@@ -1,0 +1,15 @@
+{
+  "local_datetime": "1990-07-12T14:30:00",
+  "timezone_name": "America/Sao_Paulo",
+  "latitude": -23.5505,
+  "longitude": -46.6333,
+  "place_label": "São Paulo, Brasil",
+  "source": "synthetic_demo",
+  "localization_profile": {
+    "preferred_language": "pt-BR",
+    "current_country": "Brazil",
+    "cultural_context": "Brazil",
+    "source": "synthetic_demo",
+    "localization_level": "light"
+  }
+}

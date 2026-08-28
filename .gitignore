@@ -1,0 +1,16 @@
+# Python and local build output
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Editor and operating-system files
+.DS_Store
+.idea/
+.vscode/
+
+# Generated UX audits and local report inputs
+ux-audit*/
+*.local.json

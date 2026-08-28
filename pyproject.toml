@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codex-interpretar-mapa-astrologico"
+version = "3.0.0"
+description = "Deterministic astrology facts with constrained, evidence-traceable synthesis"
+requires-python = ">=3.9"
+dependencies = ["pyswisseph==2.10.3.2"]
+
+[project.scripts]
+astrology-skill = "astrology.cli:main"
+
+[project.optional-dependencies]
+dev = ["PyYAML==6.0.2", "pytest==8.3.5"]
+
+[tool.setuptools.packages.find]
+include = ["astrology*"]
+
+[tool.setuptools.data-files]
+"share/codex-interpretar-mapa-astrologico/ephe" = ["assets/ephe/*.se1", "assets/ephe/SHA256SUMS"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

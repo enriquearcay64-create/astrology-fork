@@ -1,0 +1,4 @@
+interface:
+  display_name: "Astrologia Avançada"
+  short_description: "Mapas natais e ciclos: fatos rigorosos, síntese humana rastreável."
+  default_prompt: "Use $interpretar-mapa-astrologico para analisar este mapa com Signo Inteiro, Placidus e ângulos independentes. Preserve fatos determinísticos, faça síntese astrológica humana com evidência rastreável e trate qualquer topologia horária instável como condicional."
