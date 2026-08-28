@@ -76,22 +76,23 @@ def _transit_windows(events: List[Dict[str, object]], limit: int) -> List[Dict[s
         grouped.setdefault(str(event["evidence_family"]), []).append(event)
     windows = []
     for passes in grouped.values():
-        passes.sort(key=lambda item: item["exact_at"])
+        passes.sort(key=lambda item: str(item.get("exact_at") or item.get("closest_approach_at")))
         first = dict(passes[0])
         first["passes"] = passes
         first["window_priority"] = max(item.get("priority", 0) for item in passes)
         windows.append(first)
-    return sorted(windows, key=lambda item: (-item["window_priority"], item["exact_at"]))[:limit]
+    return sorted(windows, key=lambda item: (-item["window_priority"], str(item.get("exact_at") or item.get("closest_approach_at"))))[:limit]
 
 
 def _format_transit_window(event: Dict[str, object], lang: str) -> str:
-    dates = [str(item["exact_at"])[:10] for item in event["passes"]]
+    dates = [str(item.get("exact_at") or item.get("closest_approach_at"))[:10] for item in event["passes"]]
     passes = f"; {len(dates)} passagens ({', '.join(dates)})" if lang == "pt" and len(dates) > 1 else f"; {len(dates)} passes ({', '.join(dates)})" if len(dates) > 1 else f" ({dates[0]})"
     connector = " com " if lang == "pt" else " to "
     body = str(event["transit_body"])
     focus = TIMING_FOCUS[lang].get(body)
     suffix = f" — foco simbólico em {focus}" if focus and lang == "pt" else f" — symbolic focus on {focus}" if focus else ""
-    return f"{_token(body, lang)} {_token(str(event['aspect']), lang)}{connector}{_token(str(event['target']), lang)}{passes}{suffix}"
+    precision = "" if event.get("perfected", True) else ("; aproximação mais próxima" if lang == "pt" else "; closest approach")
+    return f"{_token(body, lang)} {_token(str(event['aspect']), lang)}{connector}{_token(str(event['target']), lang)}{passes}{precision}{suffix}"
 
 
 def _narrative_thread(themes: List[Dict[str, object]], paradoxes: List[Dict[str, object]], lang: str, narrative_plan: Optional[Dict[str, object]] = None) -> str:
@@ -115,9 +116,11 @@ def _final_synthesis(themes: List[Dict[str, object]], paradoxes: List[Dict[str, 
     planned_move = str((narrative_plan or {}).get("integration_move", ""))
     if lang == "pt":
         move = planned_move or first['expressions']['integrated']
-        return f"A integração mais promissora passa por {move}. O ganho não é cumprir o mapa, mas reconhecer o padrão cedo o bastante para escolher uma resposta menos automática."
+        qualifier = second['expressions']['constructive'] if second else first['expressions']['constructive']
+        return f"A integração mais promissora passa por {move}. Na prática, observe se isso preserva a capacidade de {qualifier} quando surge a pressão de {first['expressions']['defensive']}."
     move = planned_move or first['expressions']['integrated']
-    return f"The most promising integration move is to {move}. The gain is not fulfilling the chart, but noticing the pattern early enough to choose a less automatic response."
+    qualifier = second['expressions']['constructive'] if second else first['expressions']['constructive']
+    return f"The most promising integration move is to {move}. In practice, notice whether it preserves the capacity to {qualifier} when the pressure to {first['expressions']['defensive']} appears."
 
 
 def _executive_orientation(themes: List[Dict[str, object]], lang: str) -> str:
@@ -125,22 +128,19 @@ def _executive_orientation(themes: List[Dict[str, object]], lang: str) -> str:
     if len(themes) < 2:
         return ""
     first, second = themes[:2]
+    count_label = f"{len(themes)} temas" if lang == "pt" else f"{len(themes)} themes"
     if lang == "pt":
         return (
-            f"Leia a tabela como um mapa de decisões, não como cinco rótulos. **{first['label']}** mostra o mecanismo "
-            f"que merece atenção primeiro; **{second['label']}** mostra a condição que o qualifica. Os outros temas ajudam "
-            "a perceber em que contexto a mesma capacidade vira recurso, excesso ou proteção. Você não precisa confirmar "
-            "tudo: procure apenas uma situação concreta em que essa combinação já esteja pedindo escolha consciente. "
+            f"Leia a tabela como um mapa de decisões, não como {count_label}. **{first['label']}** mostra o mecanismo "
+            f"que merece atenção primeiro; **{second['label']}** mostra a condição que o qualifica. "
             f"Como teste, compare quando você tende a {first['expressions']['defensive']} com uma resposta que procura "
-            f"{second['expressions']['integrated']}. A diferença entre as duas costuma ser mais útil do que qualquer rótulo."
+            f"{second['expressions']['integrated']} em uma situação concreta desta semana."
         )
     return (
-        f"Read the table as a map of decisions, not five labels. **{first['label']}** names the mechanism worth noticing "
-        f"first; **{second['label']}** names the condition that qualifies it. The other themes help show when the same "
-        "capacity becomes a resource, an excess or a protection. You do not need to confirm everything: look for one "
-        f"concrete situation in which this combination is already asking for a conscious choice. As a test, compare when "
+        f"Read the table as a map of decisions, not {count_label}. **{first['label']}** names the mechanism worth noticing "
+        f"first; **{second['label']}** names the condition that qualifies it. As a test, compare when "
         f"you tend to {first['expressions']['defensive']} with a response that tries to {second['expressions']['integrated']}. "
-        "The difference between them is usually more useful than any label."
+        "Use one concrete situation from this week."
     )
 
 
@@ -166,7 +166,7 @@ def _theme_block(theme: Dict[str, object], lang: str, rank: int, profile: Option
             # movement deliberately varies by rank, so the deep reading does
             # not become five copies of a light/shadow/integration template.
             if rank == 1:
-                paragraph = f"{observation} A capacidade a desenvolver aqui é {expression['constructive']}. O cuidado está em não usar o padrão para {expression['defensive']}; a integração pede {moves.get('integration', expression['integrated'])}."
+                paragraph = f"{observation} A capacidade a desenvolver aqui é {expression['constructive']}; neste mapa, isso pede {moves.get('constructive', expression['integrated'])}. O cuidado está em não usar o padrão para {expression['defensive']}; a integração pede {moves.get('integration', expression['integrated'])}."
             elif rank == 2:
                 paragraph = f"{observation} Ele tende a ficar mais útil quando você consegue {expression['constructive']}. Uma distorção possível é {expression['excessive']}. Como contrapeso, experimente {moves.get('constructive', expression['integrated'])}."
             elif rank == 3:
@@ -174,8 +174,17 @@ def _theme_block(theme: Dict[str, object], lang: str, rank: int, profile: Option
             else:
                 paragraph = f"{observation} Não é necessário transformar isso numa regra sobre você. A pergunta prática é como {expression['integrated']} sem perder de vista os limites e as escolhas reais."
             lines.append(paragraph)
-            local_examples = localized_examples(profile, str(theme["id"]))
-            example = local_examples[0] if local_examples else (theme.get("examples", [None])[0] or theme.get("lived_examples", [None])[0])
+            # Localization is an optional contextual accent, never the whole
+            # example. A chart-derived example carries the mechanism; the
+            # locale may make a single example more familiar.
+            example = theme.get("examples", [None])[0] or theme.get("lived_examples", [None])[0]
+            local_examples = localized_examples(profile, str(theme["id"])) if rank == 1 else []
+            if example and local_examples:
+                example = f"{example}; em uma decisão prática, pode ajudar {local_examples[0]}"
+            elif not example and local_examples:
+                example = local_examples[0]
+            if example and ("função do mapa" in str(example).casefold() or "chart function" in str(example).casefold()):
+                example = None
             if rank <= 3 and example:
                 lines.extend(["", f"> **Na prática:** Isso poderia aparecer, por exemplo, em {example}."])
             return lines + [""]
@@ -190,14 +199,20 @@ def _theme_block(theme: Dict[str, object], lang: str, rank: int, profile: Option
         else:
             paragraph = f"Na melhor expressão, o tema ajuda a {expression['constructive']}. Se houver pressão, a resposta pode ser {expression['defensive']}; em excesso, pode {expression['excessive']}. O trabalho de integração é {expression['integrated']}."
         lines.append(paragraph)
-        local_examples = localized_examples(profile, str(theme["id"]))
-        example = local_examples[0] if local_examples else theme.get("lived_examples", [None])[0]
+        example = theme.get("lived_examples", [None])[0]
+        local_examples = localized_examples(profile, str(theme["id"])) if rank == 1 else []
+        if example and local_examples:
+            example = f"{example}; em uma decisão prática, pode ajudar {local_examples[0]}"
+        elif not example and local_examples:
+            example = local_examples[0]
+        if example and ("função do mapa" in str(example).casefold() or "chart function" in str(example).casefold()):
+            example = None
         if rank <= 3 and example:
             lines.extend(["", f"> **Na prática:** {example}."])
     else:
         if observation:
             if rank == 1:
-                paragraph = f"{observation} The capacity to develop here is to {expression['constructive']}. The caution is not to use the pattern to {expression['defensive']}; integration asks you to {moves.get('integration', expression['integrated'])}."
+                paragraph = f"{observation} The capacity to develop here is to {expression['constructive']}; in this chart, that asks you to {moves.get('constructive', expression['integrated'])}. The caution is not to use the pattern to {expression['defensive']}; integration asks you to {moves.get('integration', expression['integrated'])}."
             elif rank == 2:
                 paragraph = f"{observation} It becomes more useful when you can {expression['constructive']}. One possible distortion is to {expression['excessive']}. As a counterweight, try to {moves.get('constructive', expression['integrated'])}."
             elif rank == 3:
@@ -237,7 +252,7 @@ def _focus_for_body(body: str, lang: str) -> str:
 
 
 def _window_dates(event: Dict[str, object]) -> str:
-    dates = [str(item["exact_at"])[:10] for item in event["passes"]]
+    dates = [str(item.get("exact_at") or item.get("closest_approach_at"))[:10] for item in event["passes"]]
     return dates[0] if len(dates) == 1 else f"{dates[0]}–{dates[-1]}"
 
 
@@ -295,7 +310,7 @@ def _current_phase_lines(timing: Optional[Dict[str, object]], lang: str) -> List
     windows = _transit_windows(timing["modern_stream"]["major_transits"], 4)
     if windows:
         lines.append(prefix + "; ".join(_format_transit_window(event, lang) for event in windows) + ".")
-    convergent = [item for item in phase["convergence"] if item["independent_stream_count"] >= 2]
+    convergent = [item for item in phase["convergence"] if item["technique_overlap"] != "single"]
     if convergent:
         label = "- **Convergência entre técnicas:** " if lang == "pt" else "- **Cross-technique convergence:** "
         lines.append(label + "; ".join(f"{_token(item['body'], lang)} ({item['intensity']})" for item in convergent[:3]) + ".")
@@ -327,7 +342,7 @@ def _paradox_callout(themes: List[Dict[str, object]], paradoxes: List[Dict[str, 
     return [f"> ↔ **Central paradox — {left} and {right}:** both sides may coexist or alternate with context. Under pressure, the pattern may lead you to {expression['defensive']}. The way through is not choosing one permanent side, but learning to {expression['integrated']}."]
 
 
-def _life_area_lines(chart: SafeInterpretiveChart, lang: str, visible_limit: int = 4) -> List[str]:
+def _life_area_lines(chart: SafeInterpretiveChart, lang: str, hierarchy: Optional[Dict[str, Dict[str, object]]] = None, visible_limit: int = 4) -> List[str]:
     if not chart.house_placements:
         if chart.conditional_house_scenarios:
             return [
@@ -340,7 +355,13 @@ def _life_area_lines(chart: SafeInterpretiveChart, lang: str, visible_limit: int
     for body in PRIMARY_BODIES:
         if body in chart.house_placements:
             by_house[chart.house_placements[body].whole_sign_house].append(body)
-    occupied = sorted((house for house, bodies in by_house.items() if bodies), key=lambda house: (-len(by_house[house]), house))
+    hierarchy = hierarchy or {}
+    scores: Dict[int, int] = {house: len(bodies) for house, bodies in by_house.items()}
+    for _body, details in hierarchy.items():
+        prominence = {"strong": 3, "moderate": 2, "light": 1}.get(str(details.get("prominence")), 0)
+        for house in details.get("governs_whole_sign_houses", []):
+            scores[int(house)] = scores.get(int(house), 0) + prominence
+    occupied = sorted((house for house, score in scores.items() if score > 0), key=lambda house: (-scores[house], house))
     visible = occupied[:visible_limit]
     topics = HOUSE_TOPICS[lang]
     if lang == "pt":
@@ -368,10 +389,16 @@ def _life_area_lines(chart: SafeInterpretiveChart, lang: str, visible_limit: int
             else:
                 connector = " e " if lang == "pt" else " and "
                 body_text = ", ".join(labels[:-1]) + connector + labels[-1]
-            if lang == "pt":
-                lines.append(f"- **{body_text}:** o tópico principal é {topics[house]}; Placidus acrescenta a lente de {topics[placidus_house]}.")
+            states = {chart.house_placements[body].integration_state for body in bodies}
+            if "material_divergence" in states:
+                if lang == "pt":
+                    lines.append(f"- **{body_text}:** Signo Inteiro aponta para {topics[house]}, enquanto Placidus aponta para {topics[placidus_house]}. São domínios diferentes; o relatório não os funde numa única conclusão.")
+                else:
+                    lines.append(f"- **{body_text}:** Whole Sign points to {topics[house]}, while Placidus points to {topics[placidus_house]}. These are different domains; the report does not merge them into one conclusion.")
+            elif lang == "pt":
+                lines.append(f"- **{body_text}:** o tópico principal é {topics[house]}; Placidus qualifica a expressão pela lente de {topics[placidus_house]}.")
             else:
-                lines.append(f"- **{body_text}:** the main topic is {topics[house]}; Placidus adds the lens of {topics[placidus_house]}.")
+                lines.append(f"- **{body_text}:** the main topic is {topics[house]}; Placidus qualifies expression through {topics[placidus_house]}.")
 
     lines.extend(["", "<details>", "<summary><strong>Ver as doze áreas</strong></summary>" if lang == "pt" else "<summary><strong>View all twelve areas</strong></summary>", ""])
     if lang == "pt":
@@ -383,7 +410,16 @@ def _life_area_lines(chart: SafeInterpretiveChart, lang: str, visible_limit: int
         if not bodies:
             bodies = "sem planeta central" if lang == "pt" else "no central planet"
         lines.append(f"| {house} | {topics[house]} | {bodies} |")
-    lines.extend(["", "Quando não há observação sobre Placidus, os dois sistemas concordam na área. Uma casa vazia continua ativa por regência e timing." if lang == "pt" else "When no Placidus note appears, both systems agree on the area. An empty house remains active through rulership and timing.", "", "</details>"])
+    closing = (
+        "Quando não há observação sobre Placidus, os sistemas configurados permaneceram na mesma casa. Uma casa vazia também pode ganhar relevância por regência e timing."
+        if lang == "pt" and chart.placidus_available else
+        "When no Placidus note appears, the configured systems remained in the same house. An empty house may also gain relevance through rulership and timing."
+        if chart.placidus_available else
+        "Placidus não estava disponível neste cálculo; a tabela mostra somente a topologia de Signo Inteiro."
+        if lang == "pt" else
+        "Placidus was unavailable for this calculation; the table shows Whole Sign topology only."
+    )
+    lines.extend(["", closing, "", "</details>"])
     return lines
 
 
@@ -393,18 +429,29 @@ def _cycle_lines(timeline: Optional[List[Dict[str, object]]], timing: Optional[D
     age = int(timing["modern_stream"]["progressions"]["age_years"])
     if developmental_intervals:
         active = next((item for item in developmental_intervals if float(item["age_range"].split("–")[0]) <= age <= float(item["age_range"].split("–")[1])), None)
+        interval_status = "active"
         if active is None:
-            active = min(developmental_intervals, key=lambda item: abs(float(item["age_range"].split("–")[0]) - age))
+            future = [item for item in developmental_intervals if float(item["age_range"].split("–")[0]) > age]
+            if future:
+                active = min(future, key=lambda item: float(item["age_range"].split("–")[0]))
+                interval_status = "upcoming"
+            else:
+                active = max(developmental_intervals, key=lambda item: float(item["age_range"].split("–")[1]))
+                interval_status = "recent"
+        start_age, end_age = active["age_range"].split("–")
+        age_label = f"na idade {start_age}" if lang == "pt" and start_age == end_age else f"idades {active['age_range']}" if lang == "pt" else f"at age {start_age}" if start_age == end_age else f"ages {active['age_range']}"
         if lang == "pt":
+            status_label = {"active": "A ativação emergente em curso", "upcoming": "A próxima ativação emergente", "recent": "A ativação emergente mais recente"}[interval_status]
             lines = [
-                f"O intervalo emergente mais próximo é **{active['developmental_label']}** (idades {active['age_range']}). Ele é formado pelas ativações calculadas abaixo, não por uma década genérica.",
+                f"{status_label} é **{active['developmental_label']}** ({age_label}). Ela é formada pelas janelas calculadas abaixo, não por uma década genérica.",
                 "",
                 f"- **Pressão possível:** {active['possible_pressures']}.",
                 f"- **Potencial:** {active['potential']}.",
                 f"- **O que este período pode pedir:** {active['what_this_period_may_ask']}.",
             ]
         else:
-            lines = [f"The nearest emergent interval is **{active['developmental_label']}** (ages {active['age_range']}). It is formed from calculated activations, not a generic decade."]
+            status_label = {"active": "The active emergent activation", "upcoming": "The next emergent activation", "recent": "The most recent emergent activation"}[interval_status]
+            lines = [f"{status_label} is **{active['developmental_label']}** ({age_label}). It is formed from the calculated windows below, not a generic decade."]
         lines.extend(["", "<details>", "<summary><strong>Calculated activations in this interval</strong></summary>" if lang == "en" else "<summary><strong>Ativações calculadas neste intervalo</strong></summary>", ""])
         for item in active["activations"]:
             lines.append(f"- {_token(str(item['body']), lang)}: {str(item['window_start'])[:10]}–{str(item['window_end'])[:10]}.")
@@ -481,32 +528,45 @@ def _optional_depth_lines(chart: Chart, themes: List[Dict[str, object]], compens
     warning_label = "Warning" if lang == "en" else "Aviso"
     sensitivity_label = "Sensitivity" if lang == "en" else "Sensibilidade"
     lines.extend(f"- {warning_label}: {item}" for item in chart.data_quality.warnings + chart.warnings)
-    lines.extend(f"- {sensitivity_label}: {item}" for item in chart.data_quality.input_sensitivity)
+    for item in chart.data_quality.input_sensitivity:
+        if lang == "pt" and item.startswith("Sensitivity stress test:"):
+            item = "O teste contrafactual de sensibilidade atravessa a fronteira de signo do Ascendente; isso pede cautela adicional, mas não substitui a qualidade declarada da hora."
+        lines.append(f"- {sensitivity_label}: {item}")
     lines.extend(["", "</details>"])
     return lines
 
 
-def executive_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: List[Dict[str, object]], timing: Optional[Dict[str, object]], paradoxes: List[Dict[str, object]], profile: Optional[LocalizationProfile], narrative_plan: Optional[Dict[str, object]] = None) -> str:
+def executive_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: List[Dict[str, object]], timing: Optional[Dict[str, object]], paradoxes: List[Dict[str, object]], profile: Optional[LocalizationProfile], narrative_plan: Optional[Dict[str, object]] = None, chart_signature: Optional[Dict[str, object]] = None) -> str:
     lang = _lang(profile)
     heading = "# Executive Reading" if lang == "en" else "# Leitura Executiva"
     opening = "## The architecture in one page" if lang == "en" else "## A arquitetura em uma página"
-    themes_heading = "## Five themes worth keeping" if lang == "en" else "## Cinco temas para guardar"
+    visible_theme_ids = set((narrative_plan or {}).get("themes", []))
+    visible_themes = [theme for theme in themes if not visible_theme_ids or str(theme["id"]) in visible_theme_ids]
+    theme_count = len(visible_themes)
+    themes_heading = (f"## {theme_count} themes worth keeping" if lang == "en" else f"## {theme_count} temas para guardar")
     tension_heading = "## The central negotiation" if lang == "en" else "## A negociação central"
     phase_heading = "## The current chapter" if lang == "en" else "## O capítulo atual"
     synthesis_heading = "## What to do with this" if lang == "en" else "## O que fazer com esta leitura"
-    lines = [heading, "", opening, "", _narrative_thread(themes, paradoxes, lang, narrative_plan), "", themes_heading, "", *_executive_theme_table(themes, lang)]
-    orientation = _executive_orientation(themes, lang)
+    lines = [heading, "", opening, "", _narrative_thread(visible_themes, paradoxes, lang, narrative_plan)]
+    if chart_signature and chart_signature.get("mode") == "distributed":
+        lines.extend(["", "*Esta carta não pede uma única explicação totalizante: os temas principais operam como um conjunto distribuído.*" if lang == "pt" else "*This chart does not ask for one totalising explanation: its main themes operate as a distributed set.*"])
+    lines.extend(["", themes_heading, "", *_executive_theme_table(visible_themes, lang, max(theme_count, 1))])
+    orientation = _executive_orientation(visible_themes, lang)
     if orientation:
         lines.extend(["", orientation])
     if paradoxes and not narrative_plan:
         lines.extend(["", tension_heading, "", *_paradox_callout(themes, paradoxes, lang)])
     if timing:
         lines.extend(["", phase_heading, "", *_current_phase_human(timing, lang, 2)])
-    lines.extend(["", synthesis_heading, "", _final_synthesis(themes, paradoxes, lang, narrative_plan), ""])
-    if themes:
-        action_theme = next((item for item in themes if paradoxes and item["id"] == paradoxes[0]["theme"]), themes[0])
+    lines.extend(["", synthesis_heading, "", _final_synthesis(visible_themes, paradoxes, lang, narrative_plan), ""])
+    if visible_themes:
+        action_theme = next((item for item in visible_themes if paradoxes and item["id"] == paradoxes[0]["theme"]), visible_themes[0])
         local = localized_examples(profile, str(action_theme["id"]))
-        example = local[0] if local else action_theme.get("lived_examples", [""])[0]
+        example = action_theme.get("lived_examples", [""])[0]
+        if example and local:
+            example = f"{example}; se isso ajudar a tornar a escolha concreta, {local[0]}"
+        elif not example and local:
+            example = local[0]
         if lang == "pt":
             lines.extend([f"**Experimento concreto:** {example}.", "", f"**Pergunta útil:** em qual situação atual o tema **{action_theme['label']}** pede uma resposta diferente da habitual?"])
         else:
@@ -518,17 +578,19 @@ def executive_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], the
     return "\n".join(lines)
 
 
-def deep_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: List[Dict[str, object]], hierarchy: Dict[str, Dict[str, object]], timing: Optional[Dict[str, object]], timeline: Optional[List[Dict[str, object]]], paradoxes: List[Dict[str, object]], compensations: List[Dict[str, object]], structure: Dict[str, object], profile: Optional[LocalizationProfile], reasoned_syntheses: Optional[List[Dict[str, object]]] = None, narrative_plan: Optional[Dict[str, object]] = None, developmental_intervals: Optional[List[Dict[str, object]]] = None) -> str:
+def deep_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: List[Dict[str, object]], hierarchy: Dict[str, Dict[str, object]], timing: Optional[Dict[str, object]], timeline: Optional[List[Dict[str, object]]], paradoxes: List[Dict[str, object]], compensations: List[Dict[str, object]], structure: Dict[str, object], profile: Optional[LocalizationProfile], reasoned_syntheses: Optional[List[Dict[str, object]]] = None, narrative_plan: Optional[Dict[str, object]] = None, developmental_intervals: Optional[List[Dict[str, object]]] = None, chart_signature: Optional[Dict[str, object]] = None) -> str:
     lang = _lang(profile)
     if lang == "pt":
-        lines = ["# Leitura Natal Profunda", "", "> **Percurso:** arquitetura → cinco temas centrais → áreas da vida → fase atual → ciclos → integração. Recurso, sombra e possibilidade de escolha aparecem em prosa; cálculo e jargão ficam no apêndice técnico.", "", "## A arquitetura da pessoa", "", _narrative_thread(themes, paradoxes, lang, narrative_plan)]
+        lines = ["# Leitura Natal Profunda", "", "> **Percurso:** arquitetura → dinâmica central → temas diferenciados → áreas da vida → fase atual → ciclos → integração. Recurso, tensão e possibilidade de escolha aparecem em prosa; cálculo e jargão ficam no apêndice técnico.", "", "## A arquitetura da pessoa", "", _narrative_thread(themes, paradoxes, lang, narrative_plan)]
     else:
-        lines = ["# Deep Natal Reading", "", "> **Path:** architecture → five core themes → life areas → current phase → cycles → integration. Resource, shadow and choice appear in prose; calculation and jargon stay in the technical appendix.", "", "## The person's architecture", "", _narrative_thread(themes, paradoxes, lang, narrative_plan)]
+        lines = ["# Deep Natal Reading", "", "> **Path:** architecture → central dynamic → differentiated themes → life areas → current phase → cycles → integration. Resource, tension and choice appear in prose; calculation and jargon stay in the technical appendix.", "", "## The person's architecture", "", _narrative_thread(themes, paradoxes, lang, narrative_plan)]
+    visible_theme_ids = set((narrative_plan or {}).get("themes", []))
+    visible_themes = [theme for theme in themes if not visible_theme_ids or str(theme["id"]) in visible_theme_ids]
     if paradoxes and not narrative_plan:
         lines.extend(["", *_paradox_callout(themes, paradoxes, lang)])
     lines.extend(["", "## Core themes: resource, shadow and integration" if lang == "en" else "## Temas centrais: recurso, sombra e integração", ""])
     composition_by_theme = {str(item["id"]).removeprefix("reasoned."): item for item in (reasoned_syntheses or []) if item.get("status") == "allowed"}
-    for rank, theme in enumerate(themes[:5], 1):
+    for rank, theme in enumerate(visible_themes, 1):
         lines.extend(_theme_block(theme, lang, rank, profile, composition=composition_by_theme.get(str(theme["id"]))))
     lines.extend(["", "## Where this may become concrete" if lang == "en" else "## Onde isso pode ganhar forma concreta", "", *_life_area_lines(chart, lang)])
     if timing:
@@ -536,12 +598,12 @@ def deep_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: 
     cycle_section = _cycle_lines(timeline, timing, lang, developmental_intervals)
     if cycle_section:
         lines.extend(["", "## Life cycles" if lang == "en" else "## Ciclos da vida", "", *cycle_section])
-    lines.extend(["", "## Integration" if lang == "en" else "## Integração", "", _final_synthesis(themes, paradoxes, lang, narrative_plan)])
-    if themes:
+    lines.extend(["", "## Integration" if lang == "en" else "## Integração", "", _final_synthesis(visible_themes, paradoxes, lang, narrative_plan)])
+    if visible_themes:
         if lang == "pt":
-            lines.extend(["", "**Experimento de sete dias:** anote contexto → reação automática → alternativa escolhida → efeito. O objetivo é observar o padrão, não provar a interpretação.", "", f"- Em que contexto **{themes[0]['label']}** já funciona como recurso?", f"- Qual sinal mostraria que a estratégia defensiva começou a assumir o controle?"])
+            lines.extend(["", "**Experimento de sete dias:** anote contexto → reação automática → alternativa escolhida → efeito. O objetivo é observar o padrão, não provar a interpretação.", "", f"- Em que contexto **{visible_themes[0]['label']}** já funciona como recurso?", f"- Qual sinal mostraria que a estratégia defensiva começou a assumir o controle?"])
         else:
-            lines.extend(["", "**Seven-day experiment:** record context → automatic response → chosen alternative → effect. The aim is to observe the pattern, not prove the interpretation.", "", f"- In what context does **{themes[0]['label']}** already work as a resource?", f"- What sign would show that the defensive strategy has begun to take over?"])
+            lines.extend(["", "**Seven-day experiment:** record context → automatic response → chosen alternative → effect. The aim is to observe the pattern, not prove the interpretation.", "", f"- In what context does **{visible_themes[0]['label']}** already work as a resource?", f"- What sign would show that the defensive strategy has begun to take over?"])
     lines.extend(["", *_optional_depth_lines(chart, themes, compensations, structure, lang), "", "---", ""])
     if lang == "pt":
         lines.append("*Predisposição simbólica, capacidade e manifestação informada são categorias diferentes. Discordar de uma hipótese é um resultado válido. Esta leitura não diagnostica nem prevê acontecimentos concretos.*")
@@ -549,7 +611,7 @@ def deep_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: 
         lines.append("*Symbolic predisposition, capacity and reported manifestation are different categories. Disagreeing with a hypothesis is a valid result. This reading does not diagnose or predict concrete events.*")
     return "\n".join(lines)
 
-def technical_appendix(chart: SafeInterpretiveChart, hierarchy: Dict[str, Dict[str, object]], claims: Iterable[Claim], timing: Optional[Dict[str, object]], structure: Dict[str, object], profile: Optional[LocalizationProfile], reasoned_syntheses: Optional[List[Dict[str, object]]] = None, narrative_plan: Optional[Dict[str, object]] = None) -> str:
+def technical_appendix(chart: SafeInterpretiveChart, hierarchy: Dict[str, Dict[str, object]], claims: Iterable[Claim], timing: Optional[Dict[str, object]], structure: Dict[str, object], profile: Optional[LocalizationProfile], reasoned_syntheses: Optional[List[Dict[str, object]]] = None, narrative_plan: Optional[Dict[str, object]] = None, chart_signature: Optional[Dict[str, object]] = None) -> str:
     lang = _lang(profile)
     lines = [
         "# Technical Appendix" if lang == "en" else "# Apêndice Técnico", "",
@@ -594,7 +656,9 @@ def technical_appendix(chart: SafeInterpretiveChart, hierarchy: Dict[str, Dict[s
     if reasoned_syntheses:
         lines.extend(["", "## Reasoned synthesis", ""])
         for item in reasoned_syntheses:
-            lines.append(f"- {item['id']}: {item['status']}; primary={item['primary_factors']}; modifiers={item['modifiers']}; counterweights={item['counterweights']}; verifier={item['verification_errors']}.")
+            lines.append(f"- {item['id']}: {item['status']}; claims={item.get('source_claim_ids', [])}; motifs={item.get('source_motif_ids', [])}; primary={item['primary_factors']}; modifiers={item['modifiers']}; operations={item.get('composition_operations', [])}; propositions={item.get('derived_propositions', [])}; counterweights={item['counterweights']}; verifier={item['verification_errors']}.")
+    if chart_signature:
+        lines.extend(["", "## Chart signature", "", "```json", json.dumps(chart_signature, ensure_ascii=False, indent=2, sort_keys=True), "```"])
     if narrative_plan:
         lines.extend(["", "## Narrative plan", "", "```json", json.dumps(narrative_plan, ensure_ascii=False, indent=2, sort_keys=True), "```"])
     if timing:
@@ -619,11 +683,11 @@ def technical_appendix(chart: SafeInterpretiveChart, hierarchy: Dict[str, Dict[s
     return "\n".join(lines)
 
 
-def render_report(depth: str, chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: List[Dict[str, object]], hierarchy: Dict[str, Dict[str, object]], timing: Optional[Dict[str, object]], timeline: Optional[List[Dict[str, object]]], paradoxes: List[Dict[str, object]], compensations: List[Dict[str, object]], structure: Dict[str, object], profile: Optional[LocalizationProfile], reasoned_syntheses: Optional[List[Dict[str, object]]] = None, narrative_plan: Optional[Dict[str, object]] = None, developmental_intervals: Optional[List[Dict[str, object]]] = None) -> str:
+def render_report(depth: str, chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: List[Dict[str, object]], hierarchy: Dict[str, Dict[str, object]], timing: Optional[Dict[str, object]], timeline: Optional[List[Dict[str, object]]], paradoxes: List[Dict[str, object]], compensations: List[Dict[str, object]], structure: Dict[str, object], profile: Optional[LocalizationProfile], reasoned_syntheses: Optional[List[Dict[str, object]]] = None, narrative_plan: Optional[Dict[str, object]] = None, developmental_intervals: Optional[List[Dict[str, object]]] = None, chart_signature: Optional[Dict[str, object]] = None) -> str:
     if depth == "executive":
-        return executive_reading(chart, claims, themes, timing, paradoxes, profile, narrative_plan)
+        return executive_reading(chart, claims, themes, timing, paradoxes, profile, narrative_plan, chart_signature)
     if depth == "technical":
-        return technical_appendix(chart, hierarchy, claims, timing, structure, profile, reasoned_syntheses, narrative_plan)
+        return technical_appendix(chart, hierarchy, claims, timing, structure, profile, reasoned_syntheses, narrative_plan, chart_signature)
     if depth != "deep":
         raise ValueError("report_depth must be executive, deep or technical")
-    return deep_reading(chart, claims, themes, hierarchy, timing, timeline, paradoxes, compensations, structure, profile, reasoned_syntheses, narrative_plan, developmental_intervals)
+    return deep_reading(chart, claims, themes, hierarchy, timing, timeline, paradoxes, compensations, structure, profile, reasoned_syntheses, narrative_plan, developmental_intervals, chart_signature)

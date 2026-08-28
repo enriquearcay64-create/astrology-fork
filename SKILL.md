@@ -28,7 +28,7 @@ Leia [references/input-schema.md](references/input-schema.md) antes de preparar 
 11. Distinguir predisposição simbólica, capacidade e manifestação. Feedback do usuário pode contextualizar exemplos, mas nunca altera suporte astrológico ou escolhe sistema de casas.
 12. Aplicar Localization somente depois da síntese. Ela só pode alterar linguagem, exemplos, unidades, referências e formato; nunca inferir psicologia da cultura.
 13. Ao falar de timing, separar stream tradicional e moderno; usar `activation_instance` para passagens do mesmo ciclo e nunca fundir recorrências distantes pelo mesmo nome de aspecto. Não prometer eventos.
-14. Aplicar divulgação progressiva e equilíbrio Logos–Eros: arquitetura humana primeiro; cinco temas centrais; quatro áreas concretas; timing natal antes do jargão; intervalos emergentes antes de décadas; detalhes técnicos no apêndice; síntese diferente da abertura e com experimento observável.
+14. Aplicar divulgação progressiva e equilíbrio Logos–Eros: arquitetura humana primeiro; 3–4 temas centrais quando sustentados, sem quota fixa; quatro áreas concretas; timing natal antes do jargão; intervalos emergentes antes de décadas; detalhes técnicos no apêndice; síntese diferente da abertura e com experimento observável.
 
 ## Executar
 
@@ -48,7 +48,7 @@ Bloquear ou reformular frases que atribuam trauma, abuso, abandono, diagnóstico
 
 ## Profundidade de relatório
 
-- `executive`: leitura autossuficiente de aproximadamente 2–4 minutos, com cinco temas, tensão central, fase atual e experimento.
+- `executive`: leitura autossuficiente de aproximadamente 2–4 minutos, com assinatura do mapa, 3–4 temas quando sustentados, fase atual e experimento.
 - `deep`: leitura humana de aproximadamente 6–10 minutos; mecanismos psicológicos, exemplos, áreas, fase atual, ciclos e integração. Profundidade secundária fica recolhida.
 - `technical`: apêndice separado para dados, posições, casas seguras/condicionais, aspectos, hierarchy, `ReasonedSynthesis`, evidência, robustez, timing e versões.
 

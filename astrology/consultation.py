@@ -77,11 +77,11 @@ def _group_timing(events: Iterable[Dict[str, object]], limit: int = 4) -> List[D
         grouped.setdefault(str(event["evidence_family"]), []).append(event)
     windows = []
     for family, passes in grouped.items():
-        passes.sort(key=lambda item: str(item["exact_at"]))
+        passes.sort(key=lambda item: str(item.get("exact_at") or item.get("closest_approach_at")))
         first = dict(passes[0])
-        first.update({"evidence_family": family, "pass_dates": [str(item["exact_at"]) for item in passes], "pass_count": len(passes), "priority": max(int(item.get("priority", 0)) for item in passes)})
+        first.update({"evidence_family": family, "pass_dates": [str(item.get("exact_at") or item.get("closest_approach_at")) for item in passes], "pass_count": len(passes), "priority": max(int(item.get("priority", 0)) for item in passes)})
         windows.append(first)
-    return sorted(windows, key=lambda item: (-int(item["priority"]), str(item["exact_at"])))[:limit]
+    return sorted(windows, key=lambda item: (-int(item["priority"]), str(item.get("exact_at") or item.get("closest_approach_at"))))[:limit]
 
 
 def answer_question(question: str, claims: Iterable[Claim], language: str = "pt-BR", timing: Optional[Dict[str, object]] = None, hierarchy: Optional[Dict[str, Dict[str, object]]] = None, chart: Optional[object] = None, themes: Optional[List[Dict[str, object]]] = None) -> Dict[str, object]:
@@ -174,7 +174,7 @@ def render_consultation(question: str, answer: Dict[str, object], language: str 
             body = BODY_LABELS["pt"].get(str(event["transit_body"]), str(event["transit_body"])) if pt else str(event["transit_body"]).title()
             target = BODY_LABELS["pt"].get(str(event["target"]), str(event["target"]).upper() if str(event["target"]) in {"asc", "mc", "dsc", "ic"} else str(event["target"])) if pt else str(event["target"]).upper() if str(event["target"]) in {"asc", "mc", "dsc", "ic"} else str(event["target"]).title()
             aspect = ASPECT_LABELS.get(str(event["aspect"]), str(event["aspect"])) if pt else str(event["aspect"]).replace("_", " ")
-            dates = ", ".join(date[:10] for date in event.get("pass_dates", [str(event["exact_at"])]) )
+            dates = ", ".join(date[:10] for date in event.get("pass_dates", [str(event.get("exact_at") or event.get("closest_approach_at"))]) )
             suffix = f"{event.get('pass_count', 1)} passagens: {dates}" if pt and event.get("pass_count", 1) > 1 else f"{event.get('pass_count', 1)} passes: {dates}" if event.get("pass_count", 1) > 1 else dates
             lines.append(f"- {body} {aspect} {target} — {suffix}.")
     primary_intent = next(iter(answer.get("intent", {}).get("intents", [])), None)

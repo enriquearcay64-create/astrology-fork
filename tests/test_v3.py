@@ -22,57 +22,61 @@ def boundary_birth() -> BirthData:
     return BirthData("1990-07-12T00:55:00", "America/Sao_Paulo", -23.5505, -46.6333)
 
 
-def _event(when: str, branch: str = "positive") -> dict:
+def _event(when: str, branch: str = "positive", motion: str = "direct", cycle: str = "saturn:2026-05-01") -> dict:
     return {
         "id": f"raw.{when}.{branch}", "transit_body": "saturn", "target": "sun",
-        "aspect": "quincunx", "aspect_branch": branch, "exact_at": when,
+        "aspect": "quincunx", "aspect_branch": branch, "exact_at": when, "motion_at_closest": motion, "retrograde_cycle_id": cycle,
         "orb_at_minimum": 0.1, "priority": 4,
     }
 
 
-def test_stress_test_is_separate_from_declared_time_quality_and_blocks_house_leakage():
+def test_stress_test_is_separate_from_declared_time_quality_and_discloses_boundary_sensitivity():
     raw = calculate_chart(boundary_birth())
     assert raw.stability["declared_quality"] == "exact"
     assert raw.stability["declared_uncertainty_minutes"] == 0.0
-    assert raw.stability["whole_sign_topology_status"] == "conditional"
+    assert raw.stability["whole_sign_topology_status"] == "stable"
+    assert raw.stability["high_boundary_sensitivity"] is True
     assert any(item["minutes"] == 5.0 and item["whole_sign_topology_changed"] for item in raw.stability["sensitivity_tests"])
 
     result = analyse_birth_chart(boundary_birth(), report_depth="deep", include_timing=False)
     assert result["chart"]["house_placements"]  # raw factual audit record remains complete
-    assert result["safe_interpretive_view"]["house_placements"] == {}
-    assert result["safe_interpretive_view"]["conditional_house_scenarios"]
-    assert not any(claim["type"] == "topical_tendency" for claim in result["claims"] if claim["status"] == "allowed")
-    assert "temas de casa são condicionais" in result["report"]
+    assert result["safe_interpretive_view"]["house_placements"]
+    assert not result["safe_interpretive_view"]["conditional_house_scenarios"]
+    assert any(claim["type"] == "topical_tendency" for claim in result["claims"] if claim["status"] == "allowed")
+    assert "teste contrafactual de sensibilidade" in result["report"]
 
 
-def test_safe_view_cannot_expose_conditional_houses_as_regular_placements():
+def test_safe_view_keeps_exact_time_houses_but_declared_uncertainty_still_blocks_them():
     view = build_safe_interpretive_view(calculate_chart(boundary_birth()))
-    assert not view.house_placements
-    assert set(view.conditional_house_scenarios) == set(view.positions)
+    assert view.house_placements
+    assert not view.conditional_house_scenarios
+    uncertain = build_safe_interpretive_view(calculate_chart(BirthData(**{**boundary_birth().__dict__, "time_uncertainty_minutes": 181})))
+    assert not uncertain.house_placements
+    assert set(uncertain.conditional_house_scenarios) == set(uncertain.positions)
     semantic_chart = view.semantic_chart()
-    assert semantic_chart.house_placements == {}
-    assert not any(factor.kind in {"whole_sign_house", "placidus_house"} for factor in semantic_chart.factors)
+    assert semantic_chart.house_placements
 
 
-def test_conditional_whole_sign_topology_cannot_reenter_through_profections_or_hierarchy():
+def test_declared_uncertainty_blocks_profections_and_hierarchy_but_stress_test_does_not_overrule_exact_time():
     result = analyse_birth_chart(boundary_birth(), report_depth="executive", include_timing=True)
     profection = result["timing"]["traditional_stream"]
-    assert profection["status"] == "conditional"
-    assert profection["house"] is None
-    assert not any("asc_ruler" in item["roles"] for item in result["hierarchy"].values())
+    assert profection["time_lord"]
+    uncertain = analyse_birth_chart(BirthData(**{**boundary_birth().__dict__, "time_uncertainty_minutes": 181}), report_depth="executive", include_timing=True)
+    assert uncertain["timing"]["traditional_stream"]["status"] == "unavailable"
+    assert not any("asc_ruler" in item["roles"] for item in uncertain["hierarchy"].values())
 
 
 def test_activation_instance_groups_retrograde_passes_but_not_years_or_branches():
     nearby = group_activation_instances([
         _event("2026-01-10T00:00:00+00:00"),
-        _event("2026-06-10T00:00:00+00:00"),
-        _event("2026-10-10T00:00:00+00:00"),
+        _event("2026-06-10T00:00:00+00:00", motion="retrograde"),
+        _event("2026-10-10T00:00:00+00:00", motion="direct"),
     ])
     assert len(nearby) == 1 and len(nearby[0]["passes"]) == 3
 
     recurring = group_activation_instances([
         _event("2026-01-10T00:00:00+00:00"),
-        _event("2030-01-10T00:00:00+00:00"),
+        _event("2030-01-10T00:00:00+00:00", motion="retrograde", cycle="saturn:2030-05-01"),
     ])
     assert len(recurring) == 2
     assert recurring[0]["semantic_family"] == recurring[1]["semantic_family"]
@@ -88,7 +92,7 @@ def test_activation_instance_groups_retrograde_passes_but_not_years_or_branches(
 def test_renderer_preserves_separate_activation_instances():
     recurring = group_activation_instances([
         _event("2026-01-10T00:00:00+00:00"),
-        _event("2030-01-10T00:00:00+00:00"),
+        _event("2030-01-10T00:00:00+00:00", motion="retrograde", cycle="saturn:2030-05-01"),
     ])
     assert len(_transit_windows(recurring, 10)) == 2
 

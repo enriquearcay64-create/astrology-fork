@@ -81,7 +81,7 @@ def test_aspect_kind_is_part_of_generic_motif_and_evidence_family():
 
 def test_same_house_near_cusp_is_qualified_instead_of_overstated():
     assert _house_integration_state(5, 5, {"distance_degrees": 2.5})[0] == "whole_topic_placidus_qualifier"
-    assert _house_integration_state(5, 5, {"distance_degrees": 3.5})[0] == "convergence_strong"
+    assert _house_integration_state(5, 5, {"distance_degrees": 3.5})[0] == "robust_same_house"
 
 
 def test_balance_uses_sun_through_saturn_and_stellium_basis_is_explicit():

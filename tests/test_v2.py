@@ -71,7 +71,7 @@ def test_dispositor_cycles_are_unique_and_self_reception_is_not_emitted():
 
 
 def test_dual_house_policy_exposes_all_material_states():
-    assert _house_integration_state(10, 10, None)[0] == "convergence_strong"
+    assert _house_integration_state(10, 10, None)[0] == "robust_same_house"
     assert _house_integration_state(10, 9, {"distance_degrees": 5})[0] == "whole_topic_placidus_qualifier"
     assert _house_integration_state(4, 10, {"distance_degrees": 10})[0] == "complementary_emphases"
     assert _house_integration_state(2, 5, {"distance_degrees": 10})[0] == "material_divergence"
@@ -118,13 +118,13 @@ def test_life_cycles_exclude_natal_baseline_and_group_passes():
     activations = [item for phase in timeline for item in phase["activations"]]
     assert activations
     birth_instant = datetime.fromisoformat(chart.utc_datetime)
-    assert all((datetime.fromisoformat(item["exact_at"]) - birth_instant).days > 365 for item in activations)
+    assert all((datetime.fromisoformat(item["exact_at"] or item["closest_approach_at"]) - birth_instant).days > 365 for item in activations)
     assert all("passes" in item and item["window_start"] <= item["window_end"] for item in activations)
 
 
 def test_policy_schema_current_phase_and_directed_contacts_are_structured():
     result = analyse_birth_chart(birth(), as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=30)
-    assert result["chart"]["schema_version"] == "3.0.0"
+    assert result["chart"]["schema_version"] == "4.0.0"
     assert result["chart"]["policy"]["anti_cherry_picking"] if "anti_cherry_picking" in result["chart"]["policy"] else result["chart"]["policy"]["house_policy"]["anti_cherry_picking"]
     assert result["timing"]["current_phase"]["traditional_focus"]["time_lord"]
     assert "contacts" in result["progressions"] and "contacts" in result["solar_arcs"]

@@ -165,6 +165,12 @@ class ReasonedSynthesis:
     possible_expressions: List[str]
     alternative_reading: str
     prohibited_extensions: List[str]
+    # These fields make the semantic construction inspectable without
+    # pretending that a symbolic synthesis is a mathematical proof.
+    source_claim_ids: List[str] = field(default_factory=list)
+    source_motif_ids: List[str] = field(default_factory=list)
+    composition_operations: List[str] = field(default_factory=list)
+    derived_propositions: List[Dict[str, Any]] = field(default_factory=list)
     narrative_moves: Dict[str, str] = field(default_factory=dict)
     derived_claim: bool = True
     verification_errors: List[str] = field(default_factory=list)

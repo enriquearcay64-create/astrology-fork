@@ -7,7 +7,14 @@ from typing import Dict, Iterable, List
 
 
 STOPWORDS = frozenset("a an and are as at be because but by can com como de da das do dos e em esta este for from have i if in is it na no not o of on or os para por que se the this to um uma você you your seu sua seus suas".split())
-FIXED_SENTENCE_MARKERS = ("leitura simbólica", "symbolic reading", "não diagnostica", "does not diagnose", "technical appendix", "apêndice técnico", "**percurso:**", "**path:**")
+FIXED_SENTENCE_MARKERS = (
+    "leitura simbólica", "symbolic reading", "não diagnostica", "does not diagnose", "technical appendix", "apêndice técnico", "**percurso:**", "**path:**",
+    # Structural navigation belongs to the report shell, not interpretive prose.
+    "elas mostram onde os temas do mapa encontram contextos mais concretos",
+    "they show where chart themes meet more concrete contexts",
+    "ela é formada pelas janelas calculadas abaixo, não por uma década genérica",
+    "it is formed from the calculated windows below, not a generic decade",
+)
 BROAD_PATTERNS = (
     r"\b(?:você|you) (?:é|are) (?:forte|strong|sens[ií]vel|sensitive)\b",
     r"\b(?:você|you) (?:sente|feel(?:s)?) profundamente\b",

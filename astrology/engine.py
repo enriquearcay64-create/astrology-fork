@@ -304,7 +304,7 @@ def _house_integration_state(whole: int, placidus: Optional[int], cusp_proximity
     if placidus == whole:
         if cusp_distance <= 3.0:
             return "whole_topic_placidus_qualifier", "Both systems place the body in the same house, while Placidus cusp proximity qualifies spatial expression."
-        return "convergence_strong", "Both configured systems place the body in the same house."
+        return "robust_same_house", "Both configured systems place the body in the same house; this is robustness to domification choice, not a second evidence vote."
     circular_gap = min((placidus - whole) % 12, (whole - placidus) % 12)
     if circular_gap == 1 or cusp_distance <= 3.0:
         return "whole_topic_placidus_qualifier", "Whole Sign supplies the topic; adjacent/cusp-sensitive Placidus placement qualifies expression."
@@ -360,6 +360,15 @@ def calculate_chart(birth: BirthData, include_secondary: bool = True, _run_sensi
         )
     aspects = _aspects(positions)
     factors = _conditions(positions, jd_ut, birth.latitude, birth.longitude, birth.birth_time_known) + _dispositors(positions)
+    # Canonical position ledger entries allow structural configurations to be
+    # traceable without inventing pseudo-evidence ids later.
+    factors.extend(
+        Factor(
+            f"position.{key}", "shared_zodiacal", "position", [key],
+            {"longitude": position.longitude, "sign": position.sign, "degree_in_sign": position.degree_in_sign},
+        )
+        for key, position in positions.items()
+    )
     sect_factor = next((item for item in factors if item.id == "condition.sect"), None)
     lots = _lots(angles["asc"], positions, sect_factor.data["sect"]) if sect_factor and angles else {}
     for lot, longitude in lots.items():
@@ -499,14 +508,13 @@ def _apply_time_uncertainty(chart: Chart, birth: BirthData, include_secondary: b
 def _apply_sensitivity_stress_tests(chart: Chart, birth: BirthData, include_secondary: bool) -> None:
     """Record counterfactual timing sensitivity without redefining declared data.
 
-    Stress tests are not claims that the birth time is uncertain. They reveal a
-    boundary where house material must be disclosed as conditional instead of
-    quietly becoming central evidence.
+    Stress tests are not claims that the birth time is uncertain. They reveal
+    boundary sensitivity and must not silently overwrite the declared quality.
     """
     base = datetime.fromisoformat(birth.local_datetime)
     requested = tuple(float(value) for value in (birth.sensitivity_test_minutes or SENSITIVITY_STRESS_TEST_MINUTES))
     tests = []
-    conditional_bodies = set()
+    sensitive_bodies = set()
     base_asc_sign = int(chart.angles["asc"] // 30) if chart.angles else None
     for minutes in sorted(set(requested)):
         variants = []
@@ -528,7 +536,7 @@ def _apply_sensitivity_stress_tests(chart: Chart, birth: BirthData, include_seco
         })
         topology_changed = bool(base_asc_sign is not None and any(sign != base_asc_sign for sign in asc_signs))
         if topology_changed:
-            conditional_bodies.update(changed_whole or chart.house_placements.keys())
+            sensitive_bodies.update(changed_whole or chart.house_placements.keys())
         tests.append({
             "minutes": minutes,
             "whole_sign_topology_changed": topology_changed,
@@ -537,10 +545,12 @@ def _apply_sensitivity_stress_tests(chart: Chart, birth: BirthData, include_seco
             "variant_ascendants": [round(item.angles["asc"], 6) for item in variants if item.angles],
         })
     chart.stability["sensitivity_tests"] = tests
-    chart.stability["stress_conditional_house_bodies"] = sorted(conditional_bodies)
-    chart.stability["whole_sign_topology_status"] = "conditional" if conditional_bodies else "stable"
-    if conditional_bodies:
+    chart.stability["stress_sensitive_house_bodies"] = sorted(sensitive_bodies)
+    declared_conditional = bool(chart.stability.get("unstable_house_bodies")) or not chart.stability.get("allow_house_claims", True)
+    chart.stability["whole_sign_topology_status"] = "conditional" if declared_conditional else "stable"
+    chart.stability["high_boundary_sensitivity"] = bool(sensitive_bodies)
+    if sensitive_bodies:
         nearest = min(test["minutes"] for test in tests if test["whole_sign_topology_changed"])
         chart.data_quality.input_sensitivity.append(
-            f"Sensitivity stress test: a ±{nearest:g}-minute counterfactual crosses the Ascendant sign boundary; Whole Sign topics are conditional in the interpretive view."
+            f"Sensitivity stress test: a ±{nearest:g}-minute counterfactual crosses the Ascendant sign boundary; disclose high boundary sensitivity. This does not replace the declared time quality."
         )

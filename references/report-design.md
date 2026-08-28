@@ -6,7 +6,7 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 
 ## Três camadas editoriais
 
-1. **Executive Reading:** arquitetura essencial, cinco temas, paradoxo central, fase atual e um experimento. Deve ser útil se for a única parte lida.
+1. **Executive Reading:** assinatura essencial, 3–4 temas realmente sustentados, dinâmica central (ou centros distribuídos), fase atual e um experimento. Deve ser útil se for a única parte lida.
 2. **Deep Reading:** acrescenta dinâmica psicológica, exemplos vividos, áreas da vida, fase atual, ciclos e integração. Cada seção precisa adicionar uma dimensão, não apenas repetir o resumo.
 3. **Technical Appendix:** versões, dados, posições, casas seguras/condicionais, aspectos, configurações, hierarquia, claims, `ReasonedSynthesis`, plano narrativo, evidência e timing auditável. A pessoa leiga pode ignorá-lo completamente.
 
@@ -14,8 +14,8 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 
 1. Arquitetura da pessoa em um parágrafo específico.
 2. Dinâmica organizadora ou 2–3 dinâmicas distribuídas, somente quando sustentadas.
-3. Cinco temas centrais em prosa com movimento variado: recurso, tensão, risco contextual, contrapeso ou integração conforme a carta — nunca fórmula fixa.
-4. Um exemplo vivido para cada um dos três primeiros temas.
+3. Três ou quatro temas centrais em prosa com movimento variado: recurso, tensão, risco contextual, contrapeso ou integração conforme a carta — nunca fórmula fixa nem quota de cinco.
+4. Um exemplo vivido somente quando ele concretiza o mecanismo; normalmente até três no total.
 5. Quatro áreas mais ocupadas; as doze áreas ficam recolhidas.
 6. Fase atual em linguagem humana; nomes técnicos ficam recolhidos.
 7. Intervalos emergentes de desenvolvimento (por exemplo, 28–31), explicando convergência, pressão possível, potencial e o que não pode ser inferido; o mapa completo de ciclos fica recolhido.
@@ -26,7 +26,7 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 
 - Prefira parágrafos de aproximadamente 60–130 palavras para ideias psicológicas completas. Menores são válidos para conclusões; ultrapassar 150 palavras exige razão editorial.
 - Não transforme todo modo de expressão em bullet. Use prosa para relações e bullets para escolhas, janelas, passos ou mapeamentos.
-- Mantenha cinco temas no fluxo principal. Temas restantes ficam recolhidos em tabela compacta.
+- Mantenha somente os 3–4 temas que a assinatura e o plano narrativo sustentam no fluxo principal. Temas restantes ficam recolhidos em tabela compacta.
 - Use no máximo um exemplo por tema no corpo principal. Três exemplos totais normalmente bastam.
 - Evite mais de dois blocos emocionalmente pesados sem uma passagem por recurso, contexto ou agência.
 - Um heading deve responder a uma pergunta diferente. Se a seção só repete um tema anterior, fundir ou cortar.

@@ -9,7 +9,8 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import asdict
-from typing import Dict, Iterable, List, Sequence
+import re
+from typing import Dict, Iterable, List, Optional, Sequence
 
 from .config import BODY_LABELS, PRIMARY_BODIES
 from .models import Claim, ReasonedSynthesis, to_primitive
@@ -40,6 +41,14 @@ PROHIBITED_EXTENSIONS = [
 ]
 REASONING_CLASSES = {"single_structural_factor", "integrated_pattern", "theme_interaction", "natal_timing_interaction"}
 CONFIDENCE = {"light", "moderate", "strong"}
+ASPECT_OPERATIONS = {
+    "conjunction": "concentration",
+    "sextile": "facilitation",
+    "square": "tension",
+    "trine": "facilitation",
+    "quincunx": "adjustment",
+    "opposition": "polarity",
+}
 
 
 def build_reasoning_packet(
@@ -112,9 +121,19 @@ def build_reasoning_packet(
     }
 
 
-def validate_reasoned_syntheses(items: Sequence[ReasonedSynthesis], chart: SafeInterpretiveChart) -> List[ReasonedSynthesis]:
-    """Strictly validate an emergent synthesis without forcing registry prose."""
+def validate_reasoned_syntheses(
+    items: Sequence[ReasonedSynthesis],
+    chart: SafeInterpretiveChart,
+    claims: Optional[Iterable[Claim]] = None,
+) -> List[ReasonedSynthesis]:
+    """Synthesis Judge: validate provenance and conservative semantic fit.
+
+    This is deliberately not a claim of scientific proof.  It catches a
+    deduction that is disconnected from its cited semantic units before prose
+    is considered by the separate Narrative Judge.
+    """
     known = _evidence_ids(chart)
+    claim_map = {claim.id: claim for claim in (claims or []) if claim.status == "allowed"}
     output: List[ReasonedSynthesis] = []
     for item in items:
         errors: List[str] = []
@@ -127,6 +146,25 @@ def validate_reasoned_syntheses(items: Sequence[ReasonedSynthesis], chart: SafeI
             errors.append("invalid_reasoning_class")
         if item.confidence_within_astrological_model not in CONFIDENCE:
             errors.append("invalid_confidence")
+        if claim_map:
+            if not item.source_claim_ids:
+                errors.append("missing_source_claim_ids")
+            if any(claim_id not in claim_map for claim_id in item.source_claim_ids):
+                errors.append("unknown_source_claim_id")
+            available_motifs = {motif for claim in claim_map.values() for motif in claim.authorized_motifs}
+            if any(motif not in available_motifs for motif in item.source_motif_ids):
+                errors.append("unknown_source_motif_id")
+            if not item.composition_operations:
+                errors.append("missing_composition_operation")
+            for proposition in item.derived_propositions:
+                sources = set(proposition.get("sources", []))
+                if not sources or not sources.issubset(set(item.source_claim_ids)):
+                    errors.append("untraceable_derived_proposition")
+                    break
+            if _semantic_disconnect(item, claim_map):
+                errors.append("semantic_disconnect_from_sources")
+            if _specificity_escalation(item):
+                errors.append("biographical_specificity_escalation")
         # One aspect already composes two planetary functions; a lone house or
         # condition does not.
         if item.reasoning_class != "single_structural_factor" and len(set(item.primary_factors)) < 2 and not any(factor.startswith("aspect.") for factor in item.primary_factors):
@@ -138,6 +176,35 @@ def validate_reasoned_syntheses(items: Sequence[ReasonedSynthesis], chart: SafeI
         item.status = "blocked" if errors else "allowed"
         output.append(item)
     return output
+
+
+def _semantic_disconnect(item: ReasonedSynthesis, claim_map: Dict[str, Claim]) -> bool:
+    """Cheap adversarial gate, not a substitute for a model-based judge."""
+    source_claims = [claim_map[claim_id] for claim_id in item.source_claim_ids if claim_id in claim_map]
+    # A house-only topic is contextual by definition and may legitimately be
+    # worded through its topical theme rather than aspect vocabulary.
+    if source_claims and all(claim.type == "topical_tendency" for claim in source_claims):
+        return False
+    source = " ".join(
+        [claim_map[claim_id].statement + " " + claim_map[claim_id].theme.replace("_", " ") for claim_id in item.source_claim_ids if claim_id in claim_map]
+        + [motif.replace("_", " ") for claim_id in item.source_claim_ids if claim_id in claim_map for motif in claim_map[claim_id].authorized_motifs]
+    )
+    proposed = " ".join([item.observation, *[str(value.get("text", "")) for value in item.derived_propositions]])
+    source_tokens = _semantic_tokens(source)
+    proposed_tokens = _semantic_tokens(proposed)
+    # A conservative derived proposition should retain at least one meaningful
+    # semantic anchor from the claims it says it composes.
+    return bool(source_tokens and proposed_tokens and not source_tokens.intersection(proposed_tokens))
+
+
+def _specificity_escalation(item: ReasonedSynthesis) -> bool:
+    text = " ".join([item.observation, *item.possible_expressions, *[str(value.get("text", "")) for value in item.derived_propositions]]).casefold()
+    return bool(re.search(r"\b(você (?:é|trabalha|casará|vai)|you (?:are|work|will marry)|quando era criança|your childhood|seu pai|sua mãe)\b", text))
+
+
+def _semantic_tokens(value: str) -> set[str]:
+    stopwords = {"de", "da", "do", "e", "em", "a", "o", "the", "and", "of", "in", "is", "a", "an", "this", "that"}
+    return {token for token in re.findall(r"[^\W\d_]+", value.casefold()) if len(token) > 3 and token not in stopwords}
 
 
 def compose_reasoned_syntheses(
@@ -176,6 +243,9 @@ def compose_reasoned_syntheses(
         else:
             reasoning_class = "theme_interaction" if len(bodies) >= 2 else "integrated_pattern"
         observation = _fallback_observation(theme_id, bodies, structural, chart, primary, language)
+        source_claim_ids = [claim.id for claim in source]
+        source_motif_ids = list(dict.fromkeys(motif for claim in source for motif in claim.authorized_motifs))
+        operations = _composition_operations(chart, primary, counterweights)
         candidates.append(ReasonedSynthesis(
             id=f"reasoned.{theme_id}",
             observation=observation,
@@ -187,10 +257,14 @@ def compose_reasoned_syntheses(
             possible_expressions=_possible_expression_seeds(chart, bodies, language),
             alternative_reading=_alternative_reading(theme_id, language),
             prohibited_extensions=list(PROHIBITED_EXTENSIONS),
+            source_claim_ids=source_claim_ids,
+            source_motif_ids=source_motif_ids,
+            composition_operations=operations,
+            derived_propositions=[{"text": observation, "sources": source_claim_ids[:3]}],
             narrative_moves=_narrative_moves(chart, primary, bodies, language),
         ))
     # hierarchy.* is a valid packet id, although it is not a raw Chart factor.
-    checked = validate_reasoned_syntheses(candidates, chart)
+    checked = validate_reasoned_syntheses(candidates, chart, allowed)
     for item in checked:
         virtual = [factor for factor in item.modifiers if factor.startswith("hierarchy.")]
         if virtual and item.status == "blocked" and "unknown_or_unsafe_factor" in item.verification_errors:
@@ -199,19 +273,35 @@ def compose_reasoned_syntheses(
     return [to_primitive(item) for item in checked]
 
 
-def build_narrative_plan(themes: List[Dict[str, object]], syntheses: List[Dict[str, object]], language: str = "pt-BR") -> Dict[str, object]:
+def build_narrative_plan(
+    themes: List[Dict[str, object]],
+    syntheses: List[Dict[str, object]],
+    language: str = "pt-BR",
+    chart: Optional[SafeInterpretiveChart] = None,
+) -> Dict[str, object]:
     """Choose hierarchy and cross references before prose is drafted."""
     usable = [item for item in syntheses if item["status"] == "allowed"]
     by_id = {item["id"].removeprefix("reasoned."): item for item in usable}
     ordered = [theme for theme in themes if str(theme["id"]) in by_id]
-    leading = ordered[:5]
+    # A central chart benefits from fewer, deeper threads. A distributed chart
+    # may need one additional thread, but never a compulsory five.
+    leading = ordered[:3] if len(ordered) >= 3 else ordered
+    if chart and len(ordered) >= 4 and not any(
+        len(_evidence_bodies(chart).get(factor, set())) >= 2
+        for synthesis in usable for factor in synthesis["primary_factors"]
+    ):
+        leading = ordered[:4]
     central = _central_dynamic(leading, by_id, language)
     references = []
     seen_bodies: Dict[str, str] = {}
+    evidence_bodies = _evidence_bodies(chart) if chart else {}
     for theme in leading:
         synthesis = by_id[str(theme["id"])]
         for factor in synthesis["primary_factors"]:
-            for body in factor.split(".")[-1].replace("_", " ").split():
+            bodies = evidence_bodies.get(factor, set())
+            if factor.startswith("hierarchy."):
+                bodies = {factor.removeprefix("hierarchy.")}
+            for body in bodies:
                 if body in seen_bodies and seen_bodies[body] != theme["id"]:
                     references.append({"from": theme["id"], "to": seen_bodies[body], "reason": "shared structural factor"})
                 else:
@@ -224,6 +314,65 @@ def build_narrative_plan(themes: List[Dict[str, object]], syntheses: List[Dict[s
         "avoid_repetition": ["Explain each structural factor once; later sections reference it briefly.", "Do not force a light/shadow formula where a nuance or counterweight is more useful."],
         "technical_details_to_hide": ["aspect names", "house-system labels when convergent", "orb values", "registry identifiers"],
         "integration_move": by_id[str(leading[0]["id"])]["narrative_moves"]["integration"] if leading else "",
+    }
+
+
+def _composition_operations(chart: SafeInterpretiveChart, primary: Iterable[str], counterweights: Iterable[str]) -> List[str]:
+    aspects = {item.id: item for item in chart.aspects}
+    operations = []
+    for factor_id in primary:
+        aspect = aspects.get(factor_id)
+        if aspect:
+            operations.append(ASPECT_OPERATIONS[aspect.kind])
+        elif factor_id.startswith("house."):
+            operations.append("contextualization")
+    if counterweights:
+        operations.append("qualification")
+    return list(dict.fromkeys(operations)) or ["contextualization"]
+
+
+def build_chart_signature(
+    chart: SafeInterpretiveChart,
+    hierarchy: Dict[str, Dict[str, object]],
+    structure: Dict[str, object],
+    syntheses: List[Dict[str, object]],
+    language: str = "pt-BR",
+) -> Dict[str, object]:
+    """Compact, traceable architecture used to plan rather than template prose."""
+    usable = [item for item in syntheses if item.get("status") == "allowed"]
+    core_bodies = [
+        body for body, details in hierarchy.items()
+        if details["prominence"] in {"strong", "moderate"} or "configuration_focal" in details["roles"] or "asc_ruler" in details["roles"]
+    ]
+    body_to_syntheses: Dict[str, set[str]] = defaultdict(set)
+    for synthesis in usable:
+        for factor_id in synthesis["primary_factors"]:
+            for body in _evidence_bodies(chart).get(factor_id, set()):
+                body_to_syntheses[body].add(str(synthesis["id"]))
+    connected = [body for body in core_bodies if len(body_to_syntheses.get(body, set())) >= 2]
+    mode = "central" if connected else "distributed"
+    central_dynamic = (
+        {"status": "supported", "bodies": connected[:3], "syntheses": sorted(set().union(*(body_to_syntheses[body] for body in connected)))[:4]}
+        if connected else
+        {"status": "distributed", "bodies": core_bodies[:5], "syntheses": [item["id"] for item in usable[:4]]}
+    )
+    counterweights = sorted({item for synthesis in usable for item in synthesis.get("counterweights", [])})
+    contradictions = [item["id"] for item in usable if "polarity" in item.get("composition_operations", []) or "tension" in item.get("composition_operations", [])]
+    strongest_domains = [
+        {"body": body, "whole_sign_house": placement.whole_sign_house, "integration_state": placement.integration_state}
+        for body, placement in chart.house_placements.items()
+        if body in core_bodies
+    ][:5]
+    return {
+        "mode": mode,
+        "core_factors": [factor.id for factor in chart.factors if factor.kind in {"aspect", "final_dispositor"}][:12],
+        "structural_bodies": core_bodies,
+        "central_dynamic": central_dynamic,
+        "modifying_factors": [factor.id for factor in chart.factors if factor.kind == "planetary_condition"][:12],
+        "counterweights": counterweights,
+        "major_contradictions": contradictions,
+        "strongest_domains": strongest_domains,
+        "configuration_summary": structure.get("configurations", []),
     }
 
 
@@ -424,16 +573,19 @@ def _central_dynamic(themes: List[Dict[str, object]], syntheses: Dict[str, Dict[
     first_synthesis = syntheses[str(first["id"])]
     second_synthesis = syntheses[str(second["id"])]
     shared = set(first_synthesis["primary_factors"]) & set(second_synthesis["primary_factors"])
+    first_expression = dict(first.get("expressions", {}))
+    second_expression = dict(second.get("expressions", {}))
+    first_move = first_synthesis.get("narrative_moves", {}).get("integration", first_expression.get("integrated", str(first["label"]).casefold()))
     if language.startswith("pt"):
         observation = (
-            f"A leitura se organiza em torno de **{first['label']}** e **{second['label']}**. "
-            "Em vez de tratá-los como traços isolados, vale observar onde um modifica a forma de viver o outro: "
-            "a resposta mais fértil costuma depender do contexto, não de escolher um polo definitivo."
+            f"O eixo inicial liga **{first['label']}** a **{second['label']}**. Como hipótese, vale observar se "
+            f"{first_expression.get('defensive', str(first['label']).casefold())} aparece ao lado de "
+            f"{second_expression.get('defensive', str(second['label']).casefold())}; a integração proposta é {first_move}."
         )
     else:
         observation = (
-            f"The reading is organised around **{first['label']}** and **{second['label']}**. "
-            "Rather than treating them as isolated traits, notice where one changes how the other is lived: "
-            "the more useful response usually depends on context, not on choosing one permanent pole."
+            f"The opening axis links **{first['label']}** with **{second['label']}**. As a hypothesis, notice whether "
+            f"the tendency to {first_expression.get('defensive', str(first['label']).casefold())} appears alongside the tendency to "
+            f"{second_expression.get('defensive', str(second['label']).casefold())}; the proposed integration is to {first_move}."
         )
     return {"status": "candidate", "themes": [first["id"], second["id"]], "shared_factors": sorted(shared), "observation": observation}

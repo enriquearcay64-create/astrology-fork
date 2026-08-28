@@ -1,4 +1,4 @@
-# Gates de qualidade v3
+# Gates de qualidade v4
 
 O release só é aprovado quando quatro lentes passam: **Technical Truth** (cálculo), **Interpretive Integrity** (dedução dentro do pacote fechado), **Individuality** (diferença real entre cartas) e **Human Experience** (leitura clara, humana e útil). Nenhuma métrica isolada substitui a revisão editorial.
 
@@ -19,9 +19,12 @@ O release só é aprovado quando quatro lentes passam: **Technical Truth** (cál
 - Garanta que idade zero não gere retorno e que passagens do mesmo ciclo sejam agrupadas.
 - Compare aspectos de hora desconhecida em 00:01 e 23:59; nenhum aspecto instável pode chegar aos claims.
 - Teste incerteza horária acima dos gates e rejeite claims de casas/ângulos sensíveis.
-- Teste ASC em 29°59' e 0°01'. `SafeInterpretiveChart` não pode expor casas regulares, regentes tópicos, Lots ou profecções quando a topologia for condicional; o renderer não deve receber o raw chart.
+- Teste ASC em 29°59' e 0°01'. Incerteza declarada que torna a topologia condicional não pode expor casas regulares, regentes tópicos, Lots ou profecções; o renderer não deve receber o raw chart. Um stress test contrafactual para hora declarada exata deve gerar divulgação de alta sensibilidade sem reclassificar a hora declarada.
 - Teste três passagens retrógradas próximas (uma `activation_instance`), a mesma assinatura quatro anos depois (duas instâncias) e ramos geométricos opostos (instâncias distintas).
 - Construa claims forjados com tema, família, suporte e texto adulterados; o verificador deve bloquear todos.
+- Construa `ReasonedSynthesis` adversarial: factor id inexistente, `source_claim_id` inexistente, proposição sem fonte, texto semanticamente desconectado e especificidade biográfica. O Synthesis Judge deve bloquear cada caso; uma ablação do claim/factor crítico deve quebrar a cadeia.
+- Teste T-square com ápice explícito e stellium cujos `position.<body>` existem no ledger. Teste que dois aspectos com a mesma palavra (por exemplo, dois quadrados) mas corpos diferentes não geram falsa referência cruzada no planner.
+- Teste `exact_at` versus `closest_approach_at`, entrada/saída de orbe e identidade de ciclo retrógrado; não aceite data aproximada apresentada como exata.
 - Construa e inspecione o wheel; CLI e efemérides devem estar presentes.
 
 ## Narrative Quality

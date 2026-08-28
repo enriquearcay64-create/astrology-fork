@@ -88,9 +88,11 @@ def build_safe_interpretive_view(chart: Chart) -> SafeInterpretiveChart:
     """Project raw facts through declared-quality and stress-test gates."""
     stability = dict(chart.stability)
     declared_unstable = set(stability.get("unstable_house_bodies", []))
-    stress_conditional = set(stability.get("stress_conditional_house_bodies", []))
     allow_houses = bool(stability.get("allow_house_claims", True))
-    conditional = declared_unstable | stress_conditional
+    # Declared uncertainty gates interpretation.  Counterfactual stress tests
+    # remain visible as sensitivity disclosure, but do not erase an exact
+    # reported time as if it were an uncertainty interval.
+    conditional = declared_unstable
 
     stable_houses = {
         body: placement
@@ -110,7 +112,7 @@ def build_safe_interpretive_view(chart: Chart) -> SafeInterpretiveChart:
             reason=(
                 "declared_birth_time_uncertainty"
                 if body in declared_unstable
-                else "sensitivity_stress_test_changes_whole_sign_topology"
+                else "house_claims_withheld_by_declared_quality"
             ),
             stress_test_minutes=stress_minutes,
         )

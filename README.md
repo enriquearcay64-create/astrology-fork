@@ -34,8 +34,9 @@ pip install .
 astrology-skill input.json --depth deep --format report
 ~~~
 
-For Codex use, follow [SKILL.md](SKILL.md). The full v3 review is in
-[AUDITORIA_V3.md](AUDITORIA_V3.md).
+For Codex use, follow [SKILL.md](SKILL.md). The V4 review keeps calculations
+deterministic while making synthesis signature-led, traceable and less
+template-driven. The historical V3 review remains in [AUDITORIA_V3.md](AUDITORIA_V3.md).
 
 ## Development checks
 

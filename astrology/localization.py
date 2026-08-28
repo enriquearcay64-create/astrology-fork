@@ -10,35 +10,18 @@ def localized_examples(profile: Optional[LocalizationProfile], theme: str) -> Li
     if not profile or profile.localization_level == "off":
         return []
     country = (profile.current_country or "").casefold().replace(" ", "_")
-    # These are presentation seeds, not cultural psychology. The LLM may use
-    # them only when they improve a hypothetical example and may omit them.
-    examples_by_context = {
-        "brazil": {
-            "security_exploration": ["definir uma reserva em reais e qual margem pode financiar uma mudança ou experiência"],
-            "competence": ["comparar uma posição estável com um projeto independente, considerando renda, direitos e margem de risco"],
-        },
-        "portugal": {
-            "competence": ["comparar uma proposta de contrato com um projeto independente, considerando ritmo, rendimentos e continuidade"],
-            "security_exploration": ["separar uma decisão de crescimento de uma escolha feita apenas para reduzir incerteza financeira"],
-        },
-        "venezuela": {
-            "security_exploration": ["rever um plano de despesas e mudança sem transformar toda adaptação prática numa decisão de identidade"],
-            "competence": ["decidir quais compromissos manter enquanto se testa uma alternativa com margem realista"],
-        },
-        "united_states": {
-            "competence": ["comparar escopo, autonomia e sustentabilidade antes de assumir uma nova responsabilidade"],
-        },
-        "united_kingdom": {
-            "purpose": ["avaliar se uma oportunidade amplia contribuição real ou apenas acrescenta visibilidade"],
-        },
-        "netherlands": {
-            "service": ["negociar responsabilidades num projeto coletivo sem assumir sozinho o trabalho de coordenação"],
-        },
-        "japan": {
-            "individuality_belonging": ["dar uma contribuição clara a um grupo sem abandonar um critério pessoal importante"],
-        },
+    # Country supplies only neutral rendering context.  It never selects a
+    # psychological theme or maps a culture to a trait.
+    neutral_context = {
+        "brazil": "considerar valores e margem em reais antes de escolher entre alternativas",
+        "portugal": "comparar condições, continuidade e margem prática entre alternativas",
+        "venezuela": "rever uma decisão prática sem transformar adaptação em identidade",
+        "united_states": "comparar escopo, autonomia e sustentabilidade antes de assumir uma responsabilidade",
+        "united_kingdom": "distinguir contribuição concreta de visibilidade adicional numa oportunidade",
+        "netherlands": "clarificar responsabilidades num projeto coletivo antes de assumir coordenação extra",
+        "japan": "definir uma contribuição concreta e um limite claro numa decisão coletiva",
     }
-    return examples_by_context.get(country, {}).get(theme, [])[:1]
+    return [neutral_context[country]] if country in neutral_context else []
 
 
 def localization_audit(profile: Optional[LocalizationProfile]) -> Dict[str, object]:

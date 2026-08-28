@@ -28,7 +28,9 @@ def detect_configurations(chart: Chart) -> List[Dict[str, object]]:
         if kinds.count("trine") == 3:
             found.append({"kind": "grand_trine", "bodies": list(trio), "evidence": [lookup[frozenset(pair)].id for pair in combinations(trio, 2)]})
         if kinds.count("opposition") == 1 and kinds.count("square") == 2:
-            found.append({"kind": "t_square", "bodies": list(trio), "evidence": [lookup[frozenset(pair)].id for pair in combinations(trio, 2)]})
+            opposition = next(pair for pair in combinations(trio, 2) if _kind(lookup, *pair) == "opposition")
+            apex = next(body for body in trio if body not in opposition)
+            found.append({"kind": "t_square", "bodies": list(trio), "apex": apex, "evidence": [lookup[frozenset(pair)].id for pair in combinations(trio, 2)]})
         for apex in trio:
             base = [body for body in trio if body != apex]
             if _kind(lookup, apex, base[0]) == _kind(lookup, apex, base[1]) == "quincunx" and _kind(lookup, base[0], base[1]) == "sextile":

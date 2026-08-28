@@ -12,7 +12,7 @@ from .localization import localization_audit
 from .models import BirthData, Claim, LocalizationProfile, to_primitive
 from .privacy import record_boundaries
 from .report import render_report
-from .reasoning import build_narrative_plan, build_natal_timing_interactions, build_reasoning_packet, compose_reasoned_syntheses, humanization_instructions, humanization_verifier_instructions, llm_reasoning_instructions
+from .reasoning import build_chart_signature, build_narrative_plan, build_natal_timing_interactions, build_reasoning_packet, compose_reasoned_syntheses, humanization_instructions, humanization_verifier_instructions, llm_reasoning_instructions
 from .safe_view import build_safe_interpretive_view
 from .semantics import build_claims, verify_claims
 from .structure import chart_structure
@@ -37,17 +37,18 @@ def analyse_birth_chart(birth: BirthData, profile: Optional[LocalizationProfile]
     timeline = life_timeline(semantic_chart) if include_timing and report_depth in ("deep", "technical") else None
     intervals = developmental_intervals(semantic_chart, timeline) if timeline else None
     reasoned_syntheses = compose_reasoned_syntheses(chart, themes, claims, natal_hierarchy, language)
-    narrative_plan = build_narrative_plan(themes, reasoned_syntheses, language)
+    chart_signature = build_chart_signature(chart, natal_hierarchy, structure, reasoned_syntheses, language)
+    narrative_plan = build_narrative_plan(themes, reasoned_syntheses, language, chart)
     natal_timing_interactions = build_natal_timing_interactions(chart, natal_hierarchy, claims, themes, timing)
     if timing:
         timing["current_phase"]["natal_timing_interactions"] = natal_timing_interactions[:6]
     reasoning_packet = build_reasoning_packet(chart, natal_hierarchy, claims, timing, language, profile)
-    report = render_report(report_depth, chart, claims, themes, natal_hierarchy, timing, timeline, paradoxes, compensations, structure, profile, reasoned_syntheses, narrative_plan, intervals)
+    report = render_report(report_depth, chart, claims, themes, natal_hierarchy, timing, timeline, paradoxes, compensations, structure, profile, reasoned_syntheses, narrative_plan, intervals, chart_signature)
     return {
         "chart": raw_chart.as_dict(), "safe_interpretive_view": to_primitive(chart), "hierarchy": natal_hierarchy, "current_hierarchy": current_hierarchy,
         "chart_structure": structure, "claims": to_primitive(claims), "themes": themes,
         "paradoxes": paradoxes, "compensation_hypotheses": compensations,
-        "reasoned_synthesis": reasoned_syntheses, "narrative_plan": narrative_plan,
+        "reasoned_synthesis": reasoned_syntheses, "chart_signature": chart_signature, "narrative_plan": narrative_plan,
         "reasoning_packet": reasoning_packet, "llm_reasoning_instructions": llm_reasoning_instructions(), "humanization_instructions": humanization_instructions(language),
         "humanization_verifier_instructions": humanization_verifier_instructions(language),
         "timing": timing, "timeline": timeline, "developmental_intervals": intervals,

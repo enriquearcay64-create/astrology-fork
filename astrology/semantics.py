@@ -211,14 +211,14 @@ def _claim_from_house(chart: Chart, body: str, index: int, language: str) -> Cla
     placidus_topic = HOUSE_TOPICS[lang].get(placement.placidus_house) if placement.placidus_house else None
     integration = {
         "pt": {
-            "convergence_strong": "Os dois sistemas configurados convergem na mesma casa.",
+            "robust_same_house": "Os dois sistemas configurados colocam o corpo na mesma casa; isso é robustez à escolha de domificação, não uma segunda evidência.",
             "whole_topic_placidus_qualifier": f"Signo Inteiro fornece o tópico; Placidus qualifica a expressão espacial{f' pela casa {placement.placidus_house}, ligada a {placidus_topic}' if placidus_topic and placement.placidus_house != placement.whole_sign_house else ' pela proximidade de cúspide'}.",
             "complementary_emphases": f"Placidus acrescenta a casa {placement.placidus_house}, ligada a {placidus_topic}; as ênfases permanecem complementares sem somar evidência.",
             "material_divergence": f"Placidus localiza a expressão na casa {placement.placidus_house}, ligada a {placidus_topic}; as duas localizações permanecem distintas.",
             "placidus_unavailable": "A leitura tópica usa Whole Sign porque Placidus não estava disponível.",
         },
         "en": {
-            "convergence_strong": "Both configured systems converge in the same house.",
+            "robust_same_house": "Both configured systems place the body in the same house; this is robustness to domification choice, not a second evidence vote.",
             "whole_topic_placidus_qualifier": f"Whole Sign supplies the topic; Placidus qualifies spatial expression{f' through house {placement.placidus_house}, associated with {placidus_topic}' if placidus_topic and placement.placidus_house != placement.whole_sign_house else ' through cusp proximity'}.",
             "complementary_emphases": f"Placidus adds house {placement.placidus_house}, associated with {placidus_topic}; the emphases remain complementary without adding an evidence vote.",
             "material_divergence": f"Placidus locates expression in house {placement.placidus_house}, associated with {placidus_topic}; both placements remain distinct.",

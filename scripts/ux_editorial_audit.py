@@ -98,6 +98,67 @@ FIXTURES = {
             localization_level="light",
         ),
     },
+    "D": {
+        "reader_profile": {
+            "language": "pt-BR",
+            "description": "Pessoa adulta com hora de nascimento desconhecida; testa se o produto continua útil sem inventar casas, ângulos ou timing tópico.",
+            "audit_only": True,
+        },
+        "birth": BirthData(
+            local_datetime="1978-09-19T12:00:00", timezone_name="America/Argentina/Buenos_Aires",
+            latitude=-34.6037, longitude=-58.3816, place_label="Synthetic D — Buenos Aires",
+            birth_time_known=False, source="synthetic_ux_fixture",
+        ),
+        "localization": LocalizationProfile(preferred_language="pt-BR", localization_level="off", source="synthetic_ux_fixture"),
+    },
+    "E": {
+        "reader_profile": {
+            "language": "en-US",
+            "description": "Leitor técnico que testa latitude alta e indisponibilidade explícita de Placidus, sem transformar ausência em convergência.",
+            "audit_only": True,
+        },
+        "birth": BirthData(
+            local_datetime="1995-02-13T11:15:00", timezone_name="Arctic/Longyearbyen",
+            latitude=78.2232, longitude=15.6469, place_label="Synthetic E — Longyearbyen", source="synthetic_ux_fixture",
+        ),
+        "localization": LocalizationProfile(preferred_language="en-US", current_country="Norway", localization_level="light", source="synthetic_ux_fixture"),
+    },
+    "F": {
+        "reader_profile": {
+            "language": "pt-BR",
+            "description": "Profissional de meia-idade que prefere leitura curta; testa uma carta e fase temporal diferentes sem usar perfil como dado interpretativo.",
+            "audit_only": True,
+        },
+        "birth": BirthData(
+            local_datetime="1971-12-01T22:40:00", timezone_name="Africa/Johannesburg",
+            latitude=-26.2041, longitude=28.0473, place_label="Synthetic F — Johannesburg", source="synthetic_ux_fixture",
+        ),
+        "localization": LocalizationProfile(preferred_language="pt-BR", localization_level="off", source="synthetic_ux_fixture"),
+    },
+    "G": {
+        "reader_profile": {
+            "language": "pt-BR",
+            "description": "Leitora bilíngue com contexto venezuelano; testa localização leve como renderização e não como psicologia.",
+            "audit_only": True,
+        },
+        "birth": BirthData(
+            local_datetime="2001-06-30T03:25:00", timezone_name="America/Caracas",
+            latitude=10.4806, longitude=-66.9036, place_label="Synthetic G — Caracas", source="synthetic_ux_fixture",
+        ),
+        "localization": LocalizationProfile(preferred_language="pt-BR", current_country="Venezuela", cultural_context="Venezuela", localization_level="light", source="synthetic_ux_fixture"),
+    },
+    "H": {
+        "reader_profile": {
+            "language": "en-US",
+            "description": "Adulto jovem, leitor rápido e cético; testa leitura em inglês, tom direto e baixa dependência de jargão.",
+            "audit_only": True,
+        },
+        "birth": BirthData(
+            local_datetime="2004-04-08T16:10:00", timezone_name="Europe/London",
+            latitude=51.5072, longitude=-0.1276, place_label="Synthetic H — London", source="synthetic_ux_fixture",
+        ),
+        "localization": LocalizationProfile(preferred_language="en-US", current_country="United Kingdom", localization_level="light", source="synthetic_ux_fixture"),
+    },
 }
 
 JARGON = {
@@ -307,14 +368,19 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def generate(output: Path, stage: str, as_of: datetime, horizon_days: int) -> None:
+def generate(output: Path, stage: str, as_of: datetime, horizon_days: int, fixture_ids: List[str] | None = None) -> None:
     output.mkdir(parents=True, exist_ok=True)
+    selected = fixture_ids or list(FIXTURES)
+    unknown = sorted(set(selected) - set(FIXTURES))
+    if unknown:
+        raise ValueError(f"Unknown UX fixtures: {', '.join(unknown)}")
     reports: Dict[str, Dict[str, str]] = defaultdict(dict)
     metrics: Dict[str, Dict[str, object]] = defaultdict(dict)
     summaries: Dict[str, object] = {}
     methodology_versions = set()
 
-    for profile_id, fixture in FIXTURES.items():
+    for profile_id in selected:
+        fixture = FIXTURES[profile_id]
         profile_dir = output / profile_id
         profile_dir.mkdir(exist_ok=True)
         birth = fixture["birth"]
@@ -371,7 +437,7 @@ def generate(output: Path, stage: str, as_of: datetime, horizon_days: int) -> No
         "report_renderer_sha256": file_sha256(report_source),
         "word_page_assumption": WORDS_PER_PAGE,
         "reading_speed_wpm": WORDS_PER_MINUTE,
-        "fixtures": {profile_id: {"reader_profile_audit_only": fixture["reader_profile"], "birth": primitive(fixture["birth"]), "localization": primitive(fixture["localization"])} for profile_id, fixture in FIXTURES.items()},
+        "fixtures": {profile_id: {"reader_profile_audit_only": FIXTURES[profile_id]["reader_profile"], "birth": primitive(FIXTURES[profile_id]["birth"]), "localization": primitive(FIXTURES[profile_id]["localization"])} for profile_id in selected},
         "guardrail": "Reader profiles were not passed to analyse_birth_chart; only birth and LocalizationProfile were used.",
     }
     (output / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -385,8 +451,10 @@ def main() -> None:
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--stage", required=True, choices=("before", "after"))
     parser.add_argument("--horizon-days", type=int, default=366)
+    parser.add_argument("--fixtures", help="Comma-separated fixture ids; allows bounded CI/audit batches.")
     args = parser.parse_args()
-    generate(args.output, args.stage, AS_OF, args.horizon_days)
+    fixture_ids = [item.strip() for item in args.fixtures.split(",") if item.strip()] if args.fixtures else None
+    generate(args.output, args.stage, AS_OF, args.horizon_days, fixture_ids)
 
 
 if __name__ == "__main__":

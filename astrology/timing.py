@@ -12,9 +12,9 @@ from .config import ASPECTS, BODY_CODES, EPHEMERIS_END_YEAR, EPHEMERIS_START_YEA
 from .engine import EPHEMERIS_PATH, angular_distance, normalize, sign_for, signed_delta
 from .models import Chart
 
-TIMING_VERSION = "3.0.0"
+TIMING_VERSION = "4.0.0"
 MAJOR_TRANSIT_BODIES = ("jupiter", "saturn", "uranus", "neptune", "pluto", "true_node")
-ACTIVATION_INSTANCE_MAX_GAP_DAYS = 540
+PERFECTION_TOLERANCE_DEGREES = 0.01
 swe.set_ephe_path(str(EPHEMERIS_PATH))
 
 
@@ -64,7 +64,12 @@ def _aspect_branch(transit_longitude: float, target_longitude: float, aspect: st
     return "positive" if abs(delta - angle) <= abs(delta + angle) else "negative"
 
 
-def group_activation_instances(events: List[Dict[str, object]], maximum_gap_days: int = ACTIVATION_INSTANCE_MAX_GAP_DAYS) -> List[Dict[str, object]]:
+def _event_time(event: Dict[str, object]) -> str:
+    """Use a perfected instant when it exists, otherwise closest approach."""
+    return str(event.get("exact_at") or event.get("closest_approach_at"))
+
+
+def group_activation_instances(events: List[Dict[str, object]]) -> List[Dict[str, object]]:
     """Group retrograde passes, never recurring activations years apart.
 
     A semantic family describes a kind of contact.  An activation instance is a
@@ -80,9 +85,8 @@ def group_activation_instances(events: List[Dict[str, object]], maximum_gap_days
     for key, members in sorted(buckets.items()):
         current: List[Dict[str, object]] = []
         ordinal = 0
-        for event in sorted(members, key=lambda item: str(item["exact_at"])):
-            instant = datetime.fromisoformat(str(event["exact_at"]))
-            if current and (instant - datetime.fromisoformat(str(current[-1]["exact_at"]))).days > maximum_gap_days:
+        for event in sorted(members, key=_event_time):
+            if current and not _continues_retrograde_loop(current, event):
                 grouped.append(_activation_group(key, ordinal, current))
                 ordinal += 1
                 current = []
@@ -90,6 +94,94 @@ def group_activation_instances(events: List[Dict[str, object]], maximum_gap_days
         if current:
             grouped.append(_activation_group(key, ordinal, current))
     return sorted(grouped, key=lambda item: (str(item["window_start"]), str(item["activation_instance"])))
+
+
+def _continues_retrograde_loop(current: List[Dict[str, object]], candidate: Dict[str, object]) -> bool:
+    """Recognise a direct/retrograde/direct pass sequence without date gaps.
+
+    A time-distance threshold conflates separate recurrences. A single
+    apparent loop has a bounded motion sequence: direct → retrograde → direct
+    (or an observed subset). The phase is calculated with the transit, so a
+    later recurrence cannot attach merely because it shares a semantic family.
+    """
+    phases = [str(item.get("motion_at_closest", "unknown")) for item in current]
+    phase = str(candidate.get("motion_at_closest", "unknown"))
+    loop_ids = {str(item["retrograde_cycle_id"]) for item in current if item.get("retrograde_cycle_id")}
+    candidate_loop_id = candidate.get("retrograde_cycle_id")
+    if loop_ids or candidate_loop_id:
+        return bool(candidate_loop_id and loop_ids == {str(candidate_loop_id)})
+    if "unknown" in phases or phase == "unknown":
+        # Imported/legacy data lacks a declared loop identity; keep windows
+        # separate rather than guessing a temporal relationship.
+        return False
+    if len(phases) >= 3 or phase == phases[-1]:
+        return False
+    if len(phases) == 1:
+        return True
+    # A third pass completes only A → B → A. This blocks a second loop from
+    # attaching to the first completed sequence.
+    return phase == phases[0] and phases[0] != phases[1]
+
+
+def _motion_at(jd_ut: float, body: str) -> str:
+    _ensure_jd_range(jd_ut)
+    _label, code_name = BODY_CODES[body]
+    xx, flags = swe.calc_ut(jd_ut, getattr(swe, code_name), swe.FLG_SWIEPH | swe.FLG_SPEED)
+    if not flags & swe.FLG_SWIEPH:
+        raise RuntimeError(f"Swiss Ephemeris file backend was not used for timing motion {body}")
+    return "retrograde" if xx[3] < 0 else "direct"
+
+
+def _retrograde_cycle_id(jd_ut: float, body: str) -> str:
+    """Return the nearby retrograde-loop start used to identify one episode.
+
+    This is a cycle state, not a maximum time gap.  For a direct pass between
+    two loops, the nearest station decides whether it belongs to the preceding
+    completed loop or the approaching one; a retrograde pass always belongs to
+    its preceding direct→retrograde station.
+    """
+    day = int(jd_ut)
+    phase = _motion_at(day, body)
+    past: tuple[int, str] | None = None
+    future: tuple[int, str] | None = None
+    previous = phase
+    for offset in range(1, 550):
+        candidate = _motion_at(day - offset, body)
+        if candidate != previous:
+            past = (day - offset + 1, previous)
+            break
+        previous = candidate
+    previous = phase
+    for offset in range(1, 550):
+        candidate = _motion_at(day + offset, body)
+        if candidate != previous:
+            future = (day + offset, candidate)
+            break
+        previous = candidate
+    if phase == "retrograde" and past:
+        start = past[0]
+    elif past and future:
+        nearest = past if day - past[0] <= future[0] - day else future
+        if nearest[1] == "retrograde":
+            start = nearest[0]
+        else:
+            # The nearest station ended retrogradation: find that loop's
+            # start rather than falsely treating the end as a new cycle.
+            start = past[0]
+            prior = _motion_at(start - 1, body)
+            for offset in range(1, 550):
+                candidate = _motion_at(start - offset, body)
+                if candidate != prior:
+                    start = start - offset + 1
+                    break
+                prior = candidate
+    elif future:
+        start = future[0]
+    elif past:
+        start = past[0]
+    else:
+        start = day
+    return f"{body}:{_datetime_for_jd(float(start))[:10]}"
 
 
 def _activation_group(key: str, ordinal: int, passes: List[Dict[str, object]]) -> Dict[str, object]:
@@ -103,8 +195,11 @@ def _activation_group(key: str, ordinal: int, passes: List[Dict[str, object]]) -
         "evidence_family": semantic_family,  # compatible alias; not a timing window key
         "activation_instance": activation_instance,
         "passes": passes,
-        "window_start": passes[0]["exact_at"],
-        "window_end": passes[-1]["exact_at"],
+        # A retrograde episode can have several orb windows.  Its activation
+        # interval starts with the earliest entry and ends with the last exit,
+        # rather than borrowing only the representative pass's bounds.
+        "window_start": min((str(item.get("orb_entry_at") or _event_time(item)) for item in passes)),
+        "window_end": max((str(item.get("orb_exit_at") or _event_time(item)) for item in passes)),
         "window_priority": max(int(item["priority"]) for item in passes),
     }
 
@@ -120,6 +215,17 @@ def _refine_minimum(body: str, target: float, angle: float, left: float, right: 
             left = a
     jd = (left + right) / 2.0
     return jd, _deviation(_longitude(jd, body), target, angle)
+
+
+def _orb_edge(body: str, target: float, angle: float, anchor_jd: float, orb_limit: float, direction: int) -> float:
+    """Find a conservative daily boundary for a configured activation orb."""
+    current = anchor_jd
+    for _ in range(730):
+        candidate = current + direction
+        if _deviation(_longitude(candidate, body), target, angle) > orb_limit:
+            return candidate
+        current = candidate
+    return current
 
 
 def major_transits(chart: Chart, as_of: Optional[datetime] = None, horizon_days: int = 366, orb_limit: float = 1.0) -> List[Dict[str, object]]:
@@ -157,9 +263,17 @@ def major_transits(chart: Chart, as_of: Optional[datetime] = None, horizon_days:
                         elif body == target_name and aspect_name == "opposition" and body == "uranus":
                             derived_label = "Uranus Opposition"
                         transit_longitude = _longitude(jd, body)
+                        closest = _datetime_for_jd(jd)
+                        perfected = deviation <= PERFECTION_TOLERANCE_DEGREES
+                        entry_jd = _orb_edge(body, target_longitude, angle, jd, orb_limit, -1)
+                        exit_jd = _orb_edge(body, target_longitude, angle, jd, orb_limit, 1)
                         events.append({
                             "id": f"transit.{body}_{aspect_name}_{target_name}.{round(jd, 4)}", "stream": "modern_transits",
-                            "transit_body": body, "target": target_name, "aspect": aspect_name, "exact_at": _datetime_for_jd(jd),
+                            "transit_body": body, "target": target_name, "aspect": aspect_name,
+                            "closest_approach_at": closest, "minimum_orb": round(deviation, 4),
+                            "perfected": perfected, "exact_at": closest if perfected else None,
+                            "motion_at_closest": _motion_at(jd, body), "retrograde_cycle_id": _retrograde_cycle_id(jd, body),
+                            "orb_entry_at": _datetime_for_jd(entry_jd), "orb_exit_at": _datetime_for_jd(exit_jd),
                             "aspect_branch": _aspect_branch(transit_longitude, target_longitude, aspect_name),
                             "orb_at_minimum": round(deviation, 4), "derived_event_label": derived_label,
                             "evidence_family": f"transit_{body}_{aspect_name}_{target_name}",
@@ -307,15 +421,23 @@ def _cycle_occurrences(chart: Chart, body: str, aspect_name: str, age_start: flo
     for index in range(1, len(values) - 1):
         if values[index] <= values[index - 1] and values[index] <= values[index + 1] and values[index] <= orb_limit:
             jd, deviation = _refine_minimum(body, target, angle, start_jd + days[index - 1], start_jd + days[index + 1])
-            result.append({"body": body, "aspect": aspect_name, "exact_at": _datetime_for_jd(jd), "orb_at_minimum": round(deviation, 4)})
+            closest = _datetime_for_jd(jd)
+            entry_jd = _orb_edge(body, target, angle, jd, orb_limit, -1)
+            exit_jd = _orb_edge(body, target, angle, jd, orb_limit, 1)
+            result.append({
+                "body": body, "aspect": aspect_name, "closest_approach_at": closest,
+                "minimum_orb": round(deviation, 4), "perfected": deviation <= PERFECTION_TOLERANCE_DEGREES,
+                "exact_at": closest if deviation <= PERFECTION_TOLERANCE_DEGREES else None,
+                "orb_at_minimum": round(deviation, 4), "motion_at_closest": _motion_at(jd, body),
+                "orb_entry_at": _datetime_for_jd(entry_jd), "orb_exit_at": _datetime_for_jd(exit_jd),
+            })
     return result
 
 
-def _group_cycle_passes(events: List[Dict[str, object]], maximum_gap_days: int = ACTIVATION_INSTANCE_MAX_GAP_DAYS) -> List[Dict[str, object]]:
+def _group_cycle_passes(events: List[Dict[str, object]]) -> List[Dict[str, object]]:
     groups: List[List[Dict[str, object]]] = []
-    for event in sorted(events, key=lambda item: item["exact_at"]):
-        instant = datetime.fromisoformat(str(event["exact_at"]))
-        if not groups or (instant - datetime.fromisoformat(str(groups[-1][-1]["exact_at"]))).days > maximum_gap_days:
+    for event in sorted(events, key=_event_time):
+        if not groups or not _continues_retrograde_loop(groups[-1], event):
             groups.append([event])
         else:
             groups[-1].append(event)
@@ -325,8 +447,8 @@ def _group_cycle_passes(events: List[Dict[str, object]], maximum_gap_days: int =
         output.append({
             **representative,
             "passes": passes,
-            "window_start": passes[0]["exact_at"],
-            "window_end": passes[-1]["exact_at"],
+            "window_start": min(str(item.get("orb_entry_at") or _event_time(item)) for item in passes),
+            "window_end": max(str(item.get("orb_exit_at") or _event_time(item)) for item in passes),
             "semantic_family": f"cycle_{representative['body']}_{representative['aspect']}",
             "activation_instance": f"cycle_{representative['body']}_{representative['aspect']}_{len(output) + 1}",
             "evidence_family": f"cycle_{representative['body']}_{representative['aspect']}",
@@ -359,7 +481,7 @@ def life_timeline(chart: Chart, max_age: int = 70) -> List[Dict[str, object]]:
     for start_age, end_age in containers:
         phase_start = chart.julian_day_ut + start_age * 365.2425
         phase_end = chart.julian_day_ut + (end_age + 1) * 365.2425
-        activations = [cycle for cycle in calculated_cycles if phase_start <= _jd_for_datetime(datetime.fromisoformat(cycle["exact_at"])) < phase_end]
+        activations = [cycle for cycle in calculated_cycles if phase_start <= _jd_for_datetime(datetime.fromisoformat(_event_time(cycle))) < phase_end]
         output.append({
             "range": f"{start_age}–{end_age}", "activations": activations,
             "dominant_themes": sorted({cycle["body"] for cycle in activations}),
@@ -378,7 +500,9 @@ def developmental_intervals(chart: Chart, timeline: List[Dict[str, object]]) -> 
     groups: List[List[Dict[str, object]]] = []
     for item in sorted(events, key=lambda value: str(value["window_start"])):
         start = datetime.fromisoformat(str(item["window_start"]))
-        if groups and (start - datetime.fromisoformat(str(groups[-1][-1]["window_end"]))).days <= 1461:
+        # Developmental intervals are emergent overlaps of actual activation
+        # windows. No arbitrary months/years bridge separate episodes.
+        if groups and start <= datetime.fromisoformat(str(groups[-1][-1]["window_end"])):
             groups[-1].append(item)
         else:
             groups.append([item])
@@ -403,7 +527,7 @@ def developmental_intervals(chart: Chart, timeline: List[Dict[str, object]]) -> 
             "possible_pressures": pressure,
             "potential": potential,
             "what_this_period_may_ask": ask,
-            "interpretation_limit": "This interval groups calculated symbolic activations. It does not identify events, biography or a required outcome.",
+            "interpretation_limit": "This interval groups overlapping calculated symbolic activations. It does not identify events, biography or a required outcome.",
         })
     return result
 
@@ -435,23 +559,26 @@ def cross_technique_timing(chart: Chart, as_of: Optional[datetime] = None, horiz
     # A profection may contextualise, but never veto modern transit events.
     clusters: List[Dict[str, object]] = []
     for event in transits:
-        instant = datetime.fromisoformat(str(event["exact_at"]))
+        window_start = datetime.fromisoformat(str(event["window_start"]))
+        window_end = datetime.fromisoformat(str(event["window_end"]))
         event_bodies = {str(event["transit_body"]), str(event["target"])}
-        within_window = bool(clusters) and (instant - datetime.fromisoformat(str(clusters[-1]["start"]))).days <= 45
+        within_window = bool(clusters) and window_start <= datetime.fromisoformat(str(clusters[-1]["end"]))
         shares_focus = bool(clusters) and bool(event_bodies.intersection(clusters[-1]["bodies"]))
         if within_window and shares_focus:
             clusters[-1]["event_ids"].append(event["id"])
             clusters[-1]["bodies"].extend([event["transit_body"], event["target"]])
-            clusters[-1]["end"] = event["exact_at"]
+            clusters[-1]["end"] = max(str(clusters[-1]["end"]), str(event["window_end"]))
             clusters[-1]["max_priority"] = max(clusters[-1]["max_priority"], event["priority"])
         else:
-            clusters.append({"start": event["exact_at"], "end": event["exact_at"], "event_ids": [event["id"]], "bodies": [event["transit_body"], event["target"]], "max_priority": event["priority"]})
+            clusters.append({"start": event["window_start"], "end": event["window_end"], "event_ids": [event["id"]], "bodies": [event["transit_body"], event["target"]], "max_priority": event["priority"]})
     for cluster in clusters:
         cluster["bodies"] = sorted(set(cluster["bodies"]))
-        independent = 1 + int(bool(profection["time_lord"]) and profection["time_lord"] in cluster["bodies"])
-        cluster["technique_convergence"] = "moderate" if independent > 1 else "single_stream"
-        cluster["intensity"] = "very_strong" if cluster["max_priority"] >= 5 and independent > 1 else "strong" if cluster["max_priority"] >= 4 else "relevant"
-    near = [event for event in transits if datetime.fromisoformat(str(event["exact_at"])) <= as_of + timedelta(days=min(horizon_days, 180))]
+        techniques = ["major_transit"]
+        if bool(profection["time_lord"]) and profection["time_lord"] in cluster["bodies"]:
+            techniques.append("annual_profection_context")
+        cluster["technique_overlap"] = {"techniques": techniques, "overlap_level": "multi_technique" if len(techniques) > 1 else "single"}
+        cluster["intensity"] = "high_symbolic_activation" if cluster["max_priority"] >= 5 and len(techniques) > 1 else "strong" if cluster["max_priority"] >= 4 else "relevant"
+    near = [event for event in transits if datetime.fromisoformat(_event_time(event)) <= as_of + timedelta(days=min(horizon_days, 180))]
     convergence: Dict[str, set] = defaultdict(set)
     if profection["time_lord"]:
         convergence[str(profection["time_lord"])].add("annual_profection")
@@ -467,18 +594,20 @@ def cross_technique_timing(chart: Chart, as_of: Optional[datetime] = None, horiz
         convergence[str(contact["target"])].add("solar_arc_target")
     convergence_rows = []
     for body, techniques in convergence.items():
-        independent_streams = {item.replace("_target", "") for item in techniques}
+        streams = {item.replace("_target", "") for item in techniques}
         convergence_rows.append({
-            "body": body, "techniques": sorted(techniques), "independent_stream_count": len(independent_streams),
-            "intensity": "major_developmental_period" if len(independent_streams) >= 4 else "very_strong" if len(independent_streams) == 3 else "strong" if len(independent_streams) == 2 else "background",
+            "body": body, "techniques": sorted(techniques),
+            "technique_overlap": "broad_cross_method" if len(streams) >= 4 else "multi_technique" if len(streams) >= 2 else "single",
+            "intensity": "high_symbolic_activation" if len(streams) >= 4 else "very_strong" if len(streams) == 3 else "strong" if len(streams) == 2 else "background",
         })
-    convergence_rows.sort(key=lambda item: (-item["independent_stream_count"], item["body"]))
+    overlap_rank = {"broad_cross_method": 3, "multi_technique": 2, "single": 1}
+    convergence_rows.sort(key=lambda item: (-overlap_rank[item["technique_overlap"]], item["body"]))
     current_phase = {
         "as_of": as_of.isoformat(), "traditional_focus": {"house": profection["house"], "time_lord": profection["time_lord"]},
         "active_bodies": [item["body"] for item in convergence_rows], "convergence": convergence_rows,
-        "selected_transit_ids": [event["id"] for event in sorted(near, key=lambda item: (-item["priority"], item["exact_at"]))[:6]],
+        "selected_transit_ids": [event["id"] for event in sorted(near, key=lambda item: (-item["priority"], _event_time(item)))[:6]],
         "progression_contacts": progressions["contacts"][:4], "solar_arc_contacts": solar_arcs["contacts"][:4],
-        "emerging": [item["body"] for item in convergence_rows if item["independent_stream_count"] >= 2],
+        "emerging": [item["body"] for item in convergence_rows if item["technique_overlap"] != "single"],
         "integration_question": "Which active theme requires a contextual choice rather than a prediction?",
         "interpretation_limit": "Current phase is a convergence summary of symbolic techniques, not a forecast of events.",
     }
