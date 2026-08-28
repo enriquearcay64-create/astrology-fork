@@ -342,7 +342,7 @@ def _paradox_callout(themes: List[Dict[str, object]], paradoxes: List[Dict[str, 
     return [f"> ↔ **Central paradox — {left} and {right}:** both sides may coexist or alternate with context. Under pressure, the pattern may lead you to {expression['defensive']}. The way through is not choosing one permanent side, but learning to {expression['integrated']}."]
 
 
-def _life_area_lines(chart: SafeInterpretiveChart, lang: str, hierarchy: Optional[Dict[str, Dict[str, object]]] = None, visible_limit: int = 4) -> List[str]:
+def _life_area_lines(chart: SafeInterpretiveChart, lang: str, hierarchy: Optional[Dict[str, Dict[str, object]]] = None, signature_priorities: Optional[List[Dict[str, object]]] = None, visible_limit: int = 4) -> List[str]:
     if not chart.house_placements:
         if chart.conditional_house_scenarios:
             return [
@@ -361,6 +361,12 @@ def _life_area_lines(chart: SafeInterpretiveChart, lang: str, hierarchy: Optiona
         prominence = {"strong": 3, "moderate": 2, "light": 1}.get(str(details.get("prominence")), 0)
         for house in details.get("governs_whole_sign_houses", []):
             scores[int(house)] = scores.get(int(house), 0) + prominence
+    # The signature may elevate an empty house ruled by a structural factor.
+    # It is a ranking signal, not another piece of astrological evidence.
+    for item in signature_priorities or []:
+        house = int(item.get("house", 0))
+        if 1 <= house <= 12:
+            scores[house] = scores.get(house, 0) + min(6, int(item.get("score", 0)))
     occupied = sorted((house for house, score in scores.items() if score > 0), key=lambda house: (-scores[house], house))
     visible = occupied[:visible_limit]
     topics = HOUSE_TOPICS[lang]
@@ -370,6 +376,9 @@ def _life_area_lines(chart: SafeInterpretiveChart, lang: str, hierarchy: Optiona
         lines = ["The areas below are not predictions. They show where chart themes meet more concrete contexts.", "", "| Area | Central factors | Practical question |", "|---|---|---|"]
     for house in visible:
         bodies = ", ".join(_token(body, lang) for body in by_house[house])
+        if not bodies:
+            priority_bodies = next((item.get("bodies", []) for item in signature_priorities or [] if int(item.get("house", 0)) == house), [])
+            bodies = ", ".join(_token(str(body), lang) for body in priority_bodies) or ("regência estrutural" if lang == "pt" else "structural rulership")
         lines.append(f"| **{topics[house]}** | {bodies} | {HOUSE_EXAMPLES[lang][house]}? |")
 
     divergence_groups: Dict[tuple, List[str]] = {}
@@ -540,20 +549,27 @@ def executive_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], the
     lang = _lang(profile)
     heading = "# Executive Reading" if lang == "en" else "# Leitura Executiva"
     opening = "## The architecture in one page" if lang == "en" else "## A arquitetura em uma página"
-    visible_theme_ids = set((narrative_plan or {}).get("themes", []))
-    visible_themes = [theme for theme in themes if not visible_theme_ids or str(theme["id"]) in visible_theme_ids]
+    planned_ids = list((narrative_plan or {}).get("themes", []))
+    by_theme_id = {str(theme["id"]): theme for theme in themes}
+    visible_themes = [by_theme_id[theme_id] for theme_id in planned_ids if theme_id in by_theme_id] or list(themes)
     theme_count = len(visible_themes)
-    themes_heading = (f"## {theme_count} themes worth keeping" if lang == "en" else f"## {theme_count} temas para guardar")
+    themes_heading = ("## Main dynamics" if lang == "en" else "## Dinâmicas principais")
     tension_heading = "## The central negotiation" if lang == "en" else "## A negociação central"
     phase_heading = "## The current chapter" if lang == "en" else "## O capítulo atual"
     synthesis_heading = "## What to do with this" if lang == "en" else "## O que fazer com esta leitura"
     lines = [heading, "", opening, "", _narrative_thread(visible_themes, paradoxes, lang, narrative_plan)]
-    if chart_signature and chart_signature.get("mode") == "distributed":
-        lines.extend(["", "*Esta carta não pede uma única explicação totalizante: os temas principais operam como um conjunto distribuído.*" if lang == "pt" else "*This chart does not ask for one totalising explanation: its main themes operate as a distributed set.*"])
-    lines.extend(["", themes_heading, "", *_executive_theme_table(visible_themes, lang, max(theme_count, 1))])
-    orientation = _executive_orientation(visible_themes, lang)
-    if orientation:
-        lines.extend(["", orientation])
+    lines.extend(["", themes_heading, ""])
+    for theme in visible_themes:
+        expression = theme["expressions"]
+        lines.append(f"- **{theme['label']}:** {expression['constructive']}." if lang == "pt" else f"- **{theme['label']}:** {expression['constructive']}.")
+    domains = (narrative_plan or {}).get("life_area_priorities", [])
+    if domains:
+        topics = HOUSE_TOPICS[lang]
+        lines.extend(["", "## Onde isso tende a ganhar forma" if lang == "pt" else "## Where this may take form", ""])
+        for item in domains[:3]:
+            bodies = ", ".join(_token(str(body), lang) for body in item.get("bodies", [])[:2])
+            suffix = f" — {bodies}" if bodies else ""
+            lines.append(f"- **{topics[int(item['house'])]}**{suffix}.")
     if paradoxes and not narrative_plan:
         lines.extend(["", tension_heading, "", *_paradox_callout(themes, paradoxes, lang)])
     if timing:
@@ -584,15 +600,16 @@ def deep_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: 
         lines = ["# Leitura Natal Profunda", "", "> **Percurso:** arquitetura → dinâmica central → temas diferenciados → áreas da vida → fase atual → ciclos → integração. Recurso, tensão e possibilidade de escolha aparecem em prosa; cálculo e jargão ficam no apêndice técnico.", "", "## A arquitetura da pessoa", "", _narrative_thread(themes, paradoxes, lang, narrative_plan)]
     else:
         lines = ["# Deep Natal Reading", "", "> **Path:** architecture → central dynamic → differentiated themes → life areas → current phase → cycles → integration. Resource, tension and choice appear in prose; calculation and jargon stay in the technical appendix.", "", "## The person's architecture", "", _narrative_thread(themes, paradoxes, lang, narrative_plan)]
-    visible_theme_ids = set((narrative_plan or {}).get("themes", []))
-    visible_themes = [theme for theme in themes if not visible_theme_ids or str(theme["id"]) in visible_theme_ids]
+    planned_ids = list((narrative_plan or {}).get("themes", []))
+    by_theme_id = {str(theme["id"]): theme for theme in themes}
+    visible_themes = [by_theme_id[theme_id] for theme_id in planned_ids if theme_id in by_theme_id] or list(themes)
     if paradoxes and not narrative_plan:
         lines.extend(["", *_paradox_callout(themes, paradoxes, lang)])
-    lines.extend(["", "## Core themes: resource, shadow and integration" if lang == "en" else "## Temas centrais: recurso, sombra e integração", ""])
+    lines.extend(["", "## The map's organising dynamics" if lang == "en" else "## Dinâmicas que organizam o mapa", ""])
     composition_by_theme = {str(item["id"]).removeprefix("reasoned."): item for item in (reasoned_syntheses or []) if item.get("status") == "allowed"}
     for rank, theme in enumerate(visible_themes, 1):
         lines.extend(_theme_block(theme, lang, rank, profile, composition=composition_by_theme.get(str(theme["id"]))))
-    lines.extend(["", "## Where this may become concrete" if lang == "en" else "## Onde isso pode ganhar forma concreta", "", *_life_area_lines(chart, lang)])
+    lines.extend(["", "## Where this may become concrete" if lang == "en" else "## Onde isso pode ganhar forma concreta", "", *_life_area_lines(chart, lang, hierarchy, (narrative_plan or {}).get("life_area_priorities", []))])
     if timing:
         lines.extend(["", "## Current phase" if lang == "en" else "## Fase atual", "", *_current_phase_human(timing, lang, 3), "", "<details>", "<summary><strong>Technical timing basis</strong></summary>" if lang == "en" else "<summary><strong>Base técnica do timing</strong></summary>", "", *_current_phase_lines(timing, lang), "", "</details>"])
     cycle_section = _cycle_lines(timeline, timing, lang, developmental_intervals)
@@ -601,9 +618,11 @@ def deep_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: 
     lines.extend(["", "## Integration" if lang == "en" else "## Integração", "", _final_synthesis(visible_themes, paradoxes, lang, narrative_plan)])
     if visible_themes:
         if lang == "pt":
-            lines.extend(["", "**Experimento de sete dias:** anote contexto → reação automática → alternativa escolhida → efeito. O objetivo é observar o padrão, não provar a interpretação.", "", f"- Em que contexto **{visible_themes[0]['label']}** já funciona como recurso?", f"- Qual sinal mostraria que a estratégia defensiva começou a assumir o controle?"])
+            move = str((narrative_plan or {}).get("integration_move", visible_themes[0]['expressions']['integrated']))
+            lines.extend(["", "**Experimento de sete dias:** anote contexto → reação automática → alternativa escolhida → efeito. O objetivo é observar o padrão, não provar a interpretação.", "", f"- Em que contexto **{visible_themes[0]['label']}** já funciona como recurso?", f"- Qual escolha atual permitiria praticar: {move}?"])
         else:
-            lines.extend(["", "**Seven-day experiment:** record context → automatic response → chosen alternative → effect. The aim is to observe the pattern, not prove the interpretation.", "", f"- In what context does **{visible_themes[0]['label']}** already work as a resource?", f"- What sign would show that the defensive strategy has begun to take over?"])
+            move = str((narrative_plan or {}).get("integration_move", visible_themes[0]['expressions']['integrated']))
+            lines.extend(["", "**Seven-day experiment:** record context → automatic response → chosen alternative → effect. The aim is to observe the pattern, not prove the interpretation.", "", f"- In what context does **{visible_themes[0]['label']}** already work as a resource?", f"- Which current choice would let you practise: {move}?"])
     lines.extend(["", *_optional_depth_lines(chart, themes, compensations, structure, lang), "", "---", ""])
     if lang == "pt":
         lines.append("*Predisposição simbólica, capacidade e manifestação informada são categorias diferentes. Discordar de uma hipótese é um resultado válido. Esta leitura não diagnostica nem prevê acontecimentos concretos.*")

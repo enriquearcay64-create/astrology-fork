@@ -84,7 +84,7 @@ def _group_timing(events: Iterable[Dict[str, object]], limit: int = 4) -> List[D
     return sorted(windows, key=lambda item: (-int(item["priority"]), str(item.get("exact_at") or item.get("closest_approach_at"))))[:limit]
 
 
-def answer_question(question: str, claims: Iterable[Claim], language: str = "pt-BR", timing: Optional[Dict[str, object]] = None, hierarchy: Optional[Dict[str, Dict[str, object]]] = None, chart: Optional[object] = None, themes: Optional[List[Dict[str, object]]] = None) -> Dict[str, object]:
+def answer_question(question: str, claims: Iterable[Claim], language: str = "pt-BR", timing: Optional[Dict[str, object]] = None, hierarchy: Optional[Dict[str, Dict[str, object]]] = None, chart: Optional[object] = None, themes: Optional[List[Dict[str, object]]] = None, reasoned_syntheses: Optional[List[Dict[str, object]]] = None, chart_signature: Optional[Dict[str, object]] = None) -> Dict[str, object]:
     intent = classify_question(question)
     pt = language.startswith("pt")
     if intent["sensitive"]:
@@ -126,11 +126,21 @@ def answer_question(question: str, claims: Iterable[Claim], language: str = "pt-
             })
     selected_themes = [theme_label(theme, language) for theme in dict.fromkeys(claim.theme for claim in candidates)]
     focus = [theme for theme in (themes or []) if theme["id"] in {claim.theme for claim in candidates}][:3]
+    selected_ids = {claim.id for claim in candidates}
+    relevant_syntheses = [
+        item for item in (reasoned_syntheses or [])
+        if item.get("status") == "allowed" and selected_ids.intersection(item.get("source_claim_ids", []))
+    ][:2]
     if "houses" in intent["intents"]:
         answer = "Signo Inteiro define os tópicos; Placidus qualifica posição espacial e proximidade de cúspide. As convergências e divergências concretas estão listadas abaixo." if pt else "Whole Sign defines topics; Placidus qualifies spatial position and cusp proximity. The concrete convergences and divergences are listed below."
     else:
         joined = ", ".join(selected_themes)
-        if focus:
+        if relevant_syntheses:
+            observation = str(relevant_syntheses[0].get("observation", ""))
+            mode = (chart_signature or {}).get("mode")
+            frame = "A assinatura é distribuída, então esta resposta não reduz o mapa a um único eixo. " if pt and mode == "distributed" else "The signature is distributed, so this answer does not reduce the chart to one axis. " if mode == "distributed" else ""
+            answer = f"{frame}{observation} Para esta pergunta, use isso como hipótese observável, não como descrição fechada." if pt else f"{frame}{observation} For this question, use it as an observable hypothesis, not a closed description."
+        elif focus:
             movement = focus[0]["expressions"]["integrated"]
             answer = f"A leitura prioriza {joined}. O movimento mais útil para esta pergunta é {movement}. As hipóteses abaixo mostram a base e os limites dessa síntese." if pt else f"The reading prioritizes {joined}. The most useful move for this question is to {movement}. The hypotheses below show the basis and limits of that synthesis."
         else:
@@ -138,7 +148,7 @@ def answer_question(question: str, claims: Iterable[Claim], language: str = "pt-
     return {
         "answer": answer,
         "claims": [{"statement": claim.statement, "evidence": claim.evidence, "counterweights": claim.counterweights, "specificity": claim.allowed_specificity} for claim in candidates],
-        "intent": intent, "focus": focus, "relevant_timing": relevant_timing, "house_comparison": house_comparison,
+        "intent": intent, "focus": focus, "relevant_syntheses": relevant_syntheses, "signature_context": {"mode": (chart_signature or {}).get("mode"), "bodies": (chart_signature or {}).get("central_dynamic", {}).get("bodies", [])}, "relevant_timing": relevant_timing, "house_comparison": house_comparison,
         "limits": ["Não diagnostica nem promete acontecimentos." if pt else "It does not diagnose or promise events.", "Discordância é um resultado válido; feedback não aumenta o suporte astrológico." if pt else "Non-resonance is a valid result; feedback does not increase astrological support."],
     }
 
@@ -150,14 +160,11 @@ def render_consultation(question: str, answer: Dict[str, object], language: str 
     claims = answer.get("claims", [])
     if claims:
         focus = answer.get("focus", [])
-        if focus:
-            lines.extend(["", "## Luz, tensão e integração" if pt else "## Constructive, tension and integration", ""])
-            for theme in focus:
-                expressions = theme["expressions"]
-                if pt:
-                    lines.extend([f"### {theme['label']}", "", f"- ✦ **Luz:** {expressions['constructive']}.", f"- ◐ **Sob pressão:** {expressions['defensive']}.", f"- → **Integração:** {expressions['integrated']}.", ""])
-                else:
-                    lines.extend([f"### {theme['label']}", "", f"- ✦ **Constructive:** {expressions['constructive']}.", f"- ◐ **Under pressure:** {expressions['defensive']}.", f"- → **Integration:** {expressions['integrated']}.", ""])
+        syntheses = answer.get("relevant_syntheses", [])
+        if syntheses:
+            lines.extend(["", "## Dinâmica relevante no mapa" if pt else "## Relevant chart dynamic", ""])
+            for synthesis in syntheses:
+                lines.extend([f"- {synthesis['observation']}"])
         lines.extend(["", "## O que sustenta a resposta" if pt else "## What supports the answer", ""])
         for index, claim in enumerate(claims, 1):
             lines.append(f"{index}. {claim['statement']}")

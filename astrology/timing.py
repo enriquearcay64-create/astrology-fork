@@ -15,6 +15,7 @@ from .models import Chart
 TIMING_VERSION = "4.0.0"
 MAJOR_TRANSIT_BODIES = ("jupiter", "saturn", "uranus", "neptune", "pluto", "true_node")
 PERFECTION_TOLERANCE_DEGREES = 0.01
+ORB_BOUNDARY_TOLERANCE_DEGREES = 0.0001
 swe.set_ephe_path(str(EPHEMERIS_PATH))
 
 
@@ -62,6 +63,19 @@ def _aspect_branch(transit_longitude: float, target_longitude: float, aspect: st
     angle = ASPECTS[aspect]
     delta = signed_delta(transit_longitude, target_longitude)
     return "positive" if abs(delta - angle) <= abs(delta + angle) else "negative"
+
+
+def _signed_aspect_error(transit_longitude: float, target_longitude: float, aspect: str, branch: str) -> Optional[float]:
+    """Signed error only where a branch has a numerically stable zero."""
+    delta = signed_delta(transit_longitude, target_longitude)
+    angle = ASPECTS[aspect]
+    if aspect == "conjunction":
+        return delta
+    if aspect == "opposition":
+        # The angular-distance measure has a cusp at 180°.  Do not pretend a
+        # root has been demonstrated unless a branch-safe method exists.
+        return None
+    return delta - angle if branch == "positive" else delta + angle
 
 
 def _event_time(event: Dict[str, object]) -> str:
@@ -218,14 +232,41 @@ def _refine_minimum(body: str, target: float, angle: float, left: float, right: 
 
 
 def _orb_edge(body: str, target: float, angle: float, anchor_jd: float, orb_limit: float, direction: int) -> float:
-    """Find a conservative daily boundary for a configured activation orb."""
+    """Bracket daily, then refine the actual configured orb boundary."""
     current = anchor_jd
     for _ in range(730):
         candidate = current + direction
         if _deviation(_longitude(candidate, body), target, angle) > orb_limit:
-            return candidate
+            inside, outside = current, candidate
+            for _ in range(32):
+                midpoint = (inside + outside) / 2.0
+                if _deviation(_longitude(midpoint, body), target, angle) <= orb_limit:
+                    inside = midpoint
+                else:
+                    outside = midpoint
+            return (inside + outside) / 2.0
         current = candidate
     return current
+
+
+def _refine_exact_root(body: str, target: float, aspect: str, left: float, right: float, branch: str) -> Optional[float]:
+    """Refine a true aspect root only when its signed error is bracketed."""
+    left_error = _signed_aspect_error(_longitude(left, body), target, aspect, branch)
+    right_error = _signed_aspect_error(_longitude(right, body), target, aspect, branch)
+    if left_error is None or right_error is None or left_error * right_error > 0:
+        return None
+    for _ in range(40):
+        midpoint = (left + right) / 2.0
+        mid_error = _signed_aspect_error(_longitude(midpoint, body), target, aspect, branch)
+        if mid_error is None:
+            return None
+        if abs(mid_error) <= ORB_BOUNDARY_TOLERANCE_DEGREES:
+            return midpoint
+        if left_error * mid_error <= 0:
+            right, right_error = midpoint, mid_error
+        else:
+            left, left_error = midpoint, mid_error
+    return (left + right) / 2.0
 
 
 def major_transits(chart: Chart, as_of: Optional[datetime] = None, horizon_days: int = 366, orb_limit: float = 1.0) -> List[Dict[str, object]]:
@@ -263,18 +304,21 @@ def major_transits(chart: Chart, as_of: Optional[datetime] = None, horizon_days:
                         elif body == target_name and aspect_name == "opposition" and body == "uranus":
                             derived_label = "Uranus Opposition"
                         transit_longitude = _longitude(jd, body)
+                        branch = _aspect_branch(transit_longitude, target_longitude, aspect_name)
                         closest = _datetime_for_jd(jd)
-                        perfected = deviation <= PERFECTION_TOLERANCE_DEGREES
+                        exact_jd = _refine_exact_root(body, target_longitude, aspect_name, start + days[index - 1], start + days[index + 1], branch)
+                        perfected = exact_jd is not None
                         entry_jd = _orb_edge(body, target_longitude, angle, jd, orb_limit, -1)
                         exit_jd = _orb_edge(body, target_longitude, angle, jd, orb_limit, 1)
                         events.append({
                             "id": f"transit.{body}_{aspect_name}_{target_name}.{round(jd, 4)}", "stream": "modern_transits",
                             "transit_body": body, "target": target_name, "aspect": aspect_name,
                             "closest_approach_at": closest, "minimum_orb": round(deviation, 4),
-                            "perfected": perfected, "exact_at": closest if perfected else None,
+                            "perfected": perfected, "exact_at": _datetime_for_jd(exact_jd) if exact_jd is not None else None,
+                            "near_exact_within_tolerance": deviation <= PERFECTION_TOLERANCE_DEGREES,
                             "motion_at_closest": _motion_at(jd, body), "retrograde_cycle_id": _retrograde_cycle_id(jd, body),
                             "orb_entry_at": _datetime_for_jd(entry_jd), "orb_exit_at": _datetime_for_jd(exit_jd),
-                            "aspect_branch": _aspect_branch(transit_longitude, target_longitude, aspect_name),
+                            "aspect_branch": branch,
                             "orb_at_minimum": round(deviation, 4), "derived_event_label": derived_label,
                             "evidence_family": f"transit_{body}_{aspect_name}_{target_name}",
                             "priority": (4 if derived_label else 3 if target_name in ("asc", "mc", "sun", "moon") else 2) + (1 if deviation <= 0.25 else 0),

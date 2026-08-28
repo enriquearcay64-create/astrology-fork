@@ -28,14 +28,14 @@ def test_report_uses_progressive_disclosure_tables_intro_and_final_synthesis():
     assert "| Área | Fatores centrais | Pergunta prática |" in report
     assert "<summary><strong>Ver as doze áreas</strong></summary>" in report
     assert report.count("<details>") == report.count("</details>") >= 4
-    assert "recurso, sombra e integração" in report
+    assert "Dinâmicas que organizam o mapa" in report
     assert report.count("> **Na prática:**") == 3
 
 
 def test_report_balances_logos_and_eros_and_puts_human_meaning_first():
     deep = analyse_birth_chart(birth(), report_depth="deep", include_timing=False)["report"]
     technical = analyse_birth_chart(birth(), report_depth="technical", include_timing=False)["report"]
-    assert deep.index("## Temas centrais") < deep.index("## Onde isso pode ganhar forma concreta") < deep.index("## Integração")
+    assert deep.index("## Dinâmicas que organizam o mapa") < deep.index("## Onde isso pode ganhar forma concreta") < deep.index("## Integração")
     assert "Uma distorção possível" in deep or "Em momentos de maior carga" in deep
     assert "## Claims" not in deep and "## Claims" in technical
     assert "Whole Sign" not in deep.split("## Onde isso pode ganhar forma concreta", 1)[0]
@@ -56,7 +56,7 @@ def test_consultation_has_a_human_report_in_addition_to_structured_data():
     assert result["report"].startswith("# Consulta Astrológica")
     assert "## Resposta direta" in result["report"]
     assert "## Síntese e próximo passo" in result["report"]
-    assert "## Luz, tensão e integração" in result["report"]
+    assert "## Dinâmica relevante no mapa" in result["report"]
     assert "**Experimento:**" in result["report"]
     assert "Escolha duas opções reais de carreira" in result["report"]
     families = [item["evidence_family"] for item in result["consultation"]["relevant_timing"]]

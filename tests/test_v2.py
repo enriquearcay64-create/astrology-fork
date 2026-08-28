@@ -101,7 +101,7 @@ def test_english_report_is_actually_english_and_deep_report_has_no_placeholder()
     assert "Leitura Executiva" not in english["report"]
     deep = analyse_birth_chart(birth(), report_depth="deep", as_of=as_of, horizon_days=30)
     assert "a ser preenchido" not in deep["report"]
-    assert "recurso, sombra e integração" in deep["report"]
+    assert "Dinâmicas que organizam o mapa" in deep["report"]
 
 
 def test_technical_json_blocks_are_valid_json():

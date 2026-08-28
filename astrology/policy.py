@@ -18,7 +18,7 @@ def policy_manifest() -> Dict[str, object]:
     return {
         "methodology_version": METHODOLOGY_VERSION,
         "schema_version": SCHEMA_VERSION,
-        "semantic_registry_version": "4.0.0-boundaries",
+        "semantic_registry_version": "2.4.0",
         "timing_version": "4.0.0",
         "report_template_version": "4.0.0-signature-led",
         "zodiac": "tropical",
@@ -67,5 +67,6 @@ def policy_manifest() -> Dict[str, object]:
         "retrograde_friction_policy": "Mercury through Saturn may add friction; outer-planet retrogradation is disclosed but does not increase friction scoring",
         "report_design_policy": "portable Markdown; executive/deep/technical separation; signature-led human-first prose with 3–4 non-forced core themes; evidence-led examples; Whole Sign and Placidus differences named only when material; timing translated before technical labels; distinct introduction and synthesis; no decorative animation",
         "timing_orbs": {"major_transits": 1.0, "directed_contacts": 1.0, "life_cycles": 0.7},
+        "timing_precision": {"orb_boundary_tolerance_degrees": 0.0001, "perfected_policy": "only a branch-safe refined root receives exact_at; closest approach remains non-perfect when a root is not demonstrated"},
         "profection_date_policy": "evaluate birthday in the declared natal local timezone or explicit fixed offset",
     }

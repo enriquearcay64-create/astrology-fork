@@ -22,13 +22,27 @@ Leia [references/input-schema.md](references/input-schema.md) antes de preparar 
 5. Construir primeiro a `SafeInterpretiveChart`; nunca entregar casa, ângulo, Lot, profecção ou regente tópico instável ao renderer ou à síntese como fato seguro. Diferenciar incerteza declarada de stress tests contrafactuais.
 6. Usar o registry como limite semântico, não como roteiro de frases. Produzir `ReasonedSynthesis` a partir do pacote factual fechado: cada inferência emergente deve citar 1–5 fatores existentes, modificadores, contrapesos, leitura alternativa e teto de especificidade.
 7. Permitir `derived_claim` em síntese de nível 2 quando o verificador confirmar fatores existentes, suporte adequado e ausência de extensão proibida. Não exigir que a frase final já exista no registry.
-8. Antes de redigir, criar `NarrativePlanner`: dinâmica central sustentada (ou centros distribuídos), ordem dos temas, interações, detalhes técnicos a ocultar e prevenção de repetição.
+8. Antes de redigir, criar `ChartSignature` e `NarrativePlanner`: a assinatura — não a lista de themes — decide dinâmica central sustentada (ou centros distribuídos), ordem, referências cruzadas, áreas prioritárias, detalhes técnicos a ocultar e prevenção de repetição.
 9. Aplicar `HumanizationPass` depois da síntese: variar ritmo, exemplos e transições; preservar significado e fatores citados; não acrescentar dado astrológico, biografia, certeza ou timing.
 10. Verificar factual e semanticamente a saída final. Se a prosa introduzir um fator, uma extensão ou uma certeza não autorizada, reduzir especificidade ou regerar.
 11. Distinguir predisposição simbólica, capacidade e manifestação. Feedback do usuário pode contextualizar exemplos, mas nunca altera suporte astrológico ou escolhe sistema de casas.
 12. Aplicar Localization somente depois da síntese. Ela só pode alterar linguagem, exemplos, unidades, referências e formato; nunca inferir psicologia da cultura.
 13. Ao falar de timing, separar stream tradicional e moderno; usar `activation_instance` para passagens do mesmo ciclo e nunca fundir recorrências distantes pelo mesmo nome de aspecto. Não prometer eventos.
 14. Aplicar divulgação progressiva e equilíbrio Logos–Eros: arquitetura humana primeiro; 3–4 temas centrais quando sustentados, sem quota fixa; quatro áreas concretas; timing natal antes do jargão; intervalos emergentes antes de décadas; detalhes técnicos no apêndice; síntese diferente da abertura e com experimento observável.
+
+## Fluxo premium manual com Sol High
+
+O relatório local determinístico é fallback para testes e debug; não o apresente como produto premium. Para a leitura premium no Codex High, execute exatamente:
+
+```bash
+python3 scripts/astrology_skill.py /caminho/entrada.json --premium-stage prepare > pacote.json
+# No Codex, use o reasoning_packet de pacote.json para pedir JSON ReasonedSynthesis ao Sol High.
+python3 scripts/astrology_skill.py /caminho/entrada.json --premium-stage validate-synthesis --premium-synthesis sinteses-sol.json
+# O segundo JSON contém report, paragraph_sources e narrative_judge: {"verdict":"approved"}.
+python3 scripts/astrology_skill.py /caminho/entrada.json --premium-stage validate-narrative --premium-synthesis sinteses-validadas.json --premium-narrative narrativa-sol.json --format report
+```
+
+Em seguida, use apenas as sínteses aprovadas, a `ChartSignature` e o `NarrativePlanner` devolvidos para a composição narrativa no Sol High. Faça um segundo passe separado de Narrative Judge, conferindo cada parágrafo contra seus `source_claim_ids`/fatores. Só publique quando Synthesis Judge e Narrative Judge aprovarem. A CLI não chama API externa nem finge que o gate léxico é prova semântica.
 
 ## Executar
 

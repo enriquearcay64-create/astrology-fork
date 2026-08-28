@@ -9,7 +9,7 @@ from typing import Dict, Optional
 
 from .engine import calculate_chart
 from .models import BirthData, LocalizationProfile
-from .pipeline import analyse_birth_chart, consult
+from .pipeline import analyse_birth_chart, consult, prepare_premium_handoff, validate_premium_narrative, validate_premium_syntheses
 from .timing import solar_return
 
 
@@ -50,6 +50,9 @@ def main() -> int:
     parser.add_argument("--solar-return-location-policy", choices=("birth_place", "habitual_residence", "actual_physical_location"), default="birth_place")
     parser.add_argument("--as-of", help="UTC ISO timestamp for reproducible timing")
     parser.add_argument("--format", choices=("json", "report"), default="json")
+    parser.add_argument("--premium-stage", choices=("prepare", "validate-synthesis", "validate-narrative"), help="Manual Sol High handoff; does not call an external model")
+    parser.add_argument("--premium-synthesis", help="JSON array (or object with reasoned_synthesis) returned by Sol High")
+    parser.add_argument("--premium-narrative", help="JSON with report, paragraph_sources and High Narrative Judge attestation")
     args = parser.parse_args()
     try:
         data = _load(args.input)
@@ -58,7 +61,25 @@ def main() -> int:
         as_of = datetime.fromisoformat(args.as_of.replace("Z", "+00:00")) if args.as_of else None
         if as_of is not None and as_of.tzinfo is None:
             raise ValueError("--as-of must include a UTC offset")
-        if args.solar_return_year:
+        if args.premium_stage == "prepare":
+            result = prepare_premium_handoff(birth, profile, args.depth, not args.no_timing, as_of, args.horizon_days)
+        elif args.premium_stage == "validate-synthesis":
+            if not args.premium_synthesis:
+                raise ValueError("--premium-synthesis is required with --premium-stage validate-synthesis")
+            payload = _load(args.premium_synthesis)
+            items = payload.get("reasoned_synthesis", payload) if isinstance(payload, dict) else payload
+            if not isinstance(items, list):
+                raise ValueError("premium synthesis must be a JSON list or an object with reasoned_synthesis")
+            result = validate_premium_syntheses(birth, items, profile, as_of)
+        elif args.premium_stage == "validate-narrative":
+            if not args.premium_synthesis or not args.premium_narrative:
+                raise ValueError("--premium-synthesis and --premium-narrative are required with --premium-stage validate-narrative")
+            synthesis_raw = _load(args.premium_synthesis)
+            synthesis_items = synthesis_raw.get("reasoned_synthesis", synthesis_raw) if isinstance(synthesis_raw, dict) else synthesis_raw
+            if not isinstance(synthesis_items, list):
+                raise ValueError("premium synthesis must be a JSON list or an object with reasoned_synthesis")
+            result = validate_premium_narrative(_load(args.premium_narrative), synthesis_items)
+        elif args.solar_return_year:
             declared = data.get("solar_return_location")
             location = (birth.latitude, birth.longitude) if args.solar_return_location_policy == "birth_place" else (float(declared["latitude"]), float(declared["longitude"])) if isinstance(declared, dict) else None
             result = solar_return(calculate_chart(birth), args.solar_return_year, args.solar_return_location_policy, location)

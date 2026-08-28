@@ -15,7 +15,7 @@ from typing import Dict, Iterable, List, Optional, Sequence
 from .config import BODY_LABELS, PRIMARY_BODIES
 from .models import Claim, ReasonedSynthesis, to_primitive
 from .safe_view import SafeInterpretiveChart
-from .semantics import PLANET_FUNCTIONS, PLANET_SHORT_FUNCTIONS, theme_label
+from .semantics import PLANET_FUNCTIONS, PLANET_SHORT_FUNCTIONS, planet_function_primitives, theme_label
 from .localization import localization_audit
 
 
@@ -43,12 +43,13 @@ REASONING_CLASSES = {"single_structural_factor", "integrated_pattern", "theme_in
 CONFIDENCE = {"light", "moderate", "strong"}
 ASPECT_OPERATIONS = {
     "conjunction": "concentration",
-    "sextile": "facilitation",
-    "square": "tension",
-    "trine": "facilitation",
+    "sextile": "available_coordination",
+    "square": "friction",
+    "trine": "low_resistance",
     "quincunx": "adjustment",
     "opposition": "polarity",
 }
+SIGN_LABELS_PT = {"Aries": "Áries", "Taurus": "Touro", "Gemini": "Gêmeos", "Cancer": "Câncer", "Leo": "Leão", "Virgo": "Virgem", "Libra": "Libra", "Scorpio": "Escorpião", "Sagittarius": "Sagitário", "Capricorn": "Capricórnio", "Aquarius": "Aquário", "Pisces": "Peixes"}
 
 
 def build_reasoning_packet(
@@ -278,23 +279,37 @@ def build_narrative_plan(
     syntheses: List[Dict[str, object]],
     language: str = "pt-BR",
     chart: Optional[SafeInterpretiveChart] = None,
+    chart_signature: Optional[Dict[str, object]] = None,
 ) -> Dict[str, object]:
-    """Choose hierarchy and cross references before prose is drafted."""
+    """Plan the reading from the signature; themes are editorial categories."""
     usable = [item for item in syntheses if item["status"] == "allowed"]
     by_id = {item["id"].removeprefix("reasoned."): item for item in usable}
-    ordered = [theme for theme in themes if str(theme["id"]) in by_id]
-    # A central chart benefits from fewer, deeper threads. A distributed chart
-    # may need one additional thread, but never a compulsory five.
-    leading = ordered[:3] if len(ordered) >= 3 else ordered
-    if chart and len(ordered) >= 4 and not any(
-        len(_evidence_bodies(chart).get(factor, set())) >= 2
-        for synthesis in usable for factor in synthesis["primary_factors"]
-    ):
-        leading = ordered[:4]
-    central = _central_dynamic(leading, by_id, language)
+    signature = chart_signature or {"mode": "distributed", "theme_priorities": []}
+    priority = {str(item["theme"]): float(item["score"]) for item in signature.get("theme_priorities", [])}
+    ordered = sorted(
+        (theme for theme in themes if str(theme["id"]) in by_id),
+        key=lambda theme: (-priority.get(str(theme["id"]), 0.0), -{"strong": 3, "moderate": 2, "light": 1}.get(str(theme.get("support_level")), 0), str(theme["id"])),
+    )
+    # A central signature privileges connected material; a distributed chart
+    # deliberately keeps several independent centres visible.
+    anchor_bodies = set(signature.get("central_dynamic", {}).get("bodies", []))
+    evidence_bodies = _evidence_bodies(chart) if chart else {}
+    if signature.get("mode") == "central" and anchor_bodies:
+        connected = [theme for theme in ordered if any(anchor_bodies.intersection(evidence_bodies.get(factor, set())) for factor in by_id[str(theme["id"])]["primary_factors"])]
+        leading = (connected + [theme for theme in ordered if theme not in connected])[:3]
+    else:
+        leading = []
+        represented: set[str] = set()
+        for theme in ordered:
+            bodies = set().union(*(evidence_bodies.get(factor, set()) for factor in by_id[str(theme["id"])]["primary_factors"]))
+            if len(leading) < 2 or not bodies.issubset(represented):
+                leading.append(theme)
+                represented.update(bodies)
+            if len(leading) >= 4:
+                break
+    opening = _signature_opening(signature, by_id, language)
     references = []
     seen_bodies: Dict[str, str] = {}
-    evidence_bodies = _evidence_bodies(chart) if chart else {}
     for theme in leading:
         synthesis = by_id[str(theme["id"])]
         for factor in synthesis["primary_factors"]:
@@ -307,13 +322,15 @@ def build_narrative_plan(
                 else:
                     seen_bodies[body] = str(theme["id"])
     return {
-        "opening": central,
+        "opening": opening,
         "themes": [str(theme["id"]) for theme in leading],
-        "sequence": "structure → central dynamic → differentiated themes → concrete areas → timing → integration",
+        "secondary_themes": [str(theme["id"]) for theme in ordered if theme not in leading],
+        "sequence": "chart signature → differentiated themes → relevant areas → timing → integration",
         "cross_references": references[:6],
         "avoid_repetition": ["Explain each structural factor once; later sections reference it briefly.", "Do not force a light/shadow formula where a nuance or counterweight is more useful."],
         "technical_details_to_hide": ["aspect names", "house-system labels when convergent", "orb values", "registry identifiers"],
         "integration_move": by_id[str(leading[0]["id"])]["narrative_moves"]["integration"] if leading else "",
+        "life_area_priorities": signature.get("domain_priorities", []),
     }
 
 
@@ -340,38 +357,81 @@ def build_chart_signature(
 ) -> Dict[str, object]:
     """Compact, traceable architecture used to plan rather than template prose."""
     usable = [item for item in syntheses if item.get("status") == "allowed"]
-    core_bodies = [
-        body for body, details in hierarchy.items()
-        if details["prominence"] in {"strong", "moderate"} or "configuration_focal" in details["roles"] or "asc_ruler" in details["roles"]
-    ]
+    evidence_bodies = _evidence_bodies(chart)
     body_to_syntheses: Dict[str, set[str]] = defaultdict(set)
     for synthesis in usable:
         for factor_id in synthesis["primary_factors"]:
-            for body in _evidence_bodies(chart).get(factor_id, set()):
+            for body in evidence_bodies.get(factor_id, set()):
                 body_to_syntheses[body].add(str(synthesis["id"]))
-    connected = [body for body in core_bodies if len(body_to_syntheses.get(body, set())) >= 2]
-    mode = "central" if connected else "distributed"
-    central_dynamic = (
-        {"status": "supported", "bodies": connected[:3], "syntheses": sorted(set().union(*(body_to_syntheses[body] for body in connected)))[:4]}
-        if connected else
-        {"status": "distributed", "bodies": core_bodies[:5], "syntheses": [item["id"] for item in usable[:4]]}
+    role_weight = {"asc_ruler": 2, "configuration_focal": 2, "core_angle_contact": 2, "final_dispositor": 2}
+    body_scores: Dict[str, int] = {}
+    for body, details in hierarchy.items():
+        prominence = {"strong": 3, "moderate": 1, "light": 0}.get(str(details.get("prominence")), 0)
+        roles = set(details.get("roles", []))
+        role_score = min(3, sum(role_weight.get(role, 0) for role in roles))
+        connection_score = min(3, max(0, len(body_to_syntheses.get(body, set())) - 1))
+        domain_score = min(2, len(details.get("governs_whole_sign_houses", []))) if chart.house_placements else 0
+        body_scores[body] = prominence + role_score + connection_score + domain_score
+    structural_bodies = sorted(
+        (body for body in hierarchy if body_scores[body] > 0),
+        key=lambda body: (-body_scores[body], -len(body_to_syntheses.get(body, set())), body),
     )
+    anchors = [
+        body for body in structural_bodies
+        if len(body_to_syntheses.get(body, set())) >= 3
+        and body_scores[body] >= 5
+        and (hierarchy[body].get("prominence") == "strong" or set(hierarchy[body].get("roles", [])) & set(role_weight))
+    ]
+    mode = "central" if anchors else "distributed"
+    selected_bodies = anchors[:3] if anchors else structural_bodies[:4]
+    selected_syntheses = sorted(set().union(*(body_to_syntheses[body] for body in selected_bodies))) if selected_bodies else []
+    central_dynamic = {
+        "status": "supported" if anchors else "distributed",
+        "bodies": selected_bodies,
+        "syntheses": selected_syntheses[:5],
+        "logic": "a structural body connects three or more authorised syntheses" if anchors else "no structural body connects three or more authorised syntheses; retain multiple centres",
+        "connection_counts": {body: len(body_to_syntheses.get(body, set())) for body in selected_bodies},
+    }
     counterweights = sorted({item for synthesis in usable for item in synthesis.get("counterweights", [])})
-    contradictions = [item["id"] for item in usable if "polarity" in item.get("composition_operations", []) or "tension" in item.get("composition_operations", [])]
-    strongest_domains = [
-        {"body": body, "whole_sign_house": placement.whole_sign_house, "integration_state": placement.integration_state}
-        for body, placement in chart.house_placements.items()
-        if body in core_bodies
-    ][:5]
+    contradictions = [item["id"] for item in usable if "polarity" in item.get("composition_operations", []) or "friction" in item.get("composition_operations", [])]
+    domain_scores: Dict[int, Dict[str, object]] = {}
+    if chart.house_placements:
+        for body, placement in chart.house_placements.items():
+            if body in body_scores:
+                item = domain_scores.setdefault(placement.whole_sign_house, {"house": placement.whole_sign_house, "score": 0, "bodies": []})
+                item["score"] += body_scores[body]
+                item["bodies"].append(body)
+        for body, details in hierarchy.items():
+            for house in details.get("governs_whole_sign_houses", []):
+                item = domain_scores.setdefault(int(house), {"house": int(house), "score": 0, "bodies": []})
+                item["score"] += max(1, body_scores.get(body, 0))
+                if body not in item["bodies"]:
+                    item["bodies"].append(body)
+    strongest_domains = sorted(domain_scores.values(), key=lambda item: (-int(item["score"]), int(item["house"])))[:4]
+    theme_priorities = []
+    for synthesis in usable:
+        theme = str(synthesis["id"]).removeprefix("reasoned.")
+        bodies = sorted(set().union(*(evidence_bodies.get(factor, set()) for factor in synthesis["primary_factors"])))
+        score = sum(sorted((body_scores.get(body, 0) for body in bodies), reverse=True)[:2]) + min(2, len(synthesis["primary_factors"]))
+        theme_priorities.append({"theme": theme, "score": score, "bodies": bodies, "source_syntheses": [synthesis["id"]]})
+    theme_priorities.sort(key=lambda item: (-int(item["score"]), str(item["theme"])))
+    core_factor_ids = []
+    for synthesis_id in selected_syntheses:
+        synthesis = next((item for item in usable if item["id"] == synthesis_id), None)
+        if synthesis:
+            core_factor_ids.extend(synthesis["primary_factors"])
     return {
         "mode": mode,
-        "core_factors": [factor.id for factor in chart.factors if factor.kind in {"aspect", "final_dispositor"}][:12],
-        "structural_bodies": core_bodies,
+        "core_factors": list(dict.fromkeys(core_factor_ids))[:12],
+        "structural_bodies": structural_bodies[:8],
+        "structural_scores": {body: body_scores[body] for body in structural_bodies[:8]},
         "central_dynamic": central_dynamic,
         "modifying_factors": [factor.id for factor in chart.factors if factor.kind == "planetary_condition"][:12],
         "counterweights": counterweights,
         "major_contradictions": contradictions,
         "strongest_domains": strongest_domains,
+        "domain_priorities": strongest_domains,
+        "theme_priorities": theme_priorities,
         "configuration_summary": structure.get("configurations", []),
     }
 
@@ -487,19 +547,24 @@ def _fallback_observation(theme: str, bodies: set[str], structural: List[str], c
     chosen = next((aspect_by_id[item] for item in primary if item in aspect_by_id), None)
     labels = BODY_LABELS[lang]
     if chosen:
-        left = labels.get(chosen.left, chosen.left)
-        right = labels.get(chosen.right, chosen.right)
-        left_function = functions.get(chosen.left, chosen.left)
-        right_function = functions.get(chosen.right, chosen.right)
+        left = labels.get(chosen.left, chosen.left if lang == "pt" else chosen.left.title())
+        right = labels.get(chosen.right, chosen.right if lang == "pt" else chosen.right.title())
+        left_sign = chart.positions[chosen.left].sign
+        right_sign = chart.positions[chosen.right].sign
+        if lang == "pt":
+            left_sign, right_sign = SIGN_LABELS_PT.get(left_sign, left_sign), SIGN_LABELS_PT.get(right_sign, right_sign)
+        connector = " e " if lang == "pt" else " and "
+        left_function = connector.join(planet_function_primitives(chosen.left, language)[:2])
+        right_function = connector.join(planet_function_primitives(chosen.right, language)[:2])
         dynamic = (ASPECT_FUNCTIONS_PT if lang == "pt" else ASPECT_FUNCTIONS)[chosen.kind]
         if lang == "pt":
             return (
-                f"Neste mapa, o tema **{label}** ganha uma coloração própria: {left} liga {left_function} a {right_function} "
+                f"Neste mapa, o tema **{label}** ganha uma coloração própria: {left} em {left_sign} liga {left_function} a {right} em {right_sign}, {right_function}, "
                 f"por uma dinâmica de {dynamic}."
             )
         return (
-            f"In this chart, **{label}** takes on a particular colour: {left} links {left_function} with {right_function} "
-            f"through a dynamic of {dynamic}. The theme is not a loose label; it describes how those two functions need to work together."
+            f"In this chart, **{label}** takes on a particular colour: {left} in {left_sign} links {left_function} with {right} in {right_sign}, {right_function}, "
+            f"through a dynamic of {dynamic}."
         )
     relevant = [functions.get(body, body) for body in sorted(bodies)]
     relationships = []
@@ -564,28 +629,34 @@ def _narrative_moves(chart: SafeInterpretiveChart, primary: List[str], bodies: s
     return {"constructive": constructive, "pressure": pressure, "integration": integration}
 
 
-def _central_dynamic(themes: List[Dict[str, object]], syntheses: Dict[str, Dict[str, object]], language: str) -> Dict[str, object]:
-    if not themes:
-        return {"status": "distributed", "observation": "No sufficient central dynamic."}
-    if len(themes) == 1:
-        return {"status": "single", "themes": [themes[0]["id"]], "observation": syntheses[str(themes[0]["id"])]["observation"]}
-    first, second = themes[:2]
-    first_synthesis = syntheses[str(first["id"])]
-    second_synthesis = syntheses[str(second["id"])]
-    shared = set(first_synthesis["primary_factors"]) & set(second_synthesis["primary_factors"])
-    first_expression = dict(first.get("expressions", {}))
-    second_expression = dict(second.get("expressions", {}))
-    first_move = first_synthesis.get("narrative_moves", {}).get("integration", first_expression.get("integrated", str(first["label"]).casefold()))
+def _signature_opening(signature: Dict[str, object], syntheses: Dict[str, Dict[str, object]], language: str) -> Dict[str, object]:
+    """Make the opening answer to the signature, not a theme rank."""
+    bodies = [str(body) for body in signature.get("central_dynamic", {}).get("bodies", [])]
+    source_ids = [str(item) for item in signature.get("central_dynamic", {}).get("syntheses", [])]
+    priority_sources = [str(source_id) for item in signature.get("theme_priorities", [])[:1] for source_id in item.get("source_syntheses", [])]
+    if priority_sources:
+        # Align the opening with the first signature-led theme selected by the
+        # planner; alphabetical evidence ids must never choose the story.
+        source_ids = priority_sources + [item for item in source_ids if item not in priority_sources]
+    lang = "pt" if language.startswith("pt") else "en"
+    labels = BODY_LABELS[lang]
+    label_for = lambda body: labels.get(body, body if lang == "pt" else body.title())
+    source = next((syntheses.get(item.removeprefix("reasoned.")) for item in source_ids if syntheses.get(item.removeprefix("reasoned."))), None)
+    opening_theme = theme_label(source_ids[0].removeprefix("reasoned."), language) if source_ids else ("a primeira dinâmica" if language.startswith("pt") else "the first dynamic")
+    if signature.get("mode") == "central" and bodies:
+        body_text = ", ".join(label_for(body) for body in bodies[:2])
+        counts = signature.get("central_dynamic", {}).get("connection_counts", {})
+        count_text = ", ".join(f"{label_for(body)} ({counts.get(body, 0)})" for body in bodies[:2])
+        observation = str(source.get("observation", "")) if source else ""
+        if language.startswith("pt"):
+            text = f"A arquitetura deste mapa se organiza sobretudo em torno de **{body_text}**: {count_text} reaparecem nas sínteses estruturais que sustentam a leitura, abrindo primeiro o tema **{opening_theme}**. {observation}".strip()
+        else:
+            connections = ", ".join(f"{label_for(body)} connects {counts.get(body, 0)}" for body in bodies[:2])
+            text = f"This chart's architecture is organised chiefly around **{body_text}**: {connections} structural syntheses that support this reading, opening first through **{opening_theme}**. {observation}".strip()
+        return {"status": "supported", "mode": "central", "structural_bodies": bodies, "source_syntheses": source_ids, "observation": text}
+    body_text = ", ".join(label_for(body) for body in bodies[:3])
     if language.startswith("pt"):
-        observation = (
-            f"O eixo inicial liga **{first['label']}** a **{second['label']}**. Como hipótese, vale observar se "
-            f"{first_expression.get('defensive', str(first['label']).casefold())} aparece ao lado de "
-            f"{second_expression.get('defensive', str(second['label']).casefold())}; a integração proposta é {first_move}."
-        )
+        text = f"Este mapa não pede uma explicação única: **{body_text or 'vários fatores estruturais'}** formam centros diferentes, que precisam ser lidos em relação sem serem reduzidos a uma só história."
     else:
-        observation = (
-            f"The opening axis links **{first['label']}** with **{second['label']}**. As a hypothesis, notice whether "
-            f"the tendency to {first_expression.get('defensive', str(first['label']).casefold())} appears alongside the tendency to "
-            f"{second_expression.get('defensive', str(second['label']).casefold())}; the proposed integration is to {first_move}."
-        )
-    return {"status": "candidate", "themes": [first["id"], second["id"]], "shared_factors": sorted(shared), "observation": observation}
+        text = f"This chart does not ask for one total explanation: **{body_text or 'several structural factors'}** form different centres that need to be read in relation without being reduced to one story."
+    return {"status": "distributed", "mode": "distributed", "structural_bodies": bodies, "source_syntheses": source_ids, "observation": text}

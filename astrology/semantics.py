@@ -58,6 +58,29 @@ PLANET_SHORT_FUNCTIONS = {
     },
 }
 
+# Small compositional atoms for the generic fallback.  This is intentionally
+# not a second catalogue of pair rules: a routed theme remains only an
+# organisational label, while the synthesis receives the functions actually
+# interacting in this chart.
+PLANET_FUNCTION_PRIMITIVES = {
+    "pt": {
+        "sun": ("direção", "expressão", "vitalidade"), "moon": ("necessidade", "regulação", "memória emocional"),
+        "mercury": ("cognição", "linguagem", "categorização", "aprendizado"), "venus": ("vínculo", "valor", "prazer"),
+        "mars": ("ação", "impulso", "limite"), "jupiter": ("ampliação", "sentido", "exploração"),
+        "saturn": ("estrutura", "critério", "responsabilidade"), "uranus": ("autonomia", "novidade", "descontinuidade", "reorganização rápida"),
+        "neptune": ("imaginação", "permeabilidade", "idealização"), "pluto": ("intensidade", "poder", "transformação"),
+        "true_node": ("direção", "aprendizado"), "chiron": ("sensibilidade", "reparação"), "lilith_mean": ("limite", "recusa"),
+    },
+    "en": {
+        "sun": ("direction", "expression", "vitality"), "moon": ("need", "regulation", "emotional memory"),
+        "mercury": ("cognition", "language", "categorisation", "learning"), "venus": ("connection", "value", "pleasure"),
+        "mars": ("action", "impulse", "boundary"), "jupiter": ("expansion", "meaning", "exploration"),
+        "saturn": ("structure", "criterion", "responsibility"), "uranus": ("autonomy", "novelty", "discontinuity", "rapid reorganisation"),
+        "neptune": ("imagination", "permeability", "idealisation"), "pluto": ("intensity", "power", "transformation"),
+        "true_node": ("direction", "learning"), "chiron": ("sensitivity", "repair"), "lilith_mean": ("boundary", "refusal"),
+    },
+}
+
 PLANET_DEFAULT_THEME = {
     "sun": "purpose", "moon": "care", "mercury": "curiosity", "venus": "pleasure", "mars": "receptivity_initiative",
     "jupiter": "security_exploration", "saturn": "competence", "uranus": "stability_change", "neptune": "spirituality",
@@ -109,6 +132,12 @@ PROHIBITED_PATTERNS = [
 
 def _language(language: str) -> str:
     return "pt" if language.casefold().startswith("pt") else "en"
+
+
+def planet_function_primitives(body: str, language: str = "pt-BR") -> Tuple[str, ...]:
+    """Compact function atoms used by constrained semantic composition."""
+    lang = _language(language)
+    return tuple(PLANET_FUNCTION_PRIMITIVES[lang].get(body, (PLANET_SHORT_FUNCTIONS[lang].get(body, body),)))
 
 
 def _aspect_weight(kind: str, orb: float) -> str:
@@ -175,12 +204,13 @@ def _claim_from_aspect(aspect, index: int, language: str) -> Claim:
     else:
         theme = _generic_theme(pair)
         ordered = sorted(pair)
-        functions = PLANET_FUNCTIONS[lang]
         left, right = ordered
+        left_atoms = ", ".join(planet_function_primitives(left, language)[:2])
+        right_atoms = ", ".join(planet_function_primitives(right, language)[:2])
         if lang == "pt":
-            core = f"coordenação entre a função de {BODY_LABELS[lang].get(left, left)} ({functions.get(left, left)}) e a de {BODY_LABELS[lang].get(right, right)} ({functions.get(right, right)})"
+            core = f"coordenação entre {left_atoms} de {BODY_LABELS[lang].get(left, left)} e {right_atoms} de {BODY_LABELS[lang].get(right, right)}"
         else:
-            core = f"coordination between {left.title()} ({functions.get(left, left)}) and {right.title()} ({functions.get(right, right)})"
+            core = f"coordination between {left_atoms} of {left.title()} and {right_atoms} of {right.title()}"
         motifs = [f"{theme}_{aspect.kind}_coordination"]
         examples = [_generic_example(left, right, aspect.kind, lang)]
         prohibited = ["biografia específica", "diagnóstico", "evento previsto"]
@@ -315,7 +345,8 @@ def apply_counterweights(chart: Chart, claims: Sequence[Claim], include_secondar
             if aspect.id not in claim.evidence and aspect.orb <= 4.0 and aspect.kind in ("square", "opposition", "quincunx") and bodies.intersection((aspect.left, aspect.right))
         ]
         claim.counterweights = qualifications[:1] + alternatives[:1]
-        claim.counterweight_types = {item: ("resource_or_qualification" if item in qualifications else "competing_pressure") for item in claim.counterweights}
+        # Geometry describes the kind of relation, not its final value.
+        claim.counterweight_types = {item: ("low_resistance_dynamic" if item in qualifications else "friction_or_polarity_dynamic") for item in claim.counterweights}
         output.append(claim)
     return output
 
@@ -436,7 +467,7 @@ def verify_claims(claims: Iterable[Claim], chart: Optional[Chart] = None) -> Lis
             for counterweight in claim.counterweights:
                 aspect = aspect_by_id.get(counterweight)
                 declared_type = claim.counterweight_types.get(counterweight)
-                expected_type = "resource_or_qualification" if aspect and aspect.kind in ("trine", "sextile") else "competing_pressure" if aspect and aspect.kind in ("square", "opposition", "quincunx") else None
+                expected_type = "low_resistance_dynamic" if aspect and aspect.kind in ("trine", "sextile") else "friction_or_polarity_dynamic" if aspect and aspect.kind in ("square", "opposition", "quincunx") else None
                 if counterweight in claim.evidence or not aspect or aspect.orb > 4.0 or not source_bodies.intersection((aspect.left, aspect.right)) or declared_type != expected_type:
                     errors.append("invalid_counterweight_contract")
         if not _safe_text(claim.statement):
