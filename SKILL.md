@@ -15,30 +15,23 @@ Leia [references/input-schema.md](references/input-schema.md) antes de preparar 
 
 ## Fluxo obrigatório
 
-1. Rodar o núcleo determinístico, nunca calcular posições, casas, aspectos, orbes, Lots ou datas manualmente.
-2. Validar qualidade de dados e os gates de estabilidade antes de interpretar aspectos, ângulos ou casas sensíveis. Aviso sem bloqueio não é suficiente.
-3. Tratar Whole Sign como topologia temática e Placidus como análise espacial complementar. Usar os estados versionados de integração, nunca duplicar evidência quando a casa coincide nem escolher sistema depois de conhecer a biografia.
-4. Usar ASC/DSC/MC/IC como análise independente. Não confundir angularidade com dignidade, facilidade ou saúde mental.
-5. Construir primeiro a `SafeInterpretiveChart`; nunca entregar casa, ângulo, Lot, profecção ou regente tópico instável ao renderer ou à síntese como fato seguro. Diferenciar incerteza declarada de stress tests contrafactuais.
-6. Usar o registry como limite semântico, não como roteiro de frases. Produzir `ReasonedSynthesis` a partir do pacote factual fechado: cada inferência emergente deve citar 1–5 fatores existentes, modificadores, contrapesos, leitura alternativa e teto de especificidade.
-7. Permitir `derived_claim` em síntese de nível 2 quando o verificador confirmar fatores existentes, suporte adequado e ausência de extensão proibida. Não exigir que a frase final já exista no registry.
-8. Antes de redigir, criar `ChartSignature` e `NarrativePlanner`: a assinatura — não a lista de themes — decide dinâmica central sustentada (ou centros distribuídos), ordem, referências cruzadas, áreas prioritárias, detalhes técnicos a ocultar e prevenção de repetição.
-9. Aplicar `HumanizationPass` depois da síntese: variar ritmo, exemplos e transições; preservar significado e fatores citados; não acrescentar dado astrológico, biografia, certeza ou timing.
-10. Para um pedido premium, executar internamente dois passes cognitivos: um **Premium Author** cria sínteses e rascunho; após o `Deterministic Provenance Guard`, um **Premium Reviewer/Editor** independente corrige diretamente o texto. O reviewer pode cortar, fundir, reordenar e reescrever; só bloqueia se faltar cálculo, dado ou evidência factual. Não expor esses estágios ao usuário nem pedir que ele mova JSON.
-11. Executar o `Publication Guard` antes de apresentar o resultado: `packet_id`, hashes, fontes dos parágrafos, evidência de timing, fatores seguros e extensões proibidas precisam passar. O guard confirma integridade operacional; não é uma prova semântica automática.
-12. Se a prosa introduzir um fator, uma extensão ou uma certeza não autorizada, reduzir especificidade ou regerar.
-13. Distinguir predisposição simbólica, capacidade e manifestação. Feedback do usuário pode contextualizar exemplos, mas nunca altera suporte astrológico ou escolhe sistema de casas.
-14. Aplicar Localization somente depois da síntese. Ela só pode alterar linguagem, exemplos, unidades, referências e formato; nunca inferir psicologia da cultura.
-15. Ao falar de timing, separar stream tradicional e moderno; usar `activation_instance` para passagens do mesmo ciclo e nunca fundir recorrências distantes pelo mesmo nome de aspecto. Não prometer eventos.
-16. Aplicar divulgação progressiva e equilíbrio Logos–Eros: arquitetura humana primeiro; 3–4 temas centrais quando sustentados, sem quota fixa; quatro áreas concretas; timing natal antes do jargão; intervalos emergentes antes de décadas; detalhes técnicos no apêndice; síntese diferente da abertura e com experimento observável.
+1. Rodar o núcleo determinístico; nunca calcular manualmente posições, casas, aspectos, orbes, Lots ou timing.
+2. Construir `SafeInterpretiveChart` e aplicar gates de qualidade antes de qualquer interpretação. Casa, ângulo, Lot, profecção ou regente tópico instável não pode chegar à síntese como fato.
+3. Construir Claims/motifs autorizados, `ReasonedSynthesis`, `ChartSignature` e `NarrativePlanner` nessa ordem. A assinatura — não a lista de themes — governa seleção, abertura, ordem e áreas prioritárias.
+4. Aplicar integralmente o [padrão interpretativo operacional](references/methodology.md#padrão-interpretativo-operacional--v4): selecionar e omitir, compor mecanismos, preservar ancestralidade/contradição, exigir relevância real de contrapesos e resistir ao swap.
+5. No premium, o **Author High** cria uma única síntese holística e o rascunho a partir do packet fechado. Cada dedução cita 1–5 fatores existentes; exemplos são hipotéticos e não adicionam biografia.
+6. Rodar o `Deterministic Provenance Guard`; ele verifica origem, permissões, operações, tetos, timing, hashes e cobertura por parágrafo, sem alegar prova semântica.
+7. Fazer um passe separado de **Reviewer/Editor High**. Ele corrige diretamente relevância, contradições achatadas, Barnum, genericidade, repetição e deriva semântica; só bloqueia quando falta dado ou evidência não corrigível editorialmente.
+8. Rodar o `Publication Guard` e publicar apenas a versão exata aprovada. Se houver fator, certeza, timing ou extensão não autorizada, reduzir especificidade ou regenerar.
+9. Seguir [report-design.md](references/report-design.md) para divulgação progressiva e experiência do leitor. Localization altera somente apresentação; feedback contextualiza exemplos, nunca suporte astrológico. Timing descreve ativações, não eventos garantidos.
 
 ## Fluxo premium normal no Codex
 
 Quando a pessoa pedir naturalmente “gere uma leitura premium” ou “faça o relatório natal completo”, faça todo o percurso sem expor operações intermediárias:
 
 ```text
-núcleo determinístico → SafeInterpretiveChart → Premium Author (Sol High)
-→ Deterministic Provenance Guard → Premium Reviewer/Editor (Sol High)
+núcleo determinístico → SafeInterpretiveChart → Premium Author High
+→ Deterministic Provenance Guard → Premium Reviewer/Editor High
 → Publication Guard → relatório final
 ```
 
@@ -70,15 +63,7 @@ python3 scripts/astrology_skill.py /caminho/entrada.json --depth deep --format r
 
 O JSON resultante contém payload técnico, claims, temas, timing e relatório. Apresente a seção `report` para o usuário e conserve o restante para auditoria ou apêndice técnico.
 
-## Segurança interpretativa
-
-Bloquear ou reformular frases que atribuam trauma, abuso, abandono, diagnóstico, morte, doença, gravidez, divórcio, falência ou qualquer acontecimento inevitável. Evitar "sempre" e "vai acontecer". Se não houver evidência estruturada suficiente, declarar a lacuna em vez de improvisar.
-
-## Profundidade de relatório
-
-- `executive`: leitura autossuficiente de aproximadamente 2–4 minutos, com assinatura do mapa, 3–4 temas quando sustentados, fase atual e experimento.
-- `deep`: leitura humana de aproximadamente 6–10 minutos; mecanismos psicológicos, exemplos, áreas, fase atual, ciclos e integração. Profundidade secundária fica recolhida.
-- `technical`: apêndice separado para dados, posições, casas seguras/condicionais, aspectos, hierarchy, `ReasonedSynthesis`, evidência, robustez, timing e versões.
+Bloquear ou reformular trauma, abuso, abandono, diagnóstico, morte, doença, gravidez, divórcio, falência e acontecimentos inevitáveis. Quando faltar suporte, declarar a lacuna em vez de improvisar.
 
 ## Recursos
 

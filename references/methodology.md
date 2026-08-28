@@ -17,23 +17,29 @@
 - Separe incerteza declarada de stress test. `declared_uncertainty_minutes` descreve a informação recebida e é a única entrada que pode retirar casas, regentes tópicos, profecções e Lots da leitura principal. Os testes padrão ±5/±15/±30 minutos medem fragilidade mesmo quando o horário foi declarado exato; uma travessia de signo do ASC gera `high_boundary_sensitivity`, divulgada uma vez, mas não reclassifica silenciosamente a qualidade declarada. O ângulo calculado continua sujeito ao seu próprio gate.
 - Aplique cazimi, combustão e sob os raios somente aos cinco planetas tradicionais não luminares. Planetas modernos e pontos secundários permanecem fora dessa classificação.
 
-## Inferência e narrativa — v4
+## Padrão interpretativo operacional — v4
 
-O princípio é **hard facts, soft synthesis, hard verification**.
+O princípio é **hard facts, soft synthesis, hard verification**. O núcleo calcula e fecha o universo factual; Author High seleciona e compõe; Reviewer High julga significado e qualidade; os guards verificam integridade sem alegar prova da interpretação simbólica.
 
-1. Calcule fatos astronômicos e gates de estabilidade de forma determinística.
-2. Construa `SafeInterpretiveChart`; o renderer e a síntese nunca recebem `raw_chart.house`.
-3. Produza factors, `Claim` e registry como limites semânticos — não como frases prontas.
-4. Dê ao modelo apenas um pacote factual fechado. Em `ReasonedSynthesis`, ele pode compor fatores existentes, criar `derived_claim` rastreável, indicar `source_claim_ids`, `source_motif_ids`, operações de composição, proposições derivadas, modificadores, contrapesos, alternativa e nível de confiança dentro do modelo astrológico.
-5. O **Deterministic Provenance Guard** valida `packet_id`, claims → motifs → fatores, operações compatíveis, teto de confiança, hashes e fontes por parágrafo. Não prova que uma interpretação simbólica é semanticamente correta. Um **Premium Reviewer/Editor** High avalia significado, individualidade e prosa antes do **Publication Guard**, que só confirma integridade publicável. São responsabilidades distintas.
-6. `ChartSignature` está upstream do `NarrativePlanner`: pontua proeminência, regente do ASC, angularidade, focos configuracionais, dispositor final, conexões entre sínteses e domínios seguros — sem pontuar um planeta apenas por reger dois signos nem reciclar o mesmo score de corpo para as casas que ele rege. Um modo `central` exige um corpo estrutural que conecte pelo menos três sínteses autorizadas; caso contrário o modo é `distributed` e não força uma grande história. O planner escolhe abertura, ordem, referências cruzadas e áreas prioritárias a partir dessa assinatura, usando corpos e ids tipados, nunca fragmentos de texto de aspectos.
-7. `HumanizationPass` decide voz, ritmo e exemplos hipotéticos; não pode adicionar fator, biografia, evento, diagnóstico, timing ou certeza. O verifier estrutural bloqueia fato novo, casa condicional tratada como fato, biografia inventada, diagnóstico, evento ou previsão; o Reviewer High corrige deriva semântica que uma heurística não consegue provar.
+1. **Seleção e omissão:** existência não promove um fator. Proeminência estrutural, conectividade, repetição independente, relevância tópica, confiabilidade e ativação informam quais poucos fatores entram; o restante pode ser deliberadamente omitido.
+2. **Mecanismos antes de placements:** a leitura humana explica principalmente como funções interagem, não enumera posições.
+3. **Repetição sem repetição:** suportes independentes podem fortalecer um insight, mas não gerar paráfrases do mesmo parágrafo.
+4. **Sem dupla contagem:** robustez entre casas, rótulos derivados e estruturas agregadas/constituintes não viram votos extras.
+5. **Centralidade emergente:** `ChartSignature` governa o planner; use `central` apenas quando poucos fatores explicam várias sínteses. Em mapas `distributed`, preserve centros distintos sem fabricar uma grande história.
+6. **Dinâmica antes de valência:** conjunção concentra, sextil coordena, quadratura cria fricção, trígono reduz resistência, quincúncio ajusta e oposição polariza. O contexto decide recurso, automatismo, pressão ou capacidade; geometria não equivale a bom/ruim.
+7. **Semântica composicional:** prefira função planetária × dinâmica do aspecto × contexto estrutural/tópico × modificadores × confiabilidade → significado candidato; regras de par são exceções úteis, não catálogo dominante.
+8. **Ancestralidade semântica:** toda proposição derivada permanece no espaço autorizado pelas claims, motifs e fatores que cita. IDs válidos em outra parte do mapa não bastam.
+9. **Teto de especificidade:** integração e humanidade podem aumentar; especificidade biográfica, certeza e causalidade não. A precisão vem da combinação de mecanismos, nunca de biografia inventada.
+10. **Contradição preservada:** tendências válidas podem coexistir, alternar por contexto ou permanecer sem resolução; não force síntese conciliadora.
+11. **Contrapesos relevantes:** a camada determinística propõe candidatos por relação estrutural. Author escolhe somente os que qualificam a proposição/domínio; compartilhar um corpo não prova relevância. Reviewer remove contrapeso decorativo.
+12. **Exteriores personalizados:** Urano, Netuno e Plutão não ancoram assinatura pessoal apenas por conectividade geracional. Para serem âncora `central`, exigem ligação segura a planeta pessoal ou ângulo principal; ainda podem atuar como contexto ou modificador.
+13. **Integridade das casas:** Whole Sign fornece topologia; Placidus, lente espacial complementar. Concordância é robustez, não evidência duplicada; divergência material permanece visível e não pode ser escolhida retrospectivamente pela biografia.
+14. **Timing e humanização disciplinados:** timing ativa arquitetura natal e usa evidência tipada; não garante evento. Humanização muda voz, ordem e exemplo, nunca evidência, sentido, certeza ou biografia.
+15. **Resistência ao swap:** para cada parágrafo principal, pergunte se ele caberia com plausibilidade semelhante num mapa estruturalmente diferente. Se sim, corrija seleção, composição ou prosa — nunca invente detalhe de vida.
 
-Níveis de liberdade: cálculo 0; inferência técnica 1; síntese astrológica 2; narrativa/exemplos 3; afirmação biográfica 4 (bloqueada sem contexto voluntariamente fornecido).
+`SafeInterpretiveChart` é a única visão entregue à interpretação; registry e `Claim` são limites semânticos, não frases prontas. `ReasonedSynthesis` registra claims, motifs, fatores, operações, modificadores, contrapesos, alternativa, confiança e proposições derivadas. O **Deterministic Provenance Guard** prova existência, ancestralidade estrutural, permissões, operações, tetos, timing, hashes e cobertura por parágrafo. O **Premium Reviewer/Editor** julga se a dedução realmente faz sentido, se um contrapeso importa, se a contradição foi achatada, se há Barnum sofisticado e se o texto resiste ao swap. O **Publication Guard** confirma que o relatório publicado é exatamente o aprovado.
 
-Nunca infira trauma, abuso, abandono, diagnóstico, divórcio, morte, gravidez, doença, falência ou evento inevitável a partir do mapa.
-
-O verificador deve checar existência da evidência, família canônica, tema, tipo, suporte, teto de especificidade, contrapesos, limites de incerteza e linguagem proibida em português e inglês. Uma blacklist isolada não é considerada verificação suficiente. O registry delimita alcance permitido, motivos usuais e extrapolações perigosas; ele não dita a frase do relatório.
+Níveis de liberdade: cálculo 0; inferência técnica 1; síntese astrológica 2; narrativa/exemplos 3; afirmação biográfica 4 (bloqueada sem contexto voluntariamente fornecido). Nunca infira trauma, abuso, abandono, diagnóstico, divórcio, morte, gravidez, doença, falência ou evento inevitável a partir do mapa.
 
 ## Streams de timing
 

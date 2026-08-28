@@ -50,6 +50,8 @@ ASPECT_OPERATIONS = {
     "opposition": "polarity",
 }
 SIGN_LABELS_PT = {"Aries": "Áries", "Taurus": "Touro", "Gemini": "Gêmeos", "Cancer": "Câncer", "Leo": "Leão", "Virgo": "Virgem", "Libra": "Libra", "Scorpio": "Escorpião", "Sagittarius": "Sagitário", "Capricorn": "Capricórnio", "Aquarius": "Aquário", "Pisces": "Peixes"}
+OUTER_PLANETS = frozenset({"uranus", "neptune", "pluto"})
+PERSONALIZING_BODIES = frozenset({"sun", "moon", "mercury", "venus", "mars"})
 
 
 def build_reasoning_packet(
@@ -121,6 +123,8 @@ def build_reasoning_packet(
             "may_use_only_timing_ids": sorted(item["id"] for item in timing_evidence),
             "may_not_infer": PROHIBITED_EXTENSIONS,
             "conditional_house_policy": "Do not use conditional house context as central evidence. It may be disclosed as a conditional alternative only.",
+            "counterweight_policy": "Counterweights are candidates, not conclusions. Use one only when it materially qualifies the cited proposition or domain.",
+            "timing_context_policy": "Calculated timing context may orient selection, but every timing statement in prose must cite an authorised timing evidence id.",
             "localization_policy": "Localization may change language and examples, never factor weights, personality or prediction.",
         },
         "localized_rendering_context": localization_audit(localization_profile).get("rendering_context"),
@@ -455,6 +459,7 @@ def build_chart_signature(
         if len(body_to_syntheses.get(body, set())) >= 3
         and body_scores[body] >= 5
         and (hierarchy[body].get("prominence") == "strong" or set(hierarchy[body].get("roles", [])) & set(role_weight))
+        and _has_personalizing_link(chart, body)
     ]
     mode = "central" if anchors else "distributed"
     selected_bodies = anchors[:3] if anchors else structural_bodies[:4]
@@ -577,24 +582,41 @@ def humanization_verifier_instructions(language: str = "pt-BR") -> str:
     if language.startswith("pt"):
         return (
             "Compare cada parágrafo final com sua ReasonedSynthesis autorizada. Aprove somente se o sentido central, "
-            "o nível de certeza e os limites forem equivalentes; a prosa pode ser mais humana, mas não pode incluir novo "
-            "fator, casa condicional como fato, biografia, diagnóstico, evento ou previsão. Para cada falha, devolva a "
-            "frase, o factor_id ausente ou limite violado e uma instrução curta de regeneração."
+            "o nível de certeza e os limites forem equivalentes; confirme também que contradições válidas não foram achatadas "
+            "e que cada contrapeso realmente qualifica a proposição. A prosa pode ser mais humana, mas não pode incluir novo "
+            "fator, casa condicional como fato, biografia, diagnóstico, evento ou previsão. Faça o swap test conceitual em cada "
+            "parágrafo principal e corrija genericidade por seleção ou mecanismo, nunca inventando detalhes de vida."
         )
     return (
         "Compare each final paragraph with its authorised ReasonedSynthesis. Approve only if core meaning, certainty and "
-        "limits are equivalent; prose may be more human but cannot add a factor, treat a conditional house as fact, add "
-        "biography, diagnosis, event or forecast. For every failure return the sentence, missing factor_id or violated "
-        "limit, and a short regeneration instruction."
+        "limits are equivalent; also confirm that valid contradictions were not flattened and every counterweight materially "
+        "qualifies the proposition. Prose may be more human but cannot add a factor, treat a conditional house as fact, add "
+        "biography, diagnosis, event or forecast. Apply a conceptual swap test to each major paragraph and correct genericity "
+        "through selection or mechanism, never invented life detail."
     )
 
 
 def llm_reasoning_instructions() -> str:
     return (
-        "Use only the closed factual packet. You may create a derived_claim when it cites 1–5 existing factor ids, names an "
-        "alternative reading and stays at symbolic/behavioral possibility level. Treat registry motifs as boundaries, not report "
-        "sentences. Give priority to structural bodies, exact configurations, condition, safe topical context and counterweights. "
-        "Do not turn conditional house context into central evidence. Return ReasonedSynthesis objects before writing prose."
+        "Use only the closed factual packet. Select a few connected mechanisms rather than enumerating factors. You may create a "
+        "derived_claim when it cites 1–5 existing factor ids, preserves their semantic ancestry, names an alternative reading and "
+        "stays at symbolic/behavioral possibility level. Treat registry motifs as boundaries, not report sentences. Preserve valid "
+        "contradictions. Treat counterweights as candidates and retain one only when it materially qualifies the proposition or its "
+        "domain. Do not centralize an outer planet without a personalizing link, turn conditional house context into central evidence, "
+        "or invent timing outside typed timing evidence. Return ReasonedSynthesis objects before writing prose."
+    )
+
+
+def _has_personalizing_link(chart: SafeInterpretiveChart, body: str) -> bool:
+    """Outer planets need a personal-planet or core-angle link to anchor a signature."""
+    if body not in OUTER_PLANETS:
+        return True
+    if any(contact.body == body and contact.angle in {"asc", "dsc", "mc", "ic"} for contact in chart.angle_contacts):
+        return True
+    return any(
+        body in (aspect.left, aspect.right)
+        and bool(({aspect.left, aspect.right} - {body}) & PERSONALIZING_BODIES)
+        for aspect in chart.aspects
     )
 
 

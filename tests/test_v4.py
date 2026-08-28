@@ -244,6 +244,37 @@ def test_signature_score_has_no_rulership_count_bias_and_nested_intervals_remain
     assert len(intervals) == 1 and intervals[0]["window_end"].startswith("2031-01-01")
 
 
+def test_outer_planet_needs_a_personalizing_link_to_anchor_chart_signature():
+    outer_aspects = [
+        Aspect("aspect.uranus_conjunction_neptune", "uranus", "neptune", "conjunction", 0, 0, 0, None),
+        Aspect("aspect.uranus_sextile_pluto", "uranus", "pluto", "sextile", 60, 60, 0, None),
+        Aspect("aspect.jupiter_trine_uranus", "jupiter", "uranus", "trine", 120, 120, 0, None),
+    ]
+    chart = SimpleNamespace(
+        aspects=outer_aspects,
+        angle_contacts=[],
+        factors=[],
+        positions={body: object() for body in ("jupiter", "uranus", "neptune", "pluto", "sun")},
+        house_placements={},
+    )
+    hierarchy = {
+        body: {"prominence": "light", "roles": [], "governs_whole_sign_houses": []}
+        for body in chart.positions
+    }
+    hierarchy["uranus"] = {"prominence": "strong", "roles": ["configuration_focal"], "governs_whole_sign_houses": []}
+    syntheses = [
+        {"id": f"reasoned.outer_{index}", "status": "allowed", "primary_factors": [aspect.id], "counterweights": [], "composition_operations": []}
+        for index, aspect in enumerate(outer_aspects, 1)
+    ]
+    unpersonalized = build_chart_signature(chart, hierarchy, {"configurations": []}, syntheses)
+    assert unpersonalized["mode"] == "distributed"
+
+    chart.aspects.append(Aspect("aspect.sun_square_uranus", "sun", "uranus", "square", 90, 90, 0, None))
+    personalized = build_chart_signature(chart, hierarchy, {"configurations": []}, syntheses)
+    assert personalized["mode"] == "central"
+    assert personalized["central_dynamic"]["bodies"] == ["uranus"]
+
+
 def test_cycle_opposition_keeps_closest_approach_without_false_exactness():
     events = _cycle_occurrences(calculate_chart(birth()), "jupiter", "opposition", 1, 20)
     assert any(item["minimum_orb"] <= 0.01 and not item["perfected"] and item["exact_at"] is None for item in events)
