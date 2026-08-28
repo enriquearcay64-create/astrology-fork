@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from dataclasses import replace
 from types import SimpleNamespace
+import pytest
 
 from astrology.engine import calculate_chart
-from astrology.models import Aspect, BirthData, Factor, ReasonedSynthesis
-from astrology.pipeline import analyse_birth_chart, prepare_premium_handoff, validate_premium_narrative, validate_premium_syntheses
+from astrology.models import Aspect, BirthData, Claim, Factor, ReasonedSynthesis
+from astrology.pipeline import _canonical_hash, analyse_birth_chart, paragraph_source_template, prepare_premium_handoff, validate_premium_author_bundle, validate_premium_narrative, validate_premium_syntheses
 from astrology.reasoning import ASPECT_OPERATIONS, build_chart_signature, build_narrative_plan, validate_reasoned_syntheses
 from astrology.safe_view import build_safe_interpretive_view
 from astrology.semantics import _claim_from_aspect
 from astrology.structure import detect_configurations
-from astrology.timing import ORB_BOUNDARY_TOLERANCE_DEGREES, _deviation, _jd_for_datetime, _longitude
+from astrology.timing import ORB_BOUNDARY_TOLERANCE_DEGREES, _cycle_occurrences, _deviation, _jd_for_datetime, _longitude, developmental_intervals
 
 
 def birth() -> BirthData:
@@ -153,14 +155,102 @@ def test_refined_orb_edges_sit_on_the_configured_boundary():
 def test_manual_premium_workflow_has_separate_synthesis_and_narrative_gates():
     handoff = prepare_premium_handoff(birth(), include_timing=False)
     assert handoff["premium_required_for_publication"]
-    assert handoff["workflow"][4].startswith("5. Sol High")
+    assert handoff["workflow"][1].startswith("2. Premium Author")
     fallback = analyse_birth_chart(birth(), include_timing=False)
-    judged = validate_premium_syntheses(birth(), fallback["reasoned_synthesis"])
+    judged = validate_premium_syntheses(birth(), fallback["reasoned_synthesis"], include_timing=False)
     assert judged["approved"]
+    draft = "Uma hipótese simbólica, não uma certeza, ligada aos fatores autorizados neste mapa."
+    sources = paragraph_source_template(draft)
+    sources[0]["synthesis_ids"] = [judged["reasoned_synthesis"][0]["id"]]
+    author = {
+        "packet_id": judged["packet_id"], "reasoned_syntheses": fallback["reasoned_synthesis"], "draft_report": draft,
+        "paragraph_sources": sources, "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft),
+    }
+    provenance = validate_premium_author_bundle(birth(), author, include_timing=False)
+    assert provenance["approved"]
+    final_report = "Uma hipótese simbólica, não uma certeza, ligada aos fatores autorizados neste mapa."
     final = validate_premium_narrative({
-        "report": "Uma hipótese simbólica, não uma certeza.",
-        "paragraph_sources": [{"section": "opening", "synthesis_ids": [judged["reasoned_synthesis"][0]["id"]]}],
-        "narrative_judge": {"model": "gpt-5.6-sol", "verdict": "approved", "notes": "reviewed"},
-    }, judged["reasoned_synthesis"])
+        "packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"], "reviewed_draft_sha256": provenance["draft_report_sha256"],
+        "verdict": "approved", "final_report": final_report, "final_report_sha256": _canonical_hash(final_report),
+        "paragraph_sources": sources, "corrections_made": [], "remaining_warnings": [],
+    }, provenance)
     assert final["approved"]
-    assert final["semantic_status"] == "high_judge_attested_not_deterministically_proven"
+    assert final["semantic_status"] == "reviewer_attested_not_deterministically_proven"
+
+
+def _single_claim_synthesis(source: Claim, view) -> ReasonedSynthesis:
+    aspect = next(item for item in view.aspects if item.id == source.evidence[0])
+    return ReasonedSynthesis(
+        id="test.single", observation=source.statement, primary_factors=[source.evidence[0]], modifiers=[f"hierarchy.{aspect.left}"], counterweights=[],
+        reasoning_class="integrated_pattern", confidence_within_astrological_model=source.astrological_support,
+        possible_expressions=[source.statement], alternative_reading="", prohibited_extensions=[], source_claim_ids=[source.id],
+        source_motif_ids=source.authorized_motifs[:1], composition_operations=[ASPECT_OPERATIONS[aspect.kind]],
+        derived_propositions=[{"text": source.statement, "sources": [source.id]}],
+    )
+
+
+def test_provenance_guard_closes_claim_motif_factor_operation_and_confidence_contracts():
+    result = analyse_birth_chart(birth(), include_timing=False)
+    view = build_safe_interpretive_view(calculate_chart(birth()))
+    claims = [Claim(**item) for item in result["claims"] if item["status"] == "allowed" and item["type"] == "symbolic_tendency"]
+    source, other = next((a, b) for a in claims for b in claims if a.astrological_support != "strong" and a.id != b.id and a.evidence != b.evidence and set(a.authorized_motifs).isdisjoint(b.authorized_motifs))
+    valid = _single_claim_synthesis(source, view)
+    assert validate_reasoned_syntheses([valid], view, claims)[0].status == "allowed"
+    wrong_motif = replace(valid, source_motif_ids=other.authorized_motifs[:1])
+    assert "source_motif_not_authorized_by_source_claim" in validate_reasoned_syntheses([wrong_motif], view, claims)[0].verification_errors
+    wrong_factor = replace(valid, primary_factors=[other.evidence[0]])
+    assert "primary_factor_not_authorized_by_source_claim" in validate_reasoned_syntheses([wrong_factor], view, claims)[0].verification_errors
+    wrong_operation = replace(valid, composition_operations=["polarity" if valid.composition_operations[0] != "polarity" else "friction"])
+    assert "composition_operation_not_supported_by_factor" in validate_reasoned_syntheses([wrong_operation], view, claims)[0].verification_errors
+    inflated = replace(valid, confidence_within_astrological_model="strong")
+    assert "confidence_exceeds_source_ceiling" in validate_reasoned_syntheses([inflated], view, claims)[0].verification_errors
+
+
+def test_premium_guards_block_identity_hash_source_coverage_and_timing_mismatches():
+    fallback = analyse_birth_chart(birth(), as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
+    judged = validate_premium_syntheses(birth(), fallback["reasoned_synthesis"], as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
+    draft = "Esta é uma hipótese interpretativa substancial ligada a evidência autorizada e pode ser testada em contexto."
+    mapping = paragraph_source_template(draft)
+    mapping[0]["synthesis_ids"] = [judged["reasoned_synthesis"][0]["id"]]
+    author = {"packet_id": judged["packet_id"], "reasoned_syntheses": fallback["reasoned_synthesis"], "draft_report": draft, "paragraph_sources": mapping, "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft)}
+    provenance = validate_premium_author_bundle(birth(), author, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
+    assert provenance["approved"]
+    bad_packet = dict(author, packet_id="other")
+    assert "packet_id_mismatch" in validate_premium_author_bundle(birth(), bad_packet, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)["verification_errors"]
+    bad_hash = dict(author, synthesis_bundle_sha256="bad")
+    assert "synthesis_bundle_hash_mismatch" in validate_premium_author_bundle(birth(), bad_hash, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)["verification_errors"]
+    no_sources = dict(author, paragraph_sources=[])
+    assert "interpretive_paragraph_without_source_map" in validate_premium_author_bundle(birth(), no_sources, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)["verification_errors"]
+    reviewer = {"packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"], "reviewed_draft_sha256": provenance["draft_report_sha256"], "verdict": "approved", "final_report": draft, "final_report_sha256": _canonical_hash(draft), "paragraph_sources": mapping}
+    assert validate_premium_narrative(reviewer, provenance)["approved"]
+    reviewer["paragraph_sources"] = [dict(mapping[0], timing_ids=["timing.activation.invented"])]
+    assert "invented_or_unapproved_timing_evidence" in validate_premium_narrative(reviewer, provenance)["verification_errors"]
+
+
+def test_signature_score_has_no_rulership_count_bias_and_nested_intervals_remain_continuous():
+    chart = SimpleNamespace(aspects=[], factors=[], positions={"sun": object(), "mercury": object()}, house_placements={})
+    hierarchy = {
+        "sun": {"prominence": "strong", "roles": [], "governs_whole_sign_houses": [1]},
+        "mercury": {"prominence": "strong", "roles": [], "governs_whole_sign_houses": [3, 6]},
+    }
+    signature = build_chart_signature(chart, hierarchy, {"configurations": []}, [])
+    assert signature["structural_scores"]["sun"] == signature["structural_scores"]["mercury"]
+    timeline = [{"activations": [
+        {"body": "saturn", "window_start": "2025-01-01T00:00:00+00:00", "window_end": "2030-01-01T00:00:00+00:00"},
+        {"body": "jupiter", "window_start": "2026-01-01T00:00:00+00:00", "window_end": "2027-01-01T00:00:00+00:00"},
+        {"body": "uranus", "window_start": "2029-01-01T00:00:00+00:00", "window_end": "2031-01-01T00:00:00+00:00"},
+    ]}]
+    intervals = developmental_intervals(SimpleNamespace(utc_datetime="2000-01-01T00:00:00+00:00"), timeline)
+    assert len(intervals) == 1 and intervals[0]["window_end"].startswith("2031-01-01")
+
+
+def test_cycle_opposition_keeps_closest_approach_without_false_exactness():
+    events = _cycle_occurrences(calculate_chart(birth()), "jupiter", "opposition", 1, 20)
+    assert any(item["minimum_orb"] <= 0.01 and not item["perfected"] and item["exact_at"] is None for item in events)
+
+
+def test_premium_beta_requires_a_known_birth_time_without_blocking_safe_readings():
+    unknown = BirthData("1978-09-19T12:00:00", "America/Argentina/Buenos_Aires", -34.6037, -58.3816, birth_time_known=False)
+    assert analyse_birth_chart(unknown, include_timing=False)["chart_signature"]["mode"] == "distributed"
+    with pytest.raises(ValueError, match="Premium beta requires"):
+        prepare_premium_handoff(unknown, include_timing=False)

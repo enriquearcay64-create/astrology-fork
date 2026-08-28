@@ -23,7 +23,7 @@ def birth() -> BirthData:
 
 def test_report_uses_progressive_disclosure_tables_intro_and_final_synthesis():
     report = analyse_birth_chart(birth(), report_depth="deep", include_timing=False)["report"]
-    assert "## A arquitetura da pessoa" in report
+    assert "## A arquitetura central do mapa" in report
     assert "## Integração" in report
     assert "| Área | Fatores centrais | Pergunta prática |" in report
     assert "<summary><strong>Ver as doze áreas</strong></summary>" in report
@@ -36,7 +36,7 @@ def test_report_balances_logos_and_eros_and_puts_human_meaning_first():
     deep = analyse_birth_chart(birth(), report_depth="deep", include_timing=False)["report"]
     technical = analyse_birth_chart(birth(), report_depth="technical", include_timing=False)["report"]
     assert deep.index("## Dinâmicas que organizam o mapa") < deep.index("## Onde isso pode ganhar forma concreta") < deep.index("## Integração")
-    assert "Uma distorção possível" in deep or "Em momentos de maior carga" in deep
+    assert "em vez de deixar que a dinâmica se reduza" in deep or "Quando esta combinação ganha carga" in deep
     assert "## Claims" not in deep and "## Claims" in technical
     assert "Whole Sign" not in deep.split("## Onde isso pode ganhar forma concreta", 1)[0]
     assert "## Aspectos" in technical and "## Hierarquia dinâmica" in technical
@@ -44,7 +44,7 @@ def test_report_balances_logos_and_eros_and_puts_human_meaning_first():
 
 def test_introduction_and_conclusion_do_different_jobs():
     report = analyse_birth_chart(birth(), report_depth="deep", include_timing=False)["report"]
-    opening = report.split("## A arquitetura da pessoa", 1)[1].split("## Temas centrais", 1)[0].strip()
+    opening = report.split("## A arquitetura central do mapa", 1)[1].split("## Dinâmicas que organizam o mapa", 1)[0].strip()
     closing = report.split("## Integração", 1)[1].split("## Profundidade opcional", 1)[0].strip()
     assert opening != closing
     assert "A integração mais promissora" in closing

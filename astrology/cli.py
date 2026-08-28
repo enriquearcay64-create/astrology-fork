@@ -9,7 +9,7 @@ from typing import Dict, Optional
 
 from .engine import calculate_chart
 from .models import BirthData, LocalizationProfile
-from .pipeline import analyse_birth_chart, consult, prepare_premium_handoff, validate_premium_narrative, validate_premium_syntheses
+from .pipeline import analyse_birth_chart, consult, prepare_premium_handoff, validate_premium_author_bundle, validate_premium_narrative, validate_premium_syntheses
 from .timing import solar_return
 
 
@@ -51,8 +51,8 @@ def main() -> int:
     parser.add_argument("--as-of", help="UTC ISO timestamp for reproducible timing")
     parser.add_argument("--format", choices=("json", "report"), default="json")
     parser.add_argument("--premium-stage", choices=("prepare", "validate-synthesis", "validate-narrative"), help="Manual Sol High handoff; does not call an external model")
-    parser.add_argument("--premium-synthesis", help="JSON array (or object with reasoned_synthesis) returned by Sol High")
-    parser.add_argument("--premium-narrative", help="JSON with report, paragraph_sources and High Narrative Judge attestation")
+    parser.add_argument("--premium-synthesis", help="AuthorBundle JSON, or a raw ReasonedSynthesis list for synthesis-only debugging")
+    parser.add_argument("--premium-narrative", help="ReviewerBundle JSON with final_report and paragraph source mapping")
     args = parser.parse_args()
     try:
         data = _load(args.input)
@@ -67,18 +67,21 @@ def main() -> int:
             if not args.premium_synthesis:
                 raise ValueError("--premium-synthesis is required with --premium-stage validate-synthesis")
             payload = _load(args.premium_synthesis)
-            items = payload.get("reasoned_synthesis", payload) if isinstance(payload, dict) else payload
-            if not isinstance(items, list):
-                raise ValueError("premium synthesis must be a JSON list or an object with reasoned_synthesis")
-            result = validate_premium_syntheses(birth, items, profile, as_of)
+            if isinstance(payload, dict) and "reasoned_syntheses" in payload:
+                result = validate_premium_author_bundle(birth, payload, profile, as_of, args.horizon_days, not args.no_timing)
+            else:
+                items = payload.get("reasoned_synthesis", payload) if isinstance(payload, dict) else payload
+                if not isinstance(items, list):
+                    raise ValueError("premium synthesis must be a JSON list or an object with reasoned_synthesis")
+                result = validate_premium_syntheses(birth, items, profile, as_of, args.horizon_days, not args.no_timing)
         elif args.premium_stage == "validate-narrative":
             if not args.premium_synthesis or not args.premium_narrative:
                 raise ValueError("--premium-synthesis and --premium-narrative are required with --premium-stage validate-narrative")
-            synthesis_raw = _load(args.premium_synthesis)
-            synthesis_items = synthesis_raw.get("reasoned_synthesis", synthesis_raw) if isinstance(synthesis_raw, dict) else synthesis_raw
-            if not isinstance(synthesis_items, list):
-                raise ValueError("premium synthesis must be a JSON list or an object with reasoned_synthesis")
-            result = validate_premium_narrative(_load(args.premium_narrative), synthesis_items)
+            author_bundle = _load(args.premium_synthesis)
+            if not isinstance(author_bundle, dict) or "reasoned_syntheses" not in author_bundle:
+                raise ValueError("--premium-synthesis must be an AuthorBundle JSON for narrative publication")
+            provenance = validate_premium_author_bundle(birth, author_bundle, profile, as_of, args.horizon_days, not args.no_timing)
+            result = validate_premium_narrative(_load(args.premium_narrative), provenance)
         elif args.solar_return_year:
             declared = data.get("solar_return_location")
             location = (birth.latitude, birth.longitude) if args.solar_return_location_policy == "birth_place" else (float(declared["latitude"]), float(declared["longitude"])) if isinstance(declared, dict) else None

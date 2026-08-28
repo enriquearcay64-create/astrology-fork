@@ -124,23 +124,24 @@ def _final_synthesis(themes: List[Dict[str, object]], paradoxes: List[Dict[str, 
 
 
 def _executive_orientation(themes: List[Dict[str, object]], lang: str) -> str:
-    """A human bridge between the overview table and the current phase."""
+    """A substantive bridge from the signature-led opening to its dynamics."""
     if len(themes) < 2:
         return ""
     first, second = themes[:2]
-    count_label = f"{len(themes)} temas" if lang == "pt" else f"{len(themes)} themes"
     if lang == "pt":
         return (
-            f"Leia a tabela como um mapa de decisões, não como {count_label}. **{first['label']}** mostra o mecanismo "
-            f"que merece atenção primeiro; **{second['label']}** mostra a condição que o qualifica. "
-            f"Como teste, compare quando você tende a {first['expressions']['defensive']} com uma resposta que procura "
-            f"{second['expressions']['integrated']} em uma situação concreta desta semana."
+            f"Essa arquitetura ganha precisão quando se observa como **{first['label']}** e **{second['label']}** "
+            f"se qualificam mutuamente. O primeiro padrão aponta para a capacidade de {first['expressions']['constructive']}; "
+            f"o segundo mostra o que impede que isso vire uma resposta automática. Em vez de tomar qualquer um deles como "
+            f"identidade fixa, vale notar quando a pressão para {first['expressions']['defensive']} aparece e que escolha "
+            f"ajuda a {second['expressions']['integrated']} sem abandonar o que é importante para você."
         )
     return (
-        f"Read the table as a map of decisions, not {count_label}. **{first['label']}** names the mechanism worth noticing "
-        f"first; **{second['label']}** names the condition that qualifies it. As a test, compare when "
-        f"you tend to {first['expressions']['defensive']} with a response that tries to {second['expressions']['integrated']}. "
-        "Use one concrete situation from this week."
+        f"This architecture becomes more precise when **{first['label']}** and **{second['label']}** qualify each other. "
+        f"The first pattern points to the capacity to {first['expressions']['constructive']}; the second shows what keeps it "
+        f"from becoming automatic. Rather than treating either as a fixed identity, notice when pressure to "
+        f"{first['expressions']['defensive']} appears and which choice helps you {second['expressions']['integrated']} "
+        "without abandoning what matters to you."
     )
 
 
@@ -168,9 +169,9 @@ def _theme_block(theme: Dict[str, object], lang: str, rank: int, profile: Option
             if rank == 1:
                 paragraph = f"{observation} A capacidade a desenvolver aqui é {expression['constructive']}; neste mapa, isso pede {moves.get('constructive', expression['integrated'])}. O cuidado está em não usar o padrão para {expression['defensive']}; a integração pede {moves.get('integration', expression['integrated'])}."
             elif rank == 2:
-                paragraph = f"{observation} Ele tende a ficar mais útil quando você consegue {expression['constructive']}. Uma distorção possível é {expression['excessive']}. Como contrapeso, experimente {moves.get('constructive', expression['integrated'])}."
+                paragraph = f"{observation} Nessa combinação específica, o padrão tende a ficar mais útil quando você consegue {expression['constructive']}, em vez de deixar que a dinâmica se reduza a {expression['excessive']}. Como contrapeso, experimente {moves.get('constructive', expression['integrated'])}."
             elif rank == 3:
-                paragraph = f"{observation} Em momentos de maior carga, pode haver a tentação de {expression['defensive']}. O recurso contido no mesmo padrão é {moves.get('constructive', expression['constructive'])}; vale observar como isso muda com o contexto."
+                paragraph = f"{observation} Quando esta combinação ganha carga, pode haver a tentação de {expression['defensive']}; o recurso contido nela é {moves.get('constructive', expression['constructive'])}, e a questão é como isso muda entre os contextos em que o padrão aparece."
             else:
                 paragraph = f"{observation} Não é necessário transformar isso numa regra sobre você. A pergunta prática é como {expression['integrated']} sem perder de vista os limites e as escolhas reais."
             lines.append(paragraph)
@@ -214,9 +215,9 @@ def _theme_block(theme: Dict[str, object], lang: str, rank: int, profile: Option
             if rank == 1:
                 paragraph = f"{observation} The capacity to develop here is to {expression['constructive']}; in this chart, that asks you to {moves.get('constructive', expression['integrated'])}. The caution is not to use the pattern to {expression['defensive']}; integration asks you to {moves.get('integration', expression['integrated'])}."
             elif rank == 2:
-                paragraph = f"{observation} It becomes more useful when you can {expression['constructive']}. One possible distortion is to {expression['excessive']}. As a counterweight, try to {moves.get('constructive', expression['integrated'])}."
+                paragraph = f"{observation} In this particular combination, the pattern becomes more useful when you can {expression['constructive']}, rather than letting the dynamic narrow into {expression['excessive']}. As a counterweight, try to {moves.get('constructive', expression['integrated'])}."
             elif rank == 3:
-                paragraph = f"{observation} Under greater load, there may be a temptation to {expression['defensive']}. The resource in the same pattern is to {moves.get('constructive', expression['constructive'])}; notice how it changes with context."
+                paragraph = f"{observation} When this combination carries more load, there may be a temptation to {expression['defensive']}; its resource is to {moves.get('constructive', expression['constructive'])}, and the question is how that changes across the contexts where the pattern appears."
             else:
                 paragraph = f"{observation} This does not need to become a rule about you. The practical question is how to {expression['integrated']} while keeping real limits and choices in view."
             lines.append(paragraph)
@@ -558,6 +559,9 @@ def executive_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], the
     phase_heading = "## The current chapter" if lang == "en" else "## O capítulo atual"
     synthesis_heading = "## What to do with this" if lang == "en" else "## O que fazer com esta leitura"
     lines = [heading, "", opening, "", _narrative_thread(visible_themes, paradoxes, lang, narrative_plan)]
+    orientation = _executive_orientation(visible_themes, lang)
+    if orientation:
+        lines.extend(["", orientation])
     lines.extend(["", themes_heading, ""])
     for theme in visible_themes:
         expression = theme["expressions"]
@@ -597,9 +601,9 @@ def executive_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], the
 def deep_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: List[Dict[str, object]], hierarchy: Dict[str, Dict[str, object]], timing: Optional[Dict[str, object]], timeline: Optional[List[Dict[str, object]]], paradoxes: List[Dict[str, object]], compensations: List[Dict[str, object]], structure: Dict[str, object], profile: Optional[LocalizationProfile], reasoned_syntheses: Optional[List[Dict[str, object]]] = None, narrative_plan: Optional[Dict[str, object]] = None, developmental_intervals: Optional[List[Dict[str, object]]] = None, chart_signature: Optional[Dict[str, object]] = None) -> str:
     lang = _lang(profile)
     if lang == "pt":
-        lines = ["# Leitura Natal Profunda", "", "> **Percurso:** arquitetura → dinâmica central → temas diferenciados → áreas da vida → fase atual → ciclos → integração. Recurso, tensão e possibilidade de escolha aparecem em prosa; cálculo e jargão ficam no apêndice técnico.", "", "## A arquitetura da pessoa", "", _narrative_thread(themes, paradoxes, lang, narrative_plan)]
+        lines = ["# Leitura Natal Profunda", "", "> **Percurso:** arquitetura → dinâmica central → temas diferenciados → áreas da vida → fase atual → ciclos → integração. Recurso, tensão e possibilidade de escolha aparecem em prosa; cálculo e jargão ficam no apêndice técnico.", "", "## A arquitetura central do mapa", "", _narrative_thread(themes, paradoxes, lang, narrative_plan)]
     else:
-        lines = ["# Deep Natal Reading", "", "> **Path:** architecture → central dynamic → differentiated themes → life areas → current phase → cycles → integration. Resource, tension and choice appear in prose; calculation and jargon stay in the technical appendix.", "", "## The person's architecture", "", _narrative_thread(themes, paradoxes, lang, narrative_plan)]
+        lines = ["# Deep Natal Reading", "", "> **Path:** architecture → central dynamic → differentiated themes → life areas → current phase → cycles → integration. Resource, tension and choice appear in prose; calculation and jargon stay in the technical appendix.", "", "## The map's central architecture", "", _narrative_thread(themes, paradoxes, lang, narrative_plan)]
     planned_ids = list((narrative_plan or {}).get("themes", []))
     by_theme_id = {str(theme["id"]): theme for theme in themes}
     visible_themes = [by_theme_id[theme_id] for theme_id in planned_ids if theme_id in by_theme_id] or list(themes)

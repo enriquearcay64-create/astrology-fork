@@ -23,6 +23,7 @@ O release só é aprovado quando quatro lentes passam: **Technical Truth** (cál
 - Teste três passagens retrógradas próximas (uma `activation_instance`), a mesma assinatura quatro anos depois (duas instâncias) e ramos geométricos opostos (instâncias distintas).
 - Construa claims forjados com tema, família, suporte e texto adulterados; o verificador deve bloquear todos.
 - Construa `ReasonedSynthesis` adversarial: factor id inexistente, `source_claim_id` inexistente, proposição sem fonte, texto semanticamente desconectado e especificidade biográfica. O Synthesis Judge deve bloquear cada caso; uma ablação do claim/factor crítico deve quebrar a cadeia.
+- Teste a cadeia premium completa: motif autorizado apenas pela claim citada, fator primário suportado pela mesma claim, operação compatível, teto de confiança, `packet_id`, hashes do bundle/rascunho/final, evidência temporal tipada e mapa de fontes de cada parágrafo substantivo. O guard é de proveniência, não uma alegação de prova semântica.
 - Teste T-square com ápice explícito e stellium cujos `position.<body>` existem no ledger. Teste que dois aspectos com a mesma palavra (por exemplo, dois quadrados) mas corpos diferentes não geram falsa referência cruzada no planner.
 - Teste `exact_at` versus `closest_approach_at`, entrada/saída de orbe e identidade de ciclo retrógrado; não aceite data aproximada apresentada como exata.
 - Construa e inspecione o wheel; CLI e efemérides devem estar presentes.

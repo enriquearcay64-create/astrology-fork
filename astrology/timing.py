@@ -12,7 +12,7 @@ from .config import ASPECTS, BODY_CODES, EPHEMERIS_END_YEAR, EPHEMERIS_START_YEA
 from .engine import EPHEMERIS_PATH, angular_distance, normalize, sign_for, signed_delta
 from .models import Chart
 
-TIMING_VERSION = "4.0.0"
+TIMING_VERSION = "4.0.1"
 MAJOR_TRANSIT_BODIES = ("jupiter", "saturn", "uranus", "neptune", "pluto", "true_node")
 PERFECTION_TOLERANCE_DEGREES = 0.01
 ORB_BOUNDARY_TOLERANCE_DEGREES = 0.0001
@@ -466,12 +466,15 @@ def _cycle_occurrences(chart: Chart, body: str, aspect_name: str, age_start: flo
         if values[index] <= values[index - 1] and values[index] <= values[index + 1] and values[index] <= orb_limit:
             jd, deviation = _refine_minimum(body, target, angle, start_jd + days[index - 1], start_jd + days[index + 1])
             closest = _datetime_for_jd(jd)
+            branch = _aspect_branch(_longitude(jd, body), target, aspect_name)
+            exact_jd = _refine_exact_root(body, target, aspect_name, start_jd + days[index - 1], start_jd + days[index + 1], branch)
             entry_jd = _orb_edge(body, target, angle, jd, orb_limit, -1)
             exit_jd = _orb_edge(body, target, angle, jd, orb_limit, 1)
             result.append({
                 "body": body, "aspect": aspect_name, "closest_approach_at": closest,
-                "minimum_orb": round(deviation, 4), "perfected": deviation <= PERFECTION_TOLERANCE_DEGREES,
-                "exact_at": closest if deviation <= PERFECTION_TOLERANCE_DEGREES else None,
+                "minimum_orb": round(deviation, 4), "perfected": exact_jd is not None,
+                "exact_at": _datetime_for_jd(exact_jd) if exact_jd is not None else None,
+                "near_exact_within_tolerance": deviation <= PERFECTION_TOLERANCE_DEGREES,
                 "orb_at_minimum": round(deviation, 4), "motion_at_closest": _motion_at(jd, body),
                 "orb_entry_at": _datetime_for_jd(entry_jd), "orb_exit_at": _datetime_for_jd(exit_jd),
             })
@@ -542,19 +545,22 @@ def developmental_intervals(chart: Chart, timeline: List[Dict[str, object]]) -> 
     """
     events = [item for phase in timeline for item in phase.get("activations", [])]
     groups: List[List[Dict[str, object]]] = []
+    max_end_seen: datetime | None = None
     for item in sorted(events, key=lambda value: str(value["window_start"])):
         start = datetime.fromisoformat(str(item["window_start"]))
         # Developmental intervals are emergent overlaps of actual activation
         # windows. No arbitrary months/years bridge separate episodes.
-        if groups and start <= datetime.fromisoformat(str(groups[-1][-1]["window_end"])):
+        if groups and max_end_seen is not None and start <= max_end_seen:
             groups[-1].append(item)
+            max_end_seen = max(max_end_seen, datetime.fromisoformat(str(item["window_end"])))
         else:
             groups.append([item])
+            max_end_seen = datetime.fromisoformat(str(item["window_end"]))
     birth = datetime.fromisoformat(chart.utc_datetime)
     result = []
     for index, group in enumerate(groups, 1):
         start = datetime.fromisoformat(str(group[0]["window_start"]))
-        end = datetime.fromisoformat(str(group[-1]["window_end"]))
+        end = max(datetime.fromisoformat(str(item["window_end"])) for item in group)
         bodies = sorted({str(item["body"]) for item in group})
         start_age = round((start - birth).days / 365.2425, 1)
         end_age = round((end - birth).days / 365.2425, 1)
@@ -563,7 +569,7 @@ def developmental_intervals(chart: Chart, timeline: List[Dict[str, object]]) -> 
             "id": f"developmental_interval_{index}",
             "age_range": f"{start_age:g}–{end_age:g}",
             "window_start": group[0]["window_start"],
-            "window_end": group[-1]["window_end"],
+            "window_end": end.isoformat(),
             "activations": group,
             "bodies": bodies,
             "importance": "strong" if "saturn" in bodies and len(bodies) > 1 else "moderate" if len(bodies) > 1 else "light",

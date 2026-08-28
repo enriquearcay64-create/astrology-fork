@@ -12,11 +12,11 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 
 ## Ordem da leitura profunda
 
-1. Arquitetura da pessoa em um parágrafo específico.
+1. Arquitetura central do mapa em um parágrafo específico.
 2. Dinâmica organizadora ou 2–3 dinâmicas distribuídas, somente quando sustentadas.
 3. Três ou quatro temas centrais em prosa com movimento variado: recurso, tensão, risco contextual, contrapeso ou integração conforme a carta — nunca fórmula fixa nem quota de cinco.
 4. Um exemplo vivido somente quando ele concretiza o mecanismo; normalmente até três no total.
-5. Quatro áreas mais ocupadas; as doze áreas ficam recolhidas.
+5. Até quatro áreas mais relevantes; ocupação, regentes, proeminência e corpos estruturais informam a escolha sem reforço circular. As doze áreas ficam recolhidas.
 6. Fase atual em linguagem humana; nomes técnicos ficam recolhidos.
 7. Intervalos emergentes de desenvolvimento (por exemplo, 28–31), explicando convergência, pressão possível, potencial e o que não pode ser inferido; o mapa completo de ciclos fica recolhido.
 8. Síntese, experimento observável e duas perguntas.
@@ -78,3 +78,7 @@ São faixas de QA, não quotas de preenchimento:
 ## Consulta específica
 
 A consulta deve apresentar resposta direta, bases priorizadas, contrapesos recolhidos, timing relevante quando houver, síntese prática e limite. Não despeje o mapa inteiro, não recicle uma conclusão genérica e não substitua decisão profissional.
+
+## Caminho premium
+
+O pedido natural de leitura premium não mostra estágios internos ao leitor. O Codex prepara fatos seguros, um Author cria síntese e rascunho, o `Deterministic Provenance Guard` confirma a cadeia factual, um Reviewer/Editor independente melhora diretamente o texto e o `Publication Guard` confirma hashes, fontes por parágrafo e limites publicáveis. O reviewer, e não um gate por palavras-chave, julga fluidez, especificidade e deriva de significado.

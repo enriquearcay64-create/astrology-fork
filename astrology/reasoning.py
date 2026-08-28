@@ -59,6 +59,7 @@ def build_reasoning_packet(
     timing: Dict[str, object] | None = None,
     language: str = "pt-BR",
     localization_profile: object | None = None,
+    packet_id: str | None = None,
 ) -> Dict[str, object]:
     """Create a closed-world factual packet for constrained LLM reasoning."""
     lang = "pt" if language.startswith("pt") else "en"
@@ -93,7 +94,9 @@ def build_reasoning_packet(
         for body, placement in chart.house_placements.items()
         if body in PRIMARY_BODIES
     ]
+    timing_evidence = _timing_evidence(timing)
     return {
+        "packet_id": packet_id,
         "reasoning_freedom": {
             "level_0_calculation": "closed; no LLM choice",
             "level_1_technical_inference": "closed factual packet only",
@@ -111,9 +114,11 @@ def build_reasoning_packet(
             "angle_contacts": [to_primitive(item) for item in chart.angle_contacts],
             "allowed_claims": [to_primitive(item) for item in allowed_claims],
             "timing": timing or {},
+            "timing_evidence": timing_evidence,
         },
         "hard_boundaries": {
             "may_use_only_factor_ids": sorted(_evidence_ids(chart)),
+            "may_use_only_timing_ids": sorted(item["id"] for item in timing_evidence),
             "may_not_infer": PROHIBITED_EXTENSIONS,
             "conditional_house_policy": "Do not use conditional house context as central evidence. It may be disclosed as a conditional alternative only.",
             "localization_policy": "Localization may change language and examples, never factor weights, personality or prediction.",
@@ -126,6 +131,7 @@ def validate_reasoned_syntheses(
     items: Sequence[ReasonedSynthesis],
     chart: SafeInterpretiveChart,
     claims: Optional[Iterable[Claim]] = None,
+    timing_evidence_ids: Optional[Iterable[str]] = None,
 ) -> List[ReasonedSynthesis]:
     """Synthesis Judge: validate provenance and conservative semantic fit.
 
@@ -134,6 +140,7 @@ def validate_reasoned_syntheses(
     is considered by the separate Narrative Judge.
     """
     known = _evidence_ids(chart)
+    timing_ids = set(timing_evidence_ids or [])
     claim_map = {claim.id: claim for claim in (claims or []) if claim.status == "allowed"}
     output: List[ReasonedSynthesis] = []
     for item in items:
@@ -141,7 +148,7 @@ def validate_reasoned_syntheses(
         cited = list(item.primary_factors) + list(item.modifiers) + list(item.counterweights)
         if not item.primary_factors:
             errors.append("missing_primary_factors")
-        if any(factor not in known for factor in cited):
+        if any(factor not in known and factor not in timing_ids for factor in cited):
             errors.append("unknown_or_unsafe_factor")
         if item.reasoning_class not in REASONING_CLASSES:
             errors.append("invalid_reasoning_class")
@@ -152,11 +159,21 @@ def validate_reasoned_syntheses(
                 errors.append("missing_source_claim_ids")
             if any(claim_id not in claim_map for claim_id in item.source_claim_ids):
                 errors.append("unknown_source_claim_id")
-            available_motifs = {motif for claim in claim_map.values() for motif in claim.authorized_motifs}
-            if any(motif not in available_motifs for motif in item.source_motif_ids):
-                errors.append("unknown_source_motif_id")
+            source_claims = [claim_map[claim_id] for claim_id in item.source_claim_ids if claim_id in claim_map]
+            allowed_motifs = {motif for claim in source_claims for motif in claim.authorized_motifs}
+            if any(motif not in allowed_motifs for motif in item.source_motif_ids):
+                errors.append("source_motif_not_authorized_by_source_claim")
+            allowed_primary = {factor for claim in source_claims for factor in claim.evidence}
+            natal_primary = {factor for factor in item.primary_factors if factor not in timing_ids}
+            if not natal_primary.issubset(allowed_primary):
+                errors.append("primary_factor_not_authorized_by_source_claim")
             if not item.composition_operations:
                 errors.append("missing_composition_operation")
+            incompatible = _incompatible_operations(item, chart, timing_ids)
+            if incompatible:
+                errors.append("composition_operation_not_supported_by_factor")
+            if _confidence_exceeds_sources(item, source_claims, chart):
+                errors.append("confidence_exceeds_source_ceiling")
             for proposition in item.derived_propositions:
                 sources = set(proposition.get("sources", []))
                 if not sources or not sources.issubset(set(item.source_claim_ids)):
@@ -168,6 +185,8 @@ def validate_reasoned_syntheses(
                 errors.append("biographical_specificity_escalation")
         # One aspect already composes two planetary functions; a lone house or
         # condition does not.
+        if item.reasoning_class == "natal_timing_interaction" and (not any(factor in timing_ids for factor in item.primary_factors) or not any(factor not in timing_ids for factor in item.primary_factors)):
+            errors.append("natal_timing_interaction_requires_natal_and_timing_evidence")
         if item.reasoning_class != "single_structural_factor" and len(set(item.primary_factors)) < 2 and not any(factor.startswith("aspect.") for factor in item.primary_factors):
             errors.append("insufficient_composition_support")
         folded = " ".join([item.observation, item.alternative_reading, *item.possible_expressions]).casefold()
@@ -177,6 +196,59 @@ def validate_reasoned_syntheses(
         item.status = "blocked" if errors else "allowed"
         output.append(item)
     return output
+
+
+def _timing_evidence(timing: Dict[str, object] | None) -> List[Dict[str, object]]:
+    """Expose timing windows as closed, typed evidence for premium reasoning."""
+    if not timing:
+        return []
+    evidence = []
+    for event in timing.get("modern_stream", {}).get("major_transits", []):
+        activation = str(event.get("activation_instance", ""))
+        if activation:
+            evidence.append({
+                "id": f"timing.activation.{activation}", "kind": "activation_instance",
+                "transit_body": event.get("transit_body"), "target": event.get("target"),
+                "aspect": event.get("aspect"), "window_start": event.get("window_start"),
+                "window_end": event.get("window_end"), "exact_at": event.get("exact_at"),
+                "closest_approach_at": event.get("closest_approach_at"), "perfected": event.get("perfected"),
+            })
+    return evidence
+
+
+def _incompatible_operations(item: ReasonedSynthesis, chart: SafeInterpretiveChart, timing_ids: set[str]) -> bool:
+    aspects = {aspect.id: aspect for aspect in chart.aspects}
+    factor_kinds = {factor.id: factor.kind for factor in chart.factors}
+    supported = set()
+    for factor_id in item.primary_factors:
+        if factor_id in aspects:
+            supported.add(ASPECT_OPERATIONS[aspects[factor_id].kind])
+        elif factor_kinds.get(factor_id) in {"whole_sign_house", "placidus_house", "house_system_robustness"}:
+            supported.add("contextualization")
+        elif factor_id in timing_ids:
+            supported.add("timing_activation")
+        else:
+            supported.add("contextualization")
+    if item.counterweights:
+        supported.add("qualification")
+    return any(operation not in supported for operation in item.composition_operations)
+
+
+def _confidence_exceeds_sources(item: ReasonedSynthesis, source_claims: Sequence[Claim], chart: SafeInterpretiveChart) -> bool:
+    """A conservative ceiling: strong needs strong source plus structural support."""
+    ordinal = {"light": 1, "moderate": 2, "strong": 3}
+    claimed = ordinal[item.confidence_within_astrological_model]
+    source_ceiling = max((ordinal.get(claim.astrological_support, 0) for claim in source_claims), default=0)
+    # The hard ceiling is intentionally narrow: this guard prevents a High
+    # pass from calling weak evidence *strong*. Moderate synthesis may emerge
+    # from several light sources and remains a reviewer judgement.
+    if item.confidence_within_astrological_model != "strong":
+        return False
+    if source_ceiling < ordinal["strong"]:
+        return True
+    structural_modifier = any(modifier.startswith("hierarchy.") for modifier in item.modifiers)
+    multiple_sources = len(set(item.source_claim_ids)) >= 2 or len(set(item.primary_factors)) >= 2
+    return not (structural_modifier or multiple_sources)
 
 
 def _semantic_disconnect(item: ReasonedSynthesis, claim_map: Dict[str, Claim]) -> bool:
@@ -370,8 +442,10 @@ def build_chart_signature(
         roles = set(details.get("roles", []))
         role_score = min(3, sum(role_weight.get(role, 0) for role in roles))
         connection_score = min(3, max(0, len(body_to_syntheses.get(body, set())) - 1))
-        domain_score = min(2, len(details.get("governs_whole_sign_houses", []))) if chart.house_placements else 0
-        body_scores[body] = prominence + role_score + connection_score + domain_score
+        # Number of traditional rulerships is a property of the table, not a
+        # chart-specific sign of centrality.  Keep rulership for topical work,
+        # but do not reward Mercury/Venus/Mars/Jupiter/Saturn by construction.
+        body_scores[body] = prominence + role_score + connection_score
     structural_bodies = sorted(
         (body for body in hierarchy if body_scores[body] > 0),
         key=lambda body: (-body_scores[body], -len(body_to_syntheses.get(body, set())), body),
@@ -404,7 +478,10 @@ def build_chart_signature(
         for body, details in hierarchy.items():
             for house in details.get("governs_whole_sign_houses", []):
                 item = domain_scores.setdefault(int(house), {"house": int(house), "score": 0, "bodies": []})
-                item["score"] += max(1, body_scores.get(body, 0))
+                # Rulership is direct topical relevance.  Do not feed the
+                # full structural score back into houses after using that same
+                # body for signature selection.
+                item["score"] += {"strong": 3, "moderate": 2, "light": 1}.get(str(details.get("prominence")), 0)
                 if body not in item["bodies"]:
                     item["bodies"].append(body)
     strongest_domains = sorted(domain_scores.values(), key=lambda item: (-int(item["score"]), int(item["house"])))[:4]
@@ -645,14 +722,13 @@ def _signature_opening(signature: Dict[str, object], syntheses: Dict[str, Dict[s
     opening_theme = theme_label(source_ids[0].removeprefix("reasoned."), language) if source_ids else ("a primeira dinâmica" if language.startswith("pt") else "the first dynamic")
     if signature.get("mode") == "central" and bodies:
         body_text = ", ".join(label_for(body) for body in bodies[:2])
-        counts = signature.get("central_dynamic", {}).get("connection_counts", {})
-        count_text = ", ".join(f"{label_for(body)} ({counts.get(body, 0)})" for body in bodies[:2])
         observation = str(source.get("observation", "")) if source else ""
+        functions = PLANET_SHORT_FUNCTIONS[lang]
+        function_text = " e ".join(functions.get(body, label_for(body).casefold()) for body in bodies[:2]) if lang == "pt" else " and ".join(functions.get(body, label_for(body).casefold()) for body in bodies[:2])
         if language.startswith("pt"):
-            text = f"A arquitetura deste mapa se organiza sobretudo em torno de **{body_text}**: {count_text} reaparecem nas sínteses estruturais que sustentam a leitura, abrindo primeiro o tema **{opening_theme}**. {observation}".strip()
+            text = f"A arquitetura central do mapa volta sobretudo a **{body_text}**: a relação entre {function_text} organiza a entrada em **{opening_theme}**. {observation}".strip()
         else:
-            connections = ", ".join(f"{label_for(body)} connects {counts.get(body, 0)}" for body in bodies[:2])
-            text = f"This chart's architecture is organised chiefly around **{body_text}**: {connections} structural syntheses that support this reading, opening first through **{opening_theme}**. {observation}".strip()
+            text = f"The map's central architecture returns chiefly to **{body_text}**: the relationship between {function_text} opens first through **{opening_theme}**. {observation}".strip()
         return {"status": "supported", "mode": "central", "structural_bodies": bodies, "source_syntheses": source_ids, "observation": text}
     body_text = ", ".join(label_for(body) for body in bodies[:3])
     if language.startswith("pt"):
