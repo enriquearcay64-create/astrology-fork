@@ -52,13 +52,14 @@ def detect_configurations(chart: Chart) -> List[Dict[str, object]]:
                 if len(opposed) == 1 and all(_kind(lookup, fourth, body) == "sextile" for body in grand_trine if body not in opposed):
                     found.append({"kind": "kite", "bodies": list(grand_trine) + [fourth], "apex": fourth, "evidence": [lookup[frozenset(pair)].id for pair in pairs]})
     # Stellia are declared separately from aspect figures. Sign clusters describe
-    # zodiacal concentration; Whole Sign clusters describe topical concentration.
+    # zodiacal concentration; Placidus clusters describe the canonical natal
+    # spatial concentration when that placement is available.
     for sign, members in _clusters(chart, bodies, "sign").items():
         if len(members) >= 3:
             found.append({"kind": "stellium_sign", "basis": sign, "bodies": members, "evidence": [f"position.{body}" for body in members]})
-    for house, members in _clusters(chart, bodies, "house").items():
+    for house, members in _clusters(chart, bodies, "placidus_house").items():
         if len(members) >= 3:
-            found.append({"kind": "stellium_whole_sign_house", "basis": str(house), "bodies": members, "evidence": [f"house.whole_sign.{body}" for body in members]})
+            found.append({"kind": "stellium_placidus_house", "basis": str(house), "bodies": members, "evidence": [f"house.placidus.{body}" for body in members]})
 
     grand_crosses = [set(item["bodies"]) for item in found if item["kind"] == "grand_cross"]
     kites = [set(item["bodies"]) for item in found if item["kind"] == "kite"]
@@ -74,6 +75,14 @@ def detect_configurations(chart: Chart) -> List[Dict[str, object]]:
         if key not in unique:
             unique.add(key)
             absorbed.append(item)
+    for item in absorbed:
+        members = ".".join(sorted(item["bodies"]))
+        basis = str(item.get("basis", "none")).lower().replace(" ", "_")
+        item["id"] = f"configuration.{item['kind']}.{basis}.{members}"
+        if str(item["kind"]).startswith("stellium_"):
+            # A sign concentration and a Placidus concentration with identical
+            # members are complementary descriptions of one structural family.
+            item["group_id"] = f"configuration_group.stellium.{members}"
     return absorbed
 
 
@@ -82,8 +91,10 @@ def _clusters(chart: Chart, bodies: List[str], basis: str) -> Dict[object, List[
     for body in bodies:
         if basis == "sign":
             key: object = chart.positions[body].sign
-        elif body in chart.house_placements:
-            key = chart.house_placements[body].whole_sign_house
+        elif basis == "placidus_house" and body in chart.house_placements:
+            key = chart.house_placements[body].placidus_house
+            if key is None:
+                continue
         else:
             continue
         output.setdefault(key, []).append(body)
@@ -101,6 +112,11 @@ def chart_structure(chart: Chart) -> Dict[str, object]:
     all_polarities = Counter(POLARITY_BY_SIGN[chart.positions[body].sign] for body in bodies)
     signs = Counter(chart.positions[body].sign for body in bodies)
     houses = Counter(chart.house_placements[body].whole_sign_house for body in bodies if body in chart.house_placements)
+    placidus_concentrations = Counter(
+        chart.house_placements[body].placidus_house
+        for body in bodies
+        if body in chart.house_placements and chart.house_placements[body].placidus_house is not None
+    )
     placidus_houses = [chart.house_placements[body].placidus_house for body in bodies if body in chart.house_placements and chart.house_placements[body].placidus_house]
     quadrants = Counter(f"q{((house - 1) // 3) + 1}" for house in placidus_houses)
     spatial = {
@@ -116,6 +132,7 @@ def chart_structure(chart: Chart) -> Dict[str, object]:
         "balance_basis": "Sun through Saturn; outer planets remain visible in all_primary_* without determining compensation",
         "sign_concentrations": {sign: count for sign, count in signs.items() if count >= 3},
         "whole_sign_house_concentrations": {str(house): count for house, count in houses.items() if count >= 3},
+        "placidus_house_concentrations": {str(house): count for house, count in placidus_concentrations.items() if count >= 3},
         "spatial_distribution": spatial,
         "configurations": detect_configurations(chart),
     }

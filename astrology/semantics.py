@@ -8,10 +8,10 @@ from __future__ import annotations
 import re
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
-from .config import BODY_LABELS, CORE_ANGLES, SIGN_RULERS, THEME_LABELS_PT
+from .config import BODY_LABELS, CORE_ANGLES, ELEMENT_BY_SIGN, MODALITY_BY_SIGN, POLARITY_BY_SIGN, SIGN_RULERS, THEME_LABELS_PT
 from .models import Chart, Claim
 
-SEMANTIC_REGISTRY_VERSION = "2.4.0"
+SEMANTIC_REGISTRY_VERSION = "2.5.0"
 
 THEME_LABELS_EN = {
     "autonomy_closeness": "autonomy and closeness", "stability_change": "stability and change",
@@ -237,42 +237,121 @@ def _claim_from_aspect(aspect, index: int, language: str) -> Claim:
 def _claim_from_house(chart: Chart, body: str, index: int, language: str) -> Claim:
     lang = _language(language)
     placement = chart.house_placements[body]
-    topic = HOUSE_TOPICS[lang][placement.whole_sign_house]
-    placidus_topic = HOUSE_TOPICS[lang].get(placement.placidus_house) if placement.placidus_house else None
-    integration = {
-        "pt": {
-            "robust_same_house": "Os dois sistemas configurados colocam o corpo na mesma casa; isso é robustez à escolha de domificação, não uma segunda evidência.",
-            "whole_topic_placidus_qualifier": f"Signo Inteiro fornece o tópico; Placidus qualifica a expressão espacial{f' pela casa {placement.placidus_house}, ligada a {placidus_topic}' if placidus_topic and placement.placidus_house != placement.whole_sign_house else ' pela proximidade de cúspide'}.",
-            "complementary_emphases": f"Placidus acrescenta a casa {placement.placidus_house}, ligada a {placidus_topic}; as ênfases permanecem complementares sem somar evidência.",
-            "material_divergence": f"Placidus localiza a expressão na casa {placement.placidus_house}, ligada a {placidus_topic}; as duas localizações permanecem distintas.",
-            "placidus_unavailable": "A leitura tópica usa Whole Sign porque Placidus não estava disponível.",
-        },
-        "en": {
-            "robust_same_house": "Both configured systems place the body in the same house; this is robustness to domification choice, not a second evidence vote.",
-            "whole_topic_placidus_qualifier": f"Whole Sign supplies the topic; Placidus qualifies spatial expression{f' through house {placement.placidus_house}, associated with {placidus_topic}' if placidus_topic and placement.placidus_house != placement.whole_sign_house else ' through cusp proximity'}.",
-            "complementary_emphases": f"Placidus adds house {placement.placidus_house}, associated with {placidus_topic}; the emphases remain complementary without adding an evidence vote.",
-            "material_divergence": f"Placidus locates expression in house {placement.placidus_house}, associated with {placidus_topic}; both placements remain distinct.",
-            "placidus_unavailable": "The topical reading uses Whole Sign because Placidus was unavailable.",
-        },
-    }[lang].get(placement.integration_state, placement.integration_rationale)
+    if placement.placidus_house is None:
+        raise ValueError("Canonical natal house claim requires an available Placidus placement.")
+    topic = HOUSE_TOPICS[lang][placement.placidus_house]
     if lang == "pt":
-        statement = f"{BODY_LABELS[lang].get(body, chart.positions[body].label)} organiza parte da linguagem simbólica em torno de {topic}. {integration}"
+        statement = f"{BODY_LABELS[lang].get(body, chart.positions[body].label)} encontra contexto psicológico em {topic} pela casa Placidus {placement.placidus_house}."
         examples = [f"decisões ligadas a {topic}"]
         prohibited = ["evento material específico", "causalidade"]
     else:
-        statement = f"{chart.positions[body].label} organizes part of the symbolic language around {topic}. {integration}"
+        statement = f"{chart.positions[body].label} finds psychological context in {topic} through Placidus house {placement.placidus_house}."
         examples = [f"choices involving {topic}"]
         prohibited = ["specific material event", "causality"]
-    theme = HOUSE_THEME[placement.whole_sign_house]
-    evidence = [f"house.whole_sign.{body}", f"house.robustness.{body}"]
-    if placement.placidus_house is not None:
-        evidence.append(f"house.placidus.{body}")
+    theme = HOUSE_THEME[placement.placidus_house]
+    evidence = [f"house.placidus.{body}"]
     return Claim(
         id=f"claim.house.{body}.{index}", theme=theme, type="topical_tendency", statement=statement,
-        evidence=evidence, evidence_families=[f"house_topic_{placement.whole_sign_house}"],
+        evidence=evidence, evidence_families=[f"placidus_house_topic_{placement.placidus_house}"],
         counterweights=[], allowed_specificity="domain_possibility", allowed_examples=examples,
-        prohibited_inferences=prohibited, astrological_support="light", authorized_motifs=[f"house_{placement.whole_sign_house}_topic"],
+        prohibited_inferences=prohibited, astrological_support="light", authorized_motifs=[f"placidus_house_{placement.placidus_house}_topic"],
     )
+
+
+def _sign_mode(position, language: str) -> str:
+    lang = _language(language)
+    descriptors = {
+        "pt": {
+            "fire": "iniciativa e vitalidade", "earth": "concretização e continuidade", "air": "troca e elaboração", "water": "sensibilidade e ligação emocional",
+            "cardinal": "inicia e movimenta", "fixed": "sustenta e aprofunda", "mutable": "adapta e ajusta",
+            "active": "de forma mais exteriorizada", "receptive": "de forma mais receptiva",
+        },
+        "en": {
+            "fire": "initiative and vitality", "earth": "practical continuity", "air": "exchange and reflection", "water": "sensitivity and emotional connection",
+            "cardinal": "initiates and moves", "fixed": "sustains and deepens", "mutable": "adapts and adjusts",
+            "active": "in a more outward way", "receptive": "in a more receptive way",
+        },
+    }[lang]
+    return f"{descriptors[ELEMENT_BY_SIGN[position.sign]]}; {descriptors[MODALITY_BY_SIGN[position.sign]]}; {descriptors[POLARITY_BY_SIGN[position.sign]]}"
+
+
+def _claim_from_position(chart: Chart, body: str, index: int, language: str) -> Claim:
+    lang = _language(language)
+    position = chart.positions[body]
+    function = PLANET_FUNCTIONS[lang].get(body, body)
+    sign_expression = _sign_mode(position, language)
+    if lang == "pt":
+        statement = f"{BODY_LABELS[lang].get(body, position.label)} em {position.sign} colore {function} com {sign_expression}."
+        examples = [f"observar como {function} ganha esse ritmo"]
+    else:
+        statement = f"{position.label} in {position.sign} colours {function} with {sign_expression}."
+        examples = [f"notice how {function} takes on this rhythm"]
+    return Claim(
+        id=f"claim.position.{body}.{index}", theme=PLANET_DEFAULT_THEME[body], type="symbolic_tendency", statement=statement,
+        evidence=[f"position.{body}"], evidence_families=[f"position_{body}"], counterweights=[],
+        allowed_specificity="behavioral_possibility", allowed_examples=examples,
+        prohibited_inferences=["biografia específica", "diagnóstico", "evento previsto"], astrological_support="light",
+        authorized_motifs=[f"{body}_function_in_sign"],
+    )
+
+
+def _claim_from_node_axis(chart: Chart, index: int, language: str) -> Claim:
+    lang = _language(language)
+    factor = next(item for item in chart.factors if item.id == "node_axis.natal")
+    north, south = factor.data["north"], factor.data["south"]
+    houses = ""
+    if factor.data.get("placidus_house_reliable"):
+        houses = (f"; casas Placidus {north['placidus_house']} e {south['placidus_house']}" if lang == "pt"
+                  else f"; Placidus houses {north['placidus_house']} and {south['placidus_house']}")
+    if lang == "pt":
+        statement = f"O eixo nodal liga Nodo Norte em {north['sign']} e Nodo Sul em {south['sign']}{houses}: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte."
+        examples = ["considerar a tensão entre o que já é disponível e um engajamento menos automático"]
+    else:
+        statement = f"The nodal axis links the North Node in {north['sign']} and South Node in {south['sign']}{houses}: developmental direction and familiar available patterns, without turning either pole into destiny or something to discard."
+        examples = ["consider the tension between what is already available and less automatic engagement"]
+    return Claim(
+        id=f"claim.node_axis.{index}", theme="purpose", type="symbolic_tendency", statement=statement,
+        evidence=["node_axis.natal"], evidence_families=["natal_node_axis"], counterweights=[],
+        allowed_specificity="behavioral_possibility", allowed_examples=examples,
+        prohibited_inferences=["destino inevitável", "missão predestinada", "abandono do Nodo Sul"], astrological_support="light",
+        authorized_motifs=["natal_node_axis_developmental_direction"],
+    )
+
+
+def _claim_from_configuration(chart: Chart, factor, index: int, language: str) -> Claim:
+    lang = _language(language)
+    kind, members = str(factor.data["kind"]), ", ".join(factor.data["bodies"])
+    basis = factor.data.get("basis")
+    qualifier = f" em {basis}" if basis and lang == "pt" else (f" in {basis}" if basis else "")
+    if lang == "pt":
+        statement = f"A estrutura {kind}{qualifier} reúne {members} como um padrão integrado, a ser explicado uma vez antes de observar o papel de cada corpo."
+    else:
+        statement = f"The {kind} structure{qualifier} joins {members} as one integrated pattern, to be explained once before considering each body's role."
+    group = str(factor.data.get("group_id") or factor.id)
+    return Claim(
+        id=f"claim.configuration.{index}", theme="order", type="structural_prominence", statement=statement,
+        evidence=[factor.id], evidence_families=[group], counterweights=[], allowed_specificity="structural_tendency",
+        allowed_examples=["a structural pattern to read as one family" if lang == "en" else "um padrão estrutural a ler como uma família"],
+        prohibited_inferences=["evento específico", "causalidade"], astrological_support="moderate",
+        authorized_motifs=[f"{kind}_integrated_structure"],
+    )
+
+
+def _claim_from_ascendant(chart: Chart, factor, index: int, language: str) -> Claim:
+    lang = _language(language)
+    sign = factor.data["sign"]
+    statement = (f"O Ascendente em {sign} descreve uma porta de entrada simbólica para presença e início de experiências."
+                 if lang == "pt" else f"The Ascendant in {sign} describes a symbolic entry point for presence and beginning experiences.")
+    return Claim(f"claim.ascendant.{index}", "individuality_belonging", "structural_prominence", statement, [factor.id], ["ascendant"], [], "structural_tendency", ["uma forma de iniciar e se apresentar" if lang == "pt" else "a way of beginning and presenting oneself"], ["biografia específica"], "moderate", authorized_motifs=["ascendant_presence"])
+
+
+def _claim_from_chart_ruler(chart: Chart, factor, index: int, language: str) -> Claim:
+    lang = _language(language)
+    ruler = str(factor.data["ruler"])
+    label = BODY_LABELS[lang].get(ruler, ruler.title())
+    statement = (f"{label}, regente do Ascendente em {factor.data['ascendant_sign']}, organiza uma função recorrente na forma de iniciar e orientar-se."
+                 if lang == "pt" else f"{label}, ruler of the Ascendant in {factor.data['ascendant_sign']}, organizes a recurring function in how you begin and orient yourself.")
+    return Claim(f"claim.chart_ruler.{index}", PLANET_DEFAULT_THEME[ruler], "structural_prominence", statement, [factor.id], ["chart_ruler"], [], "structural_tendency", ["uma função a observar em escolhas de direção" if lang == "pt" else "a function to observe in directional choices"], ["destino inevitável"], "moderate", authorized_motifs=["chart_ruler_orientation"])
 
 
 def _claim_from_angle(chart: Chart, contact, index: int, language: str) -> Claim:
@@ -306,6 +385,20 @@ def _body_priority(chart: Chart, body: str) -> Tuple[int, int, str]:
 def build_claims(chart: Chart, max_house_claims: int = 10, include_secondary_semantics: bool = False, language: str = "pt-BR") -> List[Claim]:
     claims: List[Claim] = []
     secondary = {"true_node", "chiron", "lilith_mean"}
+    # Every primary planet receives a small compositional position/sign claim.
+    # This is coverage, not a prewritten planet×sign×house catalogue: houses,
+    # aspects, conditions and structures remain separately composable evidence.
+    primary_positions = [body for body in PLANET_DEFAULT_THEME if body in chart.positions and body not in secondary]
+    for index, body in enumerate(primary_positions, 1):
+        claims.append(_claim_from_position(chart, body, index, language))
+    if any(factor.id == "node_axis.natal" for factor in chart.factors):
+        claims.append(_claim_from_node_axis(chart, 1, language))
+    ascendant = next((factor for factor in chart.factors if factor.kind == "ascendant"), None)
+    if ascendant:
+        claims.append(_claim_from_ascendant(chart, ascendant, 1, language))
+    chart_ruler = next((factor for factor in chart.factors if factor.kind == "chart_ruler"), None)
+    if chart_ruler:
+        claims.append(_claim_from_chart_ruler(chart, chart_ruler, 1, language))
     unstable_aspects = set(chart.stability.get("unstable_aspect_ids", []))
     for index, aspect in enumerate(chart.aspects, 1):
         if aspect.id in unstable_aspects or (not include_secondary_semantics and ({aspect.left, aspect.right} & secondary)):
@@ -317,11 +410,14 @@ def build_claims(chart: Chart, max_house_claims: int = 10, include_secondary_sem
         contact_id = f"angle.{contact.body}_{contact.angle}"
         if allow_angles and contact_id not in unstable_contacts and contact.angle in CORE_ANGLES and (include_secondary_semantics or contact.body not in secondary):
             claims.append(_claim_from_angle(chart, contact, index, language))
-    unstable_houses = set(chart.stability.get("unstable_house_bodies", []))
+    unstable_houses = set(chart.stability.get("unstable_placidus_house_bodies", chart.stability.get("unstable_house_bodies", [])))
     allow_houses = chart.stability.get("allow_house_claims", True)
     eligible = [body for body in chart.house_placements if allow_houses and body not in unstable_houses and (include_secondary_semantics or body not in secondary)]
     for index, body in enumerate(sorted(eligible, key=lambda item: _body_priority(chart, item))[:max_house_claims], 1):
-        claims.append(_claim_from_house(chart, body, index, language))
+        if chart.house_placements[body].placidus_house is not None:
+            claims.append(_claim_from_house(chart, body, index, language))
+    for index, factor in enumerate((item for item in chart.factors if item.kind == "configuration"), 1):
+        claims.append(_claim_from_configuration(chart, factor, index, language))
     return apply_counterweights(chart, claims, include_secondary_semantics)
 
 
@@ -408,11 +504,82 @@ def verify_claims(claims: Iterable[Claim], chart: Optional[Chart] = None) -> Lis
                 factor = factor_by_id.get(evidence_id)
                 if not factor:
                     continue
-                if factor.kind == "whole_sign_house":
+                if factor.kind == "placidus_house":
                     semantic_source_count += 1
                     body = factor.bodies[0]
                     for language in ("pt-BR", "en-US"):
                         canonical = _claim_from_house(chart, body, 0, language)
+                        expected_motifs.update(canonical.authorized_motifs)
+                        expected_families.update(canonical.evidence_families)
+                        expected_themes.add(canonical.theme)
+                        expected_types.add(canonical.type)
+                        expected_support.add(canonical.astrological_support)
+                        expected_statements.add(canonical.statement)
+                        expected_specificity.add(canonical.allowed_specificity)
+                        expected_example_variants.add(tuple(canonical.allowed_examples))
+                        expected_prohibited_variants.add(tuple(canonical.prohibited_inferences))
+                elif factor.kind == "position":
+                    semantic_source_count += 1
+                    body = factor.bodies[0]
+                    for language in ("pt-BR", "en-US"):
+                        canonical = _claim_from_position(chart, body, 0, language)
+                        expected_motifs.update(canonical.authorized_motifs)
+                        expected_families.update(canonical.evidence_families)
+                        expected_themes.add(canonical.theme)
+                        expected_types.add(canonical.type)
+                        expected_support.add(canonical.astrological_support)
+                        expected_statements.add(canonical.statement)
+                        expected_specificity.add(canonical.allowed_specificity)
+                        expected_example_variants.add(tuple(canonical.allowed_examples))
+                        expected_prohibited_variants.add(tuple(canonical.prohibited_inferences))
+                elif factor.kind == "natal_node_axis":
+                    semantic_source_count += 1
+                    for language in ("pt-BR", "en-US"):
+                        canonical = _claim_from_node_axis(chart, 0, language)
+                        expected_motifs.update(canonical.authorized_motifs)
+                        expected_families.update(canonical.evidence_families)
+                        expected_themes.add(canonical.theme)
+                        expected_types.add(canonical.type)
+                        expected_support.add(canonical.astrological_support)
+                        expected_statements.add(canonical.statement)
+                        expected_specificity.add(canonical.allowed_specificity)
+                        expected_example_variants.add(tuple(canonical.allowed_examples))
+                        expected_prohibited_variants.add(tuple(canonical.prohibited_inferences))
+                elif factor.kind == "configuration":
+                    from .structure import detect_configurations
+                    expected_configurations = {str(item["id"]): item for item in detect_configurations(chart)}
+                    expected_configuration = expected_configurations.get(factor.id)
+                    if expected_configuration != factor.data:
+                        errors.append("invalid_configuration_provenance")
+                    semantic_source_count += 1
+                    for language in ("pt-BR", "en-US"):
+                        canonical = _claim_from_configuration(chart, factor, 0, language)
+                        expected_motifs.update(canonical.authorized_motifs)
+                        expected_families.update(canonical.evidence_families)
+                        expected_themes.add(canonical.theme)
+                        expected_types.add(canonical.type)
+                        expected_support.add(canonical.astrological_support)
+                        expected_statements.add(canonical.statement)
+                        expected_specificity.add(canonical.allowed_specificity)
+                        expected_example_variants.add(tuple(canonical.allowed_examples))
+                        expected_prohibited_variants.add(tuple(canonical.prohibited_inferences))
+                elif factor.kind == "ascendant":
+                    semantic_source_count += 1
+                    for language in ("pt-BR", "en-US"):
+                        canonical = _claim_from_ascendant(chart, factor, 0, language)
+                        expected_motifs.update(canonical.authorized_motifs)
+                        expected_families.update(canonical.evidence_families)
+                        expected_themes.add(canonical.theme)
+                        expected_types.add(canonical.type)
+                        expected_support.add(canonical.astrological_support)
+                        expected_statements.add(canonical.statement)
+                        expected_specificity.add(canonical.allowed_specificity)
+                        expected_example_variants.add(tuple(canonical.allowed_examples))
+                        expected_prohibited_variants.add(tuple(canonical.prohibited_inferences))
+                elif factor.kind == "chart_ruler":
+                    semantic_source_count += 1
+                    for language in ("pt-BR", "en-US"):
+                        canonical = _claim_from_chart_ruler(chart, factor, 0, language)
                         expected_motifs.update(canonical.authorized_motifs)
                         expected_families.update(canonical.evidence_families)
                         expected_themes.add(canonical.theme)

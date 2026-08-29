@@ -32,7 +32,16 @@ def analyse_birth_chart(birth: BirthData, profile: Optional[LocalizationProfile]
     structure = chart_structure(semantic_chart)
     natal_hierarchy = calculate_hierarchy(semantic_chart)
     claims = verify_claims(build_claims(semantic_chart, language=language), semantic_chart)
-    themes = synthesize_themes(claims, language)
+    # Coverage facts make every required component available to Premium
+    # Complete, but they must not mechanically inflate thematic support or
+    # flatten hierarchy.  Existing aspect/house/angle synthesis remains the
+    # prominence selector; the Author can add a coverage synthesis where it is
+    # needed and its paragraph provenance then verifies it.
+    thematic_claims = [
+        claim for claim in claims
+        if claim.id.startswith(("claim.aspect.", "claim.house.", "claim.angle."))
+    ]
+    themes = synthesize_themes(thematic_claims, language)
     paradoxes = build_paradoxes(themes, language)
     compensations = build_compensation_hypotheses(structure, language)
     timing = cross_technique_timing(semantic_chart, as_of, horizon_days) if include_timing else None
@@ -40,7 +49,7 @@ def analyse_birth_chart(birth: BirthData, profile: Optional[LocalizationProfile]
     current_hierarchy = calculate_hierarchy(semantic_chart, question_topics=question_topics, active_bodies=active_bodies) if timing or question_topics else natal_hierarchy
     timeline = life_timeline(semantic_chart) if include_timing and report_depth in ("deep", "technical") else None
     intervals = developmental_intervals(semantic_chart, timeline) if timeline else None
-    reasoned_syntheses = compose_reasoned_syntheses(chart, themes, claims, natal_hierarchy, language)
+    reasoned_syntheses = compose_reasoned_syntheses(chart, themes, thematic_claims, natal_hierarchy, language)
     chart_signature = build_chart_signature(chart, natal_hierarchy, structure, reasoned_syntheses, language)
     narrative_plan = build_narrative_plan(themes, reasoned_syntheses, language, chart, chart_signature)
     natal_timing_interactions = build_natal_timing_interactions(chart, natal_hierarchy, claims, themes, timing)
@@ -85,12 +94,13 @@ def consult(birth: BirthData, question: str, profile: Optional[LocalizationProfi
     return {"question": question, "consultation": answer, "report": render_consultation(question, answer, language), "methodology_version": core["chart"]["methodology_version"], "query_hierarchy": core["current_hierarchy"], "timing": core["timing"]}
 
 
-def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProfile] = None, report_depth: str = "executive", include_timing: bool = True, as_of: Optional[datetime] = None, horizon_days: int = 366) -> Dict[str, object]:
+def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProfile] = None, report_depth: str = "deep", include_timing: bool = True, as_of: Optional[datetime] = None, horizon_days: int = 366) -> Dict[str, object]:
     """Debug handoff; normal Codex use follows the same stages internally."""
     _require_premium_birth_time(birth)
     core = analyse_birth_chart(birth, profile, report_depth, include_timing, as_of, horizon_days)
     return {
         "stage": "reasoning_packet_ready",
+        "premium_report_depth": "deep",
         "packet_id": core["packet_id"],
         "premium_required_for_publication": True,
         "deterministic_fallback_notice": "The local fallback is useful for tests and debugging. Do not label it as the premium report without the two High review passes.",
@@ -101,10 +111,16 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
         "reasoning_packet": core["reasoning_packet"],
         "chart_signature": core["chart_signature"],
         "narrative_plan": core["narrative_plan"],
+        "timeline": core["timeline"],
+        "developmental_intervals": core["developmental_intervals"],
+        # The deterministic renderer supplies this sidecar without asking the
+        # Author to spend reasoning tokens restating stable facts.
+        "technical_appendix": render_report("technical", build_safe_interpretive_view(calculate_chart(birth)), [], [], core["hierarchy"], core["timing"], core["timeline"], [], [], core["chart_structure"], profile, [], core["narrative_plan"], core["developmental_intervals"], core["chart_signature"]),
         "reasoned_synthesis_schema": list(ReasonedSynthesis.__dataclass_fields__),
         "author_bundle_contract": {"packet_id": core["packet_id"], "reasoned_syntheses": "list[ReasonedSynthesis]", "draft_report": "string", "paragraph_sources": [{"paragraph_sha256": "sha256", "synthesis_ids": ["reasoned.id"], "timing_ids": ["timing.activation.id"]}], "synthesis_bundle_sha256": "sha256", "draft_report_sha256": "sha256"},
         "reviewer_bundle_contract": {"packet_id": core["packet_id"], "synthesis_bundle_sha256": "sha256", "reviewed_draft_sha256": "sha256", "verdict": "approved|blocked", "corrections_made": ["string"], "remaining_warnings": ["string"], "final_report": "string", "final_report_sha256": "sha256", "paragraph_sources": "same mapping contract"},
         "sol_high_instruction": llm_reasoning_instructions(),
+        "author_voice_instruction": core["humanization_instructions"],
         "narrative_judge_instruction": humanization_verifier_instructions(profile.preferred_language if profile else "pt-BR"),
     }
 
@@ -120,7 +136,7 @@ def validate_premium_syntheses(birth: BirthData, synthesis_payload: Iterable[Dic
     approved = [to_primitive(item) for item in checked if item.status == "allowed"]
     signature = build_chart_signature(chart, core["hierarchy"], core["chart_structure"], approved, profile.preferred_language if profile else "pt-BR")
     plan = build_narrative_plan(core["themes"], approved, profile.preferred_language if profile else "pt-BR", chart, signature)
-    return {"stage": "provenance_syntheses_checked", "packet_id": core["packet_id"], "approved": len(approved) == len(checked), "reasoned_synthesis": [to_primitive(item) for item in checked], "synthesis_bundle_sha256": _canonical_hash(approved), "chart_signature": signature, "narrative_plan": plan, "timing_evidence_ids": timing_ids, "next_step": "A Premium Reviewer may use only approved syntheses and typed timing IDs."}
+    return {"stage": "provenance_syntheses_checked", "packet_id": core["packet_id"], "approved": len(approved) == len(checked), "reasoned_synthesis": [to_primitive(item) for item in checked], "synthesis_bundle_sha256": _canonical_hash(approved), "chart_signature": signature, "narrative_plan": plan, "timing_evidence_ids": timing_ids, "coverage": core["reasoning_packet"]["facts"]["coverage"], "next_step": "A Premium Reviewer may use only approved syntheses and typed timing IDs."}
 
 
 def _substantive_paragraphs(report: str) -> List[str]:
@@ -157,6 +173,33 @@ def _validate_paragraph_sources(report: object, paragraph_sources: object, appro
     return list(dict.fromkeys(errors))
 
 
+def _validate_mandatory_coverage(report: object, paragraph_sources: object, approved_syntheses: Iterable[Dict[str, object]], coverage: object) -> List[str]:
+    """Verify Premium Complete targets through existing paragraph provenance.
+
+    This intentionally adds no parallel coverage framework: the existing
+    source map is the contract, and a target is covered only when a substantive
+    paragraph cites a synthesis that cites its deterministic evidence.
+    """
+    if not isinstance(paragraph_sources, list) or not isinstance(coverage, dict):
+        return ["missing_mandatory_coverage_map"]
+    approved = {str(item.get("id")): item for item in approved_syntheses if isinstance(item, dict)}
+    sourced_ids = {
+        str(synthesis_id)
+        for source in paragraph_sources if isinstance(source, dict)
+        for synthesis_id in source.get("synthesis_ids", [])
+    }
+    sourced_factors = {
+        str(factor)
+        for synthesis_id in sourced_ids
+        for factor in approved.get(synthesis_id, {}).get("primary_factors", [])
+    }
+    errors = []
+    for target, factors in coverage.get("required_evidence", {}).items():
+        if not set(map(str, factors)).intersection(sourced_factors):
+            errors.append(f"missing_mandatory_coverage:{target}")
+    return errors
+
+
 def paragraph_source_template(report: str) -> List[Dict[str, object]]:
     """Return the exact substantial-paragraph hashes an Author must source."""
     return [{"paragraph_sha256": _canonical_hash(paragraph), "synthesis_ids": [], "timing_ids": []} for paragraph in _substantive_paragraphs(report)]
@@ -177,11 +220,12 @@ def validate_premium_author_bundle(birth: BirthData, author_bundle: Dict[str, ob
         errors.append("draft_report_hash_mismatch")
     approved_ids = {item["id"] for item in checked["reasoned_synthesis"] if item["status"] == "allowed"}
     errors.extend(_validate_paragraph_sources(draft, author_bundle.get("paragraph_sources"), approved_ids, set(checked["timing_evidence_ids"])))
+    errors.extend(_validate_mandatory_coverage(draft, author_bundle.get("paragraph_sources"), checked["approved_reasoned_syntheses"] if "approved_reasoned_syntheses" in checked else [item for item in checked["reasoned_synthesis"] if item["status"] == "allowed"], checked.get("coverage")))
     if isinstance(draft, str) and _contains_prohibited_extension(draft):
         errors.append("prohibited_extension_in_author_draft")
     if not birth.birth_time_known:
         errors.append("premium_birth_time_required")
-    return {"stage": "deterministic_provenance_guard", "approved": checked["approved"] and not errors, "verification_errors": list(dict.fromkeys(errors)), "packet_id": checked["packet_id"], "approved_reasoned_syntheses": [item for item in checked["reasoned_synthesis"] if item["status"] == "allowed"], "synthesis_bundle_sha256": expected_synthesis_hash, "draft_report_sha256": _canonical_hash(draft), "timing_evidence_ids": checked["timing_evidence_ids"], "chart_signature": checked["chart_signature"], "narrative_plan": checked["narrative_plan"]}
+    return {"stage": "deterministic_provenance_guard", "approved": checked["approved"] and not errors, "verification_errors": list(dict.fromkeys(errors)), "packet_id": checked["packet_id"], "approved_reasoned_syntheses": [item for item in checked["reasoned_synthesis"] if item["status"] == "allowed"], "synthesis_bundle_sha256": expected_synthesis_hash, "draft_report_sha256": _canonical_hash(draft), "timing_evidence_ids": checked["timing_evidence_ids"], "coverage": checked.get("coverage"), "chart_signature": checked["chart_signature"], "narrative_plan": checked["narrative_plan"]}
 
 
 def validate_premium_narrative(narrative_payload: Dict[str, object], provenance: Dict[str, object]) -> Dict[str, object]:
@@ -205,6 +249,7 @@ def validate_premium_narrative(narrative_payload: Dict[str, object], provenance:
     if narrative_payload.get("final_report_sha256") != _canonical_hash(report):
         errors.append("final_report_hash_mismatch")
     errors.extend(_validate_paragraph_sources(report, narrative_payload.get("paragraph_sources"), approved_ids, set(provenance.get("timing_evidence_ids", []))))
+    errors.extend(_validate_mandatory_coverage(report, narrative_payload.get("paragraph_sources"), provenance.get("approved_reasoned_syntheses", []), provenance.get("coverage")))
     if isinstance(report, str) and _contains_prohibited_extension(report):
         errors.append("prohibited_extension_in_final_narrative")
     return {

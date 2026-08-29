@@ -119,10 +119,7 @@ def answer_question(question: str, claims: Iterable[Claim], language: str = "pt-
         for body, placement in placements.items():
             house_comparison.append({
                 "body": body,
-                "whole_sign_house": placement["whole_sign_house"] if isinstance(placement, dict) else placement.whole_sign_house,
                 "placidus_house": placement["placidus_house"] if isinstance(placement, dict) else placement.placidus_house,
-                "integration_state": placement["integration_state"] if isinstance(placement, dict) else placement.integration_state,
-                "rationale": placement["integration_rationale"] if isinstance(placement, dict) else placement.integration_rationale,
             })
     selected_themes = [theme_label(theme, language) for theme in dict.fromkeys(claim.theme for claim in candidates)]
     focus = [theme for theme in (themes or []) if theme["id"] in {claim.theme for claim in candidates}][:3]
@@ -132,7 +129,7 @@ def answer_question(question: str, claims: Iterable[Claim], language: str = "pt-
         if item.get("status") == "allowed" and selected_ids.intersection(item.get("source_claim_ids", []))
     ][:2]
     if "houses" in intent["intents"]:
-        answer = "Signo Inteiro define os tópicos; Placidus qualifica posição espacial e proximidade de cúspide. As convergências e divergências concretas estão listadas abaixo." if pt else "Whole Sign defines topics; Placidus qualifies spatial position and cusp proximity. The concrete convergences and divergences are listed below."
+        answer = "Placidus é a referência natal para os contextos psicológicos. Signo Inteiro aparece apenas quando uma técnica específica o exige." if pt else "Placidus is the natal reference for psychological context. Whole Sign appears only where a specific technique requires it."
     else:
         joined = ", ".join(selected_themes)
         if relevant_syntheses:

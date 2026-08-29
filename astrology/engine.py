@@ -297,21 +297,21 @@ def _angle_contacts(positions: Dict[str, PlanetPosition], angles: Dict[str, floa
 
 
 def _house_integration_state(whole: int, placidus: Optional[int], cusp_proximity: Optional[Dict[str, float]]) -> Tuple[str, str]:
-    """Apply a predeclared dual-house policy without consulting biography."""
+    """Keep a legacy technical comparison record without natal semantics."""
     if placidus is None:
-        return "placidus_unavailable", "Whole Sign remains topical; no Placidus inference is available."
+        return "placidus_unavailable", "Canonical Placidus natal placement is unavailable; Whole Sign is retained only for techniques that require it."
     cusp_distance = float((cusp_proximity or {}).get("distance_degrees", 99.0))
     if placidus == whole:
         if cusp_distance <= 3.0:
-            return "whole_topic_placidus_qualifier", "Both systems place the body in the same house, while Placidus cusp proximity qualifies spatial expression."
-        return "robust_same_house", "Both configured systems place the body in the same house; this is robustness to domification choice, not a second evidence vote."
+            return "whole_topic_placidus_qualifier", "Technical comparison only: the systems share a number and the Placidus placement is near a cusp."
+        return "robust_same_house", "Technical comparison only: the systems share a number; this is not a second natal evidence vote."
     circular_gap = min((placidus - whole) % 12, (whole - placidus) % 12)
     if circular_gap == 1 or cusp_distance <= 3.0:
-        return "whole_topic_placidus_qualifier", "Whole Sign supplies the topic; adjacent/cusp-sensitive Placidus placement qualifies expression."
+        return "whole_topic_placidus_qualifier", "Technical comparison only: Whole Sign and Placidus differ by one house or a Placidus cusp is near."
     complementary_axes = {frozenset(pair) for pair in ((1, 7), (2, 8), (3, 9), (4, 10), (5, 11), (6, 12))}
     if frozenset((whole, placidus)) in complementary_axes:
-        return "complementary_emphases", "The systems emphasize opposite but related domains; preserve both without merging evidence."
-    return "material_divergence", "The systems point to materially different domains; preserve the divergence explicitly."
+        return "complementary_emphases", "Technical comparison only: the systems fall on an opposite-house pair; do not merge them as natal evidence."
+    return "material_divergence", "Technical comparison only: the systems differ materially; canonical natal interpretation remains Placidus."
 
 
 def _tzdata_version() -> str:
@@ -369,6 +369,16 @@ def calculate_chart(birth: BirthData, include_secondary: bool = True, _run_sensi
         )
         for key, position in positions.items()
     )
+    if angles:
+        asc_sign, asc_degree = sign_for(angles["asc"])
+        factors.extend([
+            Factor("ascendant.natal", "angular", "ascendant", ["asc"], {
+                "longitude": angles["asc"], "sign": asc_sign, "degree_in_sign": asc_degree,
+            }),
+            Factor("chart_ruler.natal", "angular", "chart_ruler", [SIGN_RULERS[asc_sign]], {
+                "ascendant_sign": asc_sign, "ruler": SIGN_RULERS[asc_sign],
+            }),
+        ])
     sect_factor = next((item for item in factors if item.id == "condition.sect"), None)
     lots = _lots(angles["asc"], positions, sect_factor.data["sect"]) if sect_factor and angles else {}
     for lot, longitude in lots.items():
@@ -389,6 +399,31 @@ def calculate_chart(birth: BirthData, include_secondary: bool = True, _run_sensi
              "whole_sign_house": placement.whole_sign_house, "placidus_house": placement.placidus_house,
              "rationale": placement.integration_rationale},
         ))
+    node = positions.get("true_node")
+    if node:
+        south_longitude = normalize(node.longitude + 180.0)
+        south_sign, south_degree = sign_for(south_longitude)
+        south_position = PlanetPosition(
+            "south_node", "South Node", south_longitude, -node.latitude,
+            node.distance_au, node.speed_longitude, south_sign, south_degree,
+            node.retrograde, node.stationary,
+        )
+        south_hpos = _placidus_position(jd_ut, south_position, birth.latitude, armc) if cusps else None
+        node_contacts = [aspect.id for aspect in aspects if "true_node" in (aspect.left, aspect.right)]
+        factors.append(Factor(
+            "node_axis.natal", "node_axis", "natal_node_axis", ["true_node"],
+            {
+                "north": {"longitude": node.longitude, "sign": node.sign, "degree_in_sign": node.degree_in_sign,
+                          "placidus_house": placements.get("true_node").placidus_house if "true_node" in placements else None},
+                "south": {"longitude": south_longitude, "sign": south_sign, "degree_in_sign": south_degree,
+                          "placidus_house": int(south_hpos) if south_hpos is not None else None},
+                # An aspect to the North Node is already an aspect to this one
+                # geometric axis.  It is listed once, never mirrored as a
+                # second South-Node vote.
+                "contact_ids": node_contacts,
+                "placidus_house_reliable": bool(cusps and birth.birth_time_known),
+            },
+        ))
     chart = Chart(
         schema_version=SCHEMA_VERSION,
         methodology_version=METHODOLOGY_VERSION,
@@ -398,6 +433,15 @@ def calculate_chart(birth: BirthData, include_secondary: bool = True, _run_sensi
         aspects=aspects, house_placements=placements, angle_contacts=angle_contacts, factors=factors,
         lots=lots, policy=policy_manifest(), stability={}, warnings=warnings,
     )
+    # Configuration records are deterministic facts with stable ids.  Keeping
+    # them in the factor ledger lets the provenance guard verify a structural
+    # proposition itself, rather than trusting a prose reference to its members.
+    from .structure import detect_configurations
+    for configuration in detect_configurations(chart):
+        chart.factors.append(Factor(
+            str(configuration["id"]), "structure", "configuration",
+            list(configuration["bodies"]), dict(configuration),
+        ))
     if not birth.birth_time_known:
         _apply_unknown_time_stability(chart, birth, include_secondary)
     elif birth.time_uncertainty_minutes and birth.time_uncertainty_minutes > 0:
@@ -408,6 +452,9 @@ def calculate_chart(birth: BirthData, include_secondary: bool = True, _run_sensi
             "declared_quality": "exact",
             "declared_uncertainty_minutes": 0.0,
             "unstable_house_bodies": [],
+            "unstable_placidus_house_bodies": [],
+            "unstable_whole_sign_house_bodies": [],
+            "node_axis_placidus_house_reliable": bool(cusps),
             "unstable_angle_contact_ids": [],
             "allow_house_claims": True,
             "allow_angle_claims": True,
@@ -450,6 +497,9 @@ def _apply_unknown_time_stability(chart: Chart, birth: BirthData, include_second
         "unstable_aspect_ids": unstable_aspects,
         "body_span_degrees": body_spans,
         "timing_excluded_natal_bodies": unstable_bodies,
+        "unstable_placidus_house_bodies": sorted(chart.house_placements),
+        "unstable_whole_sign_house_bodies": sorted(chart.house_placements),
+        "node_axis_placidus_house_reliable": False,
         "allow_house_claims": False,
         "allow_angle_claims": False,
     })
@@ -478,6 +528,14 @@ def _apply_time_uncertainty(chart: Chart, birth: BirthData, include_secondary: b
     asc_change = max(angular_distance(chart.angles["asc"], item.angles["asc"]) for item in variants)
     changed_whole = sorted({body for body in chart.house_placements if any(chart.house_placements[body].whole_sign_house != item.house_placements[body].whole_sign_house for item in variants)})
     changed_placidus = sorted({body for body in chart.house_placements if any(chart.house_placements[body].placidus_house != item.house_placements[body].placidus_house for item in variants)})
+    node_axis_factor = next((factor for factor in chart.factors if factor.id == "node_axis.natal"), None)
+    variant_node_axes = [next((factor for factor in item.factors if factor.id == "node_axis.natal"), None) for item in variants]
+    node_axis_houses_stable = bool(node_axis_factor and all(
+        item is not None
+        and item.data["north"].get("placidus_house") == node_axis_factor.data["north"].get("placidus_house")
+        and item.data["south"].get("placidus_house") == node_axis_factor.data["south"].get("placidus_house")
+        for item in variant_node_axes
+    ))
     chart.data_quality.input_sensitivity.append(f"±{minutes:g} minutes changes ASC by up to {asc_change:.2f}°.")
     if changed_whole:
         chart.data_quality.input_sensitivity.append("Whole Sign house assignment changes for: " + ", ".join(changed_whole) + ".")
@@ -494,7 +552,13 @@ def _apply_time_uncertainty(chart: Chart, birth: BirthData, include_secondary: b
         "uncertainty_minutes": minutes,
         "declared_quality": "approximate",
         "declared_uncertainty_minutes": minutes,
-        "unstable_house_bodies": sorted(set(changed_whole) | set(changed_placidus)),
+        # Placidus is the natal psychological house system.  Whole Sign
+        # instability belongs to technique-specific logic and must not suppress
+        # a stable Placidus natal placement.
+        "unstable_house_bodies": changed_placidus,
+        "unstable_placidus_house_bodies": changed_placidus,
+        "unstable_whole_sign_house_bodies": changed_whole,
+        "node_axis_placidus_house_reliable": node_axis_houses_stable and minutes <= HOUSE_CLAIM_MAX_UNCERTAINTY_MINUTES,
         "unstable_angle_contact_ids": sorted(base_contacts - stable_contacts),
         "allow_house_claims": minutes <= HOUSE_CLAIM_MAX_UNCERTAINTY_MINUTES,
         "allow_angle_claims": minutes <= ANGLE_CLAIM_MAX_UNCERTAINTY_MINUTES,
@@ -546,8 +610,8 @@ def _apply_sensitivity_stress_tests(chart: Chart, birth: BirthData, include_seco
         })
     chart.stability["sensitivity_tests"] = tests
     chart.stability["stress_sensitive_house_bodies"] = sorted(sensitive_bodies)
-    declared_conditional = bool(chart.stability.get("unstable_house_bodies")) or not chart.stability.get("allow_house_claims", True)
-    chart.stability["whole_sign_topology_status"] = "conditional" if declared_conditional else "stable"
+    declared_whole_conditional = bool(chart.stability.get("unstable_whole_sign_house_bodies")) or not chart.stability.get("allow_house_claims", True)
+    chart.stability["whole_sign_topology_status"] = "conditional" if declared_whole_conditional else "stable"
     chart.stability["high_boundary_sensitivity"] = bool(sensitive_bodies)
     if sensitive_bodies:
         nearest = min(test["minutes"] for test in tests if test["whole_sign_topology_changed"])

@@ -18,12 +18,12 @@ def birth():
 
 def test_ablation_records_do_not_claim_extra_evidence():
     result = run_ablations(birth())
-    assert result["placidus_only"]["status"] == "not a supported synthesis mode"
+    assert result["placidus_only"]["status"] == "canonical natal mode"
     assert result["without_feedback"]["status"] == "no core change expected"
     assert result["without_localization"]["theme_ids"] == result["baseline"]["theme_ids"]
     assert result["semantic_motif_ablation"]["removed_family"] in result["baseline"]["evidence_families"]
     assert result["semantic_motif_ablation"]["removed_family"] not in result["semantic_motif_ablation"]["evidence_families"]
-    assert result["whole_sign_only"]["claim_count"] == result["baseline"]["claim_count"]
+    assert result["whole_sign_only"]["claim_count"] < result["baseline"]["claim_count"]
 
 
 def test_counterfactual_and_qa_are_explicit_about_scope():

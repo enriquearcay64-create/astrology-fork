@@ -87,7 +87,8 @@ class SafeInterpretiveChart:
 def build_safe_interpretive_view(chart: Chart) -> SafeInterpretiveChart:
     """Project raw facts through declared-quality and stress-test gates."""
     stability = dict(chart.stability)
-    declared_unstable = set(stability.get("unstable_house_bodies", []))
+    declared_unstable = set(stability.get("unstable_placidus_house_bodies", stability.get("unstable_house_bodies", [])))
+    unstable_whole = set(stability.get("unstable_whole_sign_house_bodies", []))
     allow_houses = bool(stability.get("allow_house_claims", True))
     # Declared uncertainty gates interpretation.  Counterfactual stress tests
     # remain visible as sensitivity disclosure, but do not erase an exact
@@ -120,9 +121,15 @@ def build_safe_interpretive_view(chart: Chart) -> SafeInterpretiveChart:
         if body in conditional or not allow_houses
     }
 
-    allowed_house_ids = {f"house.whole_sign.{body}" for body in stable_houses}
-    allowed_house_ids.update(f"house.placidus.{body}" for body, item in stable_houses.items() if item.placidus_house is not None)
+    allowed_placidus_ids = {f"house.placidus.{body}" for body, item in stable_houses.items() if item.placidus_house is not None}
+    allowed_house_ids = set(allowed_placidus_ids)
     allowed_house_ids.update(f"house.robustness.{body}" for body in stable_houses)
+    # Whole Sign remains available only as a technique-specific datum.  It is
+    # deliberately not part of the canonical natal house evidence set.
+    allowed_whole_ids = {
+        f"house.whole_sign.{body}" for body in chart.house_placements
+        if allow_houses and body not in unstable_whole
+    }
     allow_angles = bool(stability.get("allow_angle_claims", True))
     unstable_contacts = set(stability.get("unstable_angle_contact_ids", []))
     safe_contacts = [
@@ -133,9 +140,35 @@ def build_safe_interpretive_view(chart: Chart) -> SafeInterpretiveChart:
     factors = [
         factor for factor in chart.factors
         if (
-            factor.kind not in {"whole_sign_house", "placidus_house", "house_system_robustness", "angle_contact"}
-            or factor.id in allowed_house_ids | allowed_angle_ids
+            factor.kind not in {"whole_sign_house", "placidus_house", "house_system_robustness", "angle_contact", "ascendant", "chart_ruler"}
+            or factor.id in allowed_house_ids | allowed_whole_ids | allowed_angle_ids
+            or (factor.kind in {"ascendant", "chart_ruler"} and allow_angles)
         )
+    ]
+    available_ids = {factor.id for factor in factors} | {aspect.id for aspect in chart.aspects}
+    factors = [
+        factor for factor in factors
+        if factor.kind != "configuration" or set(factor.data.get("evidence", [])).issubset(available_ids)
+    ]
+    # The natal node axis remains sign-level evidence even when house evidence
+    # is conditional.  Suppress both endpoint houses together, so one half of
+    # the axis cannot become a stronger independent vote than the other.
+    node_houses_reliable = bool(stability.get("node_axis_placidus_house_reliable", allow_houses))
+    factors = [
+        replace(
+            factor,
+            data={
+                **factor.data,
+                "north": {**factor.data["north"], "placidus_house": factor.data["north"].get("placidus_house") if node_houses_reliable else None},
+                "south": {**factor.data["south"], "placidus_house": factor.data["south"].get("placidus_house") if node_houses_reliable else None},
+                "placidus_house_reliable": node_houses_reliable,
+                "contact_ids": [
+                    item for item in factor.data.get("contact_ids", [])
+                    if item in available_ids and item not in set(stability.get("unstable_aspect_ids", []))
+                ],
+            },
+        ) if factor.kind == "natal_node_axis" else factor
+        for factor in factors
     ]
     # Lots depend on ASC and must not be available when the declared angle gate
     # excludes angular inference.
@@ -166,4 +199,4 @@ def build_safe_interpretive_view(chart: Chart) -> SafeInterpretiveChart:
 
 def body_in_test(test: Dict[str, object], bodies: set[str]) -> bool:
     """Keep the conditional scenario calculation readable and total."""
-    return bool(bodies.intersection(set(test.get("changed_whole_sign_bodies", []))))
+    return bool(bodies.intersection(set(test.get("changed_placidus_bodies", []))))

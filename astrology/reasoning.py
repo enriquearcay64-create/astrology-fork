@@ -89,14 +89,29 @@ def build_reasoning_packet(
     house_context = [
         {
             "body": body,
-            "whole_sign_house": placement.whole_sign_house,
             "placidus_house": placement.placidus_house,
-            "integration_state": placement.integration_state,
         }
         for body, placement in chart.house_placements.items()
         if body in PRIMARY_BODIES
     ]
     timing_evidence = _timing_evidence(timing)
+    configurations = [to_primitive(item) for item in chart.factors if item.kind == "configuration"]
+    node_axis = next((to_primitive(item) for item in chart.factors if item.kind == "natal_node_axis"), None)
+    coverage = {
+        "required_primary_planets": [body for body in PRIMARY_BODIES if body in chart.positions],
+        "ascendant_required": any(item.kind == "ascendant" for item in chart.factors),
+        "chart_ruler_required": any(item.kind == "chart_ruler" for item in chart.factors),
+        "natal_node_axis_required": node_axis is not None,
+        "promoted_configuration_ids": [item["id"] for item in configurations],
+        "rule": "Coverage is mandatory but verbosity is adaptive. A structural group may be reused contextually, but its group_id is one evidence family and one full structural explanation.",
+        "required_evidence": {
+            **{f"planet.{body}": [f"position.{body}"] for body in PRIMARY_BODIES if body in chart.positions},
+            **({"ascendant": ["ascendant.natal"]} if any(item.kind == "ascendant" for item in chart.factors) else {}),
+            **({"chart_ruler": ["chart_ruler.natal"]} if any(item.kind == "chart_ruler" for item in chart.factors) else {}),
+            **({"natal_node_axis": ["node_axis.natal"]} if node_axis else {}),
+            **{f"configuration.{item['id']}": [item["id"]] for item in configurations},
+        },
+    }
     return {
         "packet_id": packet_id,
         "reasoning_freedom": {
@@ -117,6 +132,10 @@ def build_reasoning_packet(
             "allowed_claims": [to_primitive(item) for item in allowed_claims],
             "timing": timing or {},
             "timing_evidence": timing_evidence,
+            "positions": [to_primitive(item) for item in chart.factors if item.kind == "position" and item.bodies[0] in PRIMARY_BODIES],
+            "natal_node_axis": node_axis,
+            "configurations": configurations,
+            "coverage": coverage,
         },
         "hard_boundaries": {
             "may_use_only_factor_ids": sorted(_evidence_ids(chart)),
@@ -125,6 +144,7 @@ def build_reasoning_packet(
             "conditional_house_policy": "Do not use conditional house context as central evidence. It may be disclosed as a conditional alternative only.",
             "counterweight_policy": "Counterweights are candidates, not conclusions. Use one only when it materially qualifies the cited proposition or domain.",
             "timing_context_policy": "Calculated timing context may orient selection, but every timing statement in prose must cite an authorised timing evidence id.",
+            "configuration_reuse_policy": "A configuration may be cited in more than one synthesis only for a genuinely distinct role. Its group_id remains one structural evidence family: reuse cannot raise confidence, prominence, support count or evidence-family count, and the full configuration explanation appears once.",
             "localization_policy": "Localization may change language and examples, never factor weights, personality or prediction.",
         },
         "localized_rendering_context": localization_audit(localization_profile).get("rendering_context"),
@@ -193,6 +213,14 @@ def validate_reasoned_syntheses(
             errors.append("natal_timing_interaction_requires_natal_and_timing_evidence")
         if item.reasoning_class != "single_structural_factor" and len(set(item.primary_factors)) < 2 and not any(factor.startswith("aspect.") for factor in item.primary_factors):
             errors.append("insufficient_composition_support")
+        configuration_factors = {factor.id: factor for factor in chart.factors if factor.kind == "configuration"}
+        if any(factor in configuration_factors for factor in item.primary_factors):
+            from .structure import detect_configurations
+            detected = {str(record["id"]): record for record in detect_configurations(chart.semantic_chart())}
+            for factor_id in set(item.primary_factors).intersection(configuration_factors):
+                factor = configuration_factors[factor_id]
+                if detected.get(factor_id) != factor.data:
+                    errors.append("invalid_configuration_provenance")
         folded = " ".join([item.observation, item.alternative_reading, *item.possible_expressions]).casefold()
         if any(token in folded for token in ("diagnóstico", "diagnosis", "trauma", "morte", "death", "doença", "disease", "vai acontecer", "will happen")):
             errors.append("prohibited_extension_in_reasoning")
@@ -313,7 +341,7 @@ def compose_reasoned_syntheses(
         counterweights = [item for claim in source for item in claim.counterweights][:3]
         confidence = str(theme["support_level"])
         structural = [body for body in bodies if hierarchy.get(body, {}).get("prominence") == "strong"]
-        if len(primary) == 1 and structural:
+        if len(primary) == 1:
             reasoning_class = "single_structural_factor"
         elif counterweights:
             reasoning_class = "integrated_pattern"
@@ -437,6 +465,11 @@ def build_chart_signature(
     body_to_syntheses: Dict[str, set[str]] = defaultdict(set)
     for synthesis in usable:
         for factor_id in synthesis["primary_factors"]:
+            # A configuration's members may be contextually reused across
+            # syntheses, but the structural family cannot become independent
+            # connection/support votes for each member.
+            if factor_id.startswith("configuration."):
+                continue
             for body in evidence_bodies.get(factor_id, set()):
                 body_to_syntheses[body].add(str(synthesis["id"]))
     role_weight = {"asc_ruler": 2, "configuration_focal": 2, "core_angle_contact": 2, "final_dispositor": 2}
@@ -477,18 +510,11 @@ def build_chart_signature(
     if chart.house_placements:
         for body, placement in chart.house_placements.items():
             if body in body_scores:
-                item = domain_scores.setdefault(placement.whole_sign_house, {"house": placement.whole_sign_house, "score": 0, "bodies": []})
+                if placement.placidus_house is None:
+                    continue
+                item = domain_scores.setdefault(placement.placidus_house, {"house": placement.placidus_house, "score": 0, "bodies": []})
                 item["score"] += body_scores[body]
                 item["bodies"].append(body)
-        for body, details in hierarchy.items():
-            for house in details.get("governs_whole_sign_houses", []):
-                item = domain_scores.setdefault(int(house), {"house": int(house), "score": 0, "bodies": []})
-                # Rulership is direct topical relevance.  Do not feed the
-                # full structural score back into houses after using that same
-                # body for signature selection.
-                item["score"] += {"strong": 3, "moderate": 2, "light": 1}.get(str(details.get("prominence")), 0)
-                if body not in item["bodies"]:
-                    item["bodies"].append(body)
     strongest_domains = sorted(domain_scores.values(), key=lambda item: (-int(item["score"]), int(item["house"])))[:4]
     theme_priorities = []
     for synthesis in usable:
@@ -561,14 +587,18 @@ def humanization_instructions(language: str = "pt-BR") -> str:
     """Instructions for the high-freedom editorial pass, not a prose template."""
     if language.startswith("pt"):
         return (
-            "Reescreva a partir do plano e das sínteses autorizadas. Varie ritmo e estrutura; use exemplos hipotéticos e "
-            "contextuais; explique mecanismos antes de nomes técnicos. Não acrescente fator, biografia, evento, diagnóstico ou "
-            "certeza. Preserve as citações internas de fatores para verificação, mas não as exponha no corpo principal."
+            "Escreva em nossa voz: dirija-se predominantemente à pessoa em segunda pessoa natural, variando a construção quando "
+            "a repetição ficar mecânica. Seja direto, psicologicamente perceptivo, humano antes do técnico, emocionalmente legível, "
+            "íntimo sem presumir biografia e de baixo jargão. Ao nomear astrologia, traduza imediatamente o termo para linguagem comum. "
+            "Interpretação vem antes de coaching. Não use voz acadêmica, legalista ou de QA interno. Não acrescente fator, biografia, "
+            "evento, diagnóstico ou certeza. Preserve citações internas de fatores para verificação, mas não as exponha no corpo principal."
         )
     return (
-        "Rewrite from the plan and authorised syntheses. Vary rhythm and structure; use contextual hypothetical examples; "
-        "explain mechanisms before technical labels. Do not add a factor, biography, event, diagnosis or certainty. Preserve "
-        "internal factor citations for verification, but do not expose them in the main reading."
+        "Write in our house voice: address the reader predominantly in natural second person, varying construction whenever repeated "
+        "direct address would become mechanical. Be direct, psychologically perceptive, human-meaning-first, emotionally legible, "
+        "intimate but non-presumptive, and low-jargon. When astrology is named, translate the term immediately into plain language. "
+        "Interpretation comes before coaching. Use no academic, legalistic, or internal-QA voice. Do not add a factor, biography, event, "
+        "diagnosis or certainty. Preserve internal factor citations for verification, but do not expose them in the main reading."
     )
 
 
@@ -584,15 +614,19 @@ def humanization_verifier_instructions(language: str = "pt-BR") -> str:
             "Compare cada parágrafo final com sua ReasonedSynthesis autorizada. Aprove somente se o sentido central, "
             "o nível de certeza e os limites forem equivalentes; confirme também que contradições válidas não foram achatadas "
             "e que cada contrapeso realmente qualifica a proposição. A prosa pode ser mais humana, mas não pode incluir novo "
-            "fator, casa condicional como fato, biografia, diagnóstico, evento ou previsão. Faça o swap test conceitual em cada "
-            "parágrafo principal e corrija genericidade por seleção ou mecanismo, nunca inventando detalhes de vida."
+            "fator, casa condicional como fato, biografia, diagnóstico, evento ou previsão. Exija voz direta, psicologicamente legível, "
+            "íntima sem presunção, de baixo jargão, com tradução imediata de termos astrológicos e interpretação antes de coaching; "
+            "rejeite tom acadêmico, legalista ou de QA. Faça o swap test conceitual em cada parágrafo principal e corrija genericidade "
+            "por seleção ou mecanismo, nunca inventando detalhes de vida."
         )
     return (
         "Compare each final paragraph with its authorised ReasonedSynthesis. Approve only if core meaning, certainty and "
         "limits are equivalent; also confirm that valid contradictions were not flattened and every counterweight materially "
         "qualifies the proposition. Prose may be more human but cannot add a factor, treat a conditional house as fact, add "
-        "biography, diagnosis, event or forecast. Apply a conceptual swap test to each major paragraph and correct genericity "
-        "through selection or mechanism, never invented life detail."
+        "biography, diagnosis, event or forecast. Require direct, psychologically legible, intimate-but-non-presumptive, low-jargon "
+        "voice with immediate plain-language translation of astrology and interpretation before coaching; reject academic, legalistic, "
+        "or internal-QA voice. Apply a conceptual swap test to each major paragraph and correct genericity through selection or mechanism, "
+        "never invented life detail."
     )
 
 

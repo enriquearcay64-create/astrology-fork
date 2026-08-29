@@ -124,7 +124,7 @@ def test_life_cycles_exclude_natal_baseline_and_group_passes():
 
 def test_policy_schema_current_phase_and_directed_contacts_are_structured():
     result = analyse_birth_chart(birth(), as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=30)
-    assert result["chart"]["schema_version"] == "4.0.1"
+    assert result["chart"]["schema_version"] == "4.1.0"
     assert result["chart"]["policy"]["anti_cherry_picking"] if "anti_cherry_picking" in result["chart"]["policy"] else result["chart"]["policy"]["house_policy"]["anti_cherry_picking"]
     assert result["timing"]["current_phase"]["traditional_focus"]["time_lord"]
     assert "contacts" in result["progressions"] and "contacts" in result["solar_arcs"]
@@ -223,7 +223,10 @@ def test_large_time_uncertainty_is_an_enforced_gate_not_only_a_warning():
     uncertain = BirthData("1990-07-12T14:30:00", "America/Sao_Paulo", -23.5505, -46.6333, time_uncertainty_minutes=780)
     result = analyse_birth_chart(uncertain, include_timing=False)
     allowed = [claim for claim in result["claims"] if claim["status"] == "allowed"]
-    assert not any(claim["type"] in {"topical_tendency", "structural_prominence"} for claim in allowed)
+    # A sign-level nodal or aspect configuration may remain available, but
+    # canonical Placidus house and angle evidence is withheld at this gate.
+    assert not any(any(item.startswith("house.placidus.") for item in claim["evidence"]) for claim in allowed)
+    assert not any(item in {"ascendant.natal", "chart_ruler.natal"} for claim in allowed for item in claim["evidence"])
 
 
 def test_semantic_contract_blocks_forged_theme_family_support_and_text():
@@ -273,7 +276,7 @@ def test_portuguese_deep_report_localizes_planets_elements_and_configurations():
 
 def test_house_consultation_returns_direct_system_comparison():
     result = consult(birth(), "Compare Placidus e Signo Inteiro", as_of=datetime(2026, 8, 27, tzinfo=timezone.utc))["consultation"]
-    assert "Signo Inteiro define os tópicos" in result["answer"]
+    assert "Placidus é a referência natal" in result["answer"]
     assert result["house_comparison"]
 
 

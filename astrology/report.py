@@ -28,7 +28,7 @@ FRICTION_LEVELS = {"pt": {"strong": "fortes", "moderate": "moderadas", "light": 
 ELEMENTS = {"pt": {"fire": "fogo", "earth": "terra", "air": "ar", "water": "água"}, "en": {}}
 MODALITIES = {"pt": {"cardinal": "cardinal", "fixed": "fixo", "mutable": "mutável"}, "en": {}}
 CONFIGURATIONS = {
-    "pt": {"grand_trine": "grande trígono", "t_square": "quadratura em T", "yod": "Yod", "grand_cross": "grande cruz", "mystic_rectangle": "retângulo místico", "kite": "pipa", "stellium_sign": "stellium por signo", "stellium_whole_sign_house": "stellium por casa de Signo Inteiro"},
+    "pt": {"grand_trine": "grande trígono", "t_square": "quadratura em T", "yod": "Yod", "grand_cross": "grande cruz", "mystic_rectangle": "retângulo místico", "kite": "pipa", "stellium_sign": "stellium por signo", "stellium_placidus_house": "stellium por casa Placidus"},
     "en": {},
 }
 TIMING_FOCUS = {
@@ -347,21 +347,19 @@ def _life_area_lines(chart: SafeInterpretiveChart, lang: str, hierarchy: Optiona
     if not chart.house_placements:
         if chart.conditional_house_scenarios:
             return [
-                "House themes are conditional because a sensitivity test crosses the Ascendant sign boundary; they are not used as central evidence." if lang == "en" else
-                "Os temas de casa são condicionais porque um teste de sensibilidade atravessa a fronteira de signo do Ascendente; eles não são usados como evidência central."
+                "Placidus house themes are conditional under the declared birth-time quality; they are not used as central evidence." if lang == "en" else
+                "Os temas de casa Placidus são condicionais pela qualidade declarada da hora natal; eles não são usados como evidência central."
             ]
         return ["Houses are unavailable because birth time is unknown." if lang == "en" else "As casas estão indisponíveis porque a hora natal é desconhecida."]
 
     by_house = {house: [] for house in range(1, 13)}
     for body in PRIMARY_BODIES:
         if body in chart.house_placements:
-            by_house[chart.house_placements[body].whole_sign_house].append(body)
+            house = chart.house_placements[body].placidus_house
+            if house is not None:
+                by_house[house].append(body)
     hierarchy = hierarchy or {}
     scores: Dict[int, int] = {house: len(bodies) for house, bodies in by_house.items()}
-    for _body, details in hierarchy.items():
-        prominence = {"strong": 3, "moderate": 2, "light": 1}.get(str(details.get("prominence")), 0)
-        for house in details.get("governs_whole_sign_houses", []):
-            scores[int(house)] = scores.get(int(house), 0) + prominence
     # The signature may elevate an empty house ruled by a structural factor.
     # It is a ranking signal, not another piece of astrological evidence.
     for item in signature_priorities or []:
@@ -379,37 +377,8 @@ def _life_area_lines(chart: SafeInterpretiveChart, lang: str, hierarchy: Optiona
         bodies = ", ".join(_token(body, lang) for body in by_house[house])
         if not bodies:
             priority_bodies = next((item.get("bodies", []) for item in signature_priorities or [] if int(item.get("house", 0)) == house), [])
-            bodies = ", ".join(_token(str(body), lang) for body in priority_bodies) or ("regência estrutural" if lang == "pt" else "structural rulership")
+            bodies = ", ".join(_token(str(body), lang) for body in priority_bodies) or ("prioridade estrutural" if lang == "pt" else "structural priority")
         lines.append(f"| **{topics[house]}** | {bodies} | {HOUSE_EXAMPLES[lang][house]}? |")
-
-    divergence_groups: Dict[tuple, List[str]] = {}
-    for house in visible:
-        for body in by_house[house]:
-            placement = chart.house_placements[body]
-            if placement.placidus_house is None:
-                continue
-            if placement.placidus_house != placement.whole_sign_house:
-                divergence_groups.setdefault((house, placement.placidus_house), []).append(body)
-    if divergence_groups:
-        lines.extend(["", "Apenas as divergências que mudam a leitura são nomeadas:" if lang == "pt" else "Only differences that change the reading are named:", ""])
-        for (house, placidus_house), bodies in divergence_groups.items():
-            labels = [_token(body, lang) for body in bodies]
-            if len(labels) == 1:
-                body_text = labels[0]
-            else:
-                connector = " e " if lang == "pt" else " and "
-                body_text = ", ".join(labels[:-1]) + connector + labels[-1]
-            states = {chart.house_placements[body].integration_state for body in bodies}
-            if "material_divergence" in states:
-                if lang == "pt":
-                    lines.append(f"- **{body_text}:** Signo Inteiro aponta para {topics[house]}, enquanto Placidus aponta para {topics[placidus_house]}. São domínios diferentes; o relatório não os funde numa única conclusão.")
-                else:
-                    lines.append(f"- **{body_text}:** Whole Sign points to {topics[house]}, while Placidus points to {topics[placidus_house]}. These are different domains; the report does not merge them into one conclusion.")
-            elif lang == "pt":
-                lines.append(f"- **{body_text}:** o tópico principal é {topics[house]}; Placidus qualifica a expressão pela lente de {topics[placidus_house]}.")
-            else:
-                lines.append(f"- **{body_text}:** the main topic is {topics[house]}; Placidus qualifies expression through {topics[placidus_house]}.")
-
     lines.extend(["", "<details>", "<summary><strong>Ver as doze áreas</strong></summary>" if lang == "pt" else "<summary><strong>View all twelve areas</strong></summary>", ""])
     if lang == "pt":
         lines.extend(["| Casa | Área | Fatores centrais |", "|---:|---|---|"])
@@ -651,15 +620,25 @@ def technical_appendix(chart: SafeInterpretiveChart, hierarchy: Dict[str, Dict[s
     for item in chart.positions.values():
         placement = chart.house_placements.get(item.key)
         conditional = chart.conditional_house_scenarios.get(item.key)
-        house_text = f"Whole Sign {placement.whole_sign_house}; Placidus {placement.placidus_house}; integration {placement.integration_state}" if placement else (f"conditional primary Whole Sign {conditional.primary_whole_sign_house}; Placidus {conditional.primary_placidus_house}; not used as interpretive evidence" if conditional else "houses unavailable")
+        house_text = f"Placidus {placement.placidus_house} (canonical natal); Whole Sign {placement.whole_sign_house} (technique-only)" if placement else (f"conditional Placidus {conditional.primary_placidus_house}; not used as interpretive evidence" if conditional else "houses unavailable")
         label = _token(item.key, lang)
         if lang == "pt":
-            house_text = f"Signo Inteiro {placement.whole_sign_house}; Placidus {placement.placidus_house}; integração {placement.integration_state}" if placement else (f"Signo Inteiro primário condicional {conditional.primary_whole_sign_house}; Placidus {conditional.primary_placidus_house}; não usado como evidência interpretativa" if conditional else "casas indisponíveis")
+            house_text = f"Placidus {placement.placidus_house} (natal canônico); Signo Inteiro {placement.whole_sign_house} (somente técnica)" if placement else (f"Placidus condicional {conditional.primary_placidus_house}; não usado como evidência interpretativa" if conditional else "casas indisponíveis")
             lines.append(f"- {label}: {_degree(item.longitude, lang)}; velocidade {item.speed_longitude:.6f}°/dia; {house_text}.")
         else:
             lines.append(f"- {label}: {_degree(item.longitude, lang)}; speed {item.speed_longitude:.6f}°/day; {house_text}.")
     lines.extend(["", "## Angles" if lang == "en" else "## Ângulos", ""])
     lines.extend(f"- {name.upper()}: {_degree(value, lang)}" for name, value in chart.angles.items())
+    node_axis = next((item for item in chart.factors if item.kind == "natal_node_axis"), None)
+    if node_axis:
+        north, south = node_axis.data["north"], node_axis.data["south"]
+        lines.extend(["", "## Natal nodal axis" if lang == "en" else "## Eixo nodal natal", ""])
+        if lang == "pt":
+            lines.append(f"- Nodo Norte: {north['sign']} ({north['degree_in_sign']:.4f}°); Nodo Sul derivado: {south['sign']} ({south['degree_in_sign']:.4f}°).")
+            lines.append(f"- Casas Placidus: Norte {north['placidus_house']}; Sul {south['placidus_house']}; confiáveis: {node_axis.data['placidus_house_reliable']}.")
+        else:
+            lines.append(f"- North Node: {north['sign']} ({north['degree_in_sign']:.4f}°); derived South Node: {south['sign']} ({south['degree_in_sign']:.4f}°).")
+            lines.append(f"- Placidus houses: North {north['placidus_house']}; South {south['placidus_house']}; reliable: {node_axis.data['placidus_house_reliable']}.")
     lines.extend(["", "## Lots" if lang == "en" else "## Lotes", "", json.dumps(chart.lots, ensure_ascii=False, sort_keys=True), "", "## Aspects" if lang == "en" else "## Aspectos", ""])
     lines.extend(f"- {_token(item.left, lang)} {_token(item.kind, lang)} {_token(item.right, lang)}; orbe {item.orb:.4f}°; aplicando: {'indeterminado' if item.applying is None else 'sim' if item.applying else 'não'}." if lang == "pt" else f"- {_token(item.left, lang)} {_token(item.kind, lang)} {_token(item.right, lang)}; orb {item.orb:.4f}°; applying: {item.applying}." for item in chart.aspects)
     lines.extend(["", "## Structure and configurations" if lang == "en" else "## Estrutura e configurações", ""])

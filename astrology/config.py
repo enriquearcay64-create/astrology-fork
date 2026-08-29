@@ -1,8 +1,8 @@
 """Versioned conservative policy defaults.  Change only with a methodology version bump."""
 from __future__ import annotations
 
-METHODOLOGY_VERSION = "4.0.2"
-SCHEMA_VERSION = "4.0.1"
+METHODOLOGY_VERSION = "4.1.0"
+SCHEMA_VERSION = "4.1.0"
 EPHEMERIS_START_YEAR = 1800
 EPHEMERIS_END_YEAR = 2399
 

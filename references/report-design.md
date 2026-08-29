@@ -16,7 +16,7 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 2. Dinâmica organizadora ou 2–3 dinâmicas distribuídas, somente quando sustentadas.
 3. Três ou quatro temas centrais em prosa com movimento variado: recurso, tensão, risco contextual, contrapeso ou integração conforme a carta — nunca fórmula fixa nem quota de cinco.
 4. Um exemplo vivido somente quando ele concretiza o mecanismo; normalmente até três no total.
-5. Até quatro áreas mais relevantes; ocupação, regentes, proeminência e corpos estruturais informam a escolha sem reforço circular. As doze áreas ficam recolhidas.
+5. Até quatro áreas Placidus mais relevantes; ocupação, proeminência e corpos estruturais informam a escolha sem reforço circular. As doze áreas ficam recolhidas. Regência Whole Sign só aparece dentro de técnica tradicional nomeada.
 6. Fase atual em linguagem humana; nomes técnicos ficam recolhidos.
 7. Intervalos emergentes de desenvolvimento (por exemplo, 28–31), explicando convergência, pressão possível, potencial e o que não pode ser inferido; o mapa completo de ciclos fica recolhido.
 8. Síntese, experimento observável e duas perguntas.
@@ -35,7 +35,7 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 
 Comece por uma capacidade, tensão ou escolha observável. Não comece com aspecto, casa, dignidade, profecção, regente ou sistema de casas. Se a evidência técnica for útil, apresente-a depois ou no apêndice.
 
-Whole Sign fornece o tópico e Placidus a qualificação espacial, mas essa metodologia deve permanecer silenciosa quando os sistemas concordam. Nomeie Placidus no corpo principal somente quando a diferença muda a lente prática. Nunca repita “os dois sistemas convergem” em cada planeta.
+Placidus fornece o contexto natal psicológico. Whole Sign só aparece no corpo principal quando uma técnica nomeada o exige, como a profecção anual. Nunca apresente os dois como narrativas natais concorrentes nem repita notas de robustez em cada planeta.
 
 Se o teste de sensibilidade torna a topologia Whole Sign condicional, não use casas, profecções ou regentes tópicos para dar cor ao exemplo. Explique a cautela uma vez, em linguagem simples; cenários alternativos pertencem à profundidade opcional ou ao apêndice.
 
@@ -56,6 +56,8 @@ Luz e sombra são lentes, não campos obrigatórios repetidos mecanicamente. A s
 
 Localization só altera linguagem, unidades, instituições e exemplos. Um exemplo localizado deve continuar humano se o nome do país for removido. Evite listas caricaturais de instituições locais.
 
+Predominantemente dirija-se à pessoa em segunda pessoa natural, variando a construção quando a repetição soaria mecânica. A voz começa pelo significado humano, traduz imediatamente qualquer termo técnico e evita tom acadêmico, jurídico ou de QA interno. Interpretação vem antes de coaching.
+
 Gênero, idade, ceticismo e estilo de leitura podem orientar auditoria editorial, pronomes e acessibilidade, mas não entram no motor interpretativo nem alteram peso, tema ou ênfase relacional. A astrologia, não o gênero, deve produzir diferenças entre relatórios.
 
 ## Gramática visual
@@ -67,10 +69,10 @@ Gênero, idade, ceticismo e estilo de leitura podem orientar auditoria editorial
 
 ## Alvos de extensão
 
-São faixas de QA, não quotas de preenchimento:
+São faixas de QA para produtos compactos, não quotas de preenchimento. Premium Complete não tem mínimo rígido de palavras: cobertura obrigatória e importância interpretativa decidem a extensão.
 
 - Executive Reading: 450–750 palavras; cerca de 2–4 minutos.
-- Deep Reading: 1.400–2.200 palavras totais; cerca de 6–10 minutos.
+- Deep Reading / Premium Complete: extensão adaptativa; cerca de 6–10 minutos apenas quando a arquitetura do mapa sustenta esse fôlego.
 - Fase atual no corpo principal: 150–350 palavras.
 - Ciclos visíveis: 120–300 palavras; mapa completo recolhido.
 - Technical Appendix: tão longo quanto a auditoria exigir, preferencialmente 2.000–5.000 palavras, com política e listas longas recolhidas.

@@ -78,9 +78,10 @@ def test_robustness_is_not_second_evidence_vote():
     assert robustness
 
 
-def test_secondary_points_are_technical_by_default_not_core_claims():
+def test_nodal_axis_is_available_while_other_secondary_points_remain_non_core():
     result = analyse_birth_chart(birth(), include_timing=False)
-    assert all("chiron" not in claim["id"] and "lilith" not in claim["id"] and "true_node" not in claim["id"] for claim in result["claims"])
+    assert any(claim["id"].startswith("claim.node_axis") for claim in result["claims"])
+    assert all("chiron" not in claim["id"] and "lilith" not in claim["id"] for claim in result["claims"])
 
 
 def test_counterweights_are_sought_from_related_qualifying_aspects():

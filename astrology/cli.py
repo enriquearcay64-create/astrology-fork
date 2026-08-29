@@ -42,7 +42,7 @@ def _profile(data: Dict[str, object]) -> Optional[LocalizationProfile]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Deterministic astrology calculation and structured reading.")
     parser.add_argument("input", help="JSON with birth data and optional localization_profile")
-    parser.add_argument("--depth", choices=("executive", "deep", "technical"), default="executive")
+    parser.add_argument("--depth", choices=("executive", "deep", "technical"), default=None)
     parser.add_argument("--no-timing", action="store_true")
     parser.add_argument("--horizon-days", type=int, default=366)
     parser.add_argument("--question", help="Run constrained consultation mode")
@@ -62,7 +62,7 @@ def main() -> int:
         if as_of is not None and as_of.tzinfo is None:
             raise ValueError("--as-of must include a UTC offset")
         if args.premium_stage == "prepare":
-            result = prepare_premium_handoff(birth, profile, args.depth, not args.no_timing, as_of, args.horizon_days)
+            result = prepare_premium_handoff(birth, profile, args.depth or "deep", not args.no_timing, as_of, args.horizon_days)
         elif args.premium_stage == "validate-synthesis":
             if not args.premium_synthesis:
                 raise ValueError("--premium-synthesis is required with --premium-stage validate-synthesis")
@@ -89,7 +89,7 @@ def main() -> int:
         elif args.question:
             result = consult(birth, args.question, profile, as_of)
         else:
-            result = analyse_birth_chart(birth, profile, args.depth, not args.no_timing, as_of, args.horizon_days)
+            result = analyse_birth_chart(birth, profile, args.depth or "executive", not args.no_timing, as_of, args.horizon_days)
     except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError, RuntimeError) as error:
         json.dump({"error": type(error).__name__, "message": str(error)}, sys.stderr, ensure_ascii=False)
         print(file=sys.stderr)

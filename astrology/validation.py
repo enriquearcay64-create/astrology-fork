@@ -31,7 +31,7 @@ def run_ablations(birth: BirthData, profile: Optional[LocalizationProfile] = Non
     language = profile.preferred_language if profile else "pt-BR"
     baseline_claims = verify_claims(build_claims(chart, language=language), chart)
     baseline_themes = synthesize_themes(baseline_claims, language)
-    no_placidus_placements = {key: replace(value, placidus_house=None, placidus_position=None, house_system_robustness="unavailable", cusp_proximity=None, integration_state="placidus_unavailable", integration_rationale="Whole Sign remains topical; no Placidus inference is available.") for key, value in chart.house_placements.items()}
+    no_placidus_placements = {key: replace(value, placidus_house=None, placidus_position=None, house_system_robustness="unavailable", cusp_proximity=None, integration_state="placidus_unavailable", integration_rationale="Canonical Placidus natal placement is unavailable.") for key, value in chart.house_placements.items()}
     retained_factors = [factor for factor in chart.factors if factor.kind not in {"placidus_house", "house_system_robustness"}]
     retained_factors.extend(
         Factor(f"house.robustness.{key}", "house_synthesis", "house_system_robustness", [key], {"state": "placidus_unavailable", "legacy_state": "unavailable", "whole_sign_house": placement.whole_sign_house, "placidus_house": None, "rationale": placement.integration_rationale})
@@ -51,7 +51,7 @@ def run_ablations(birth: BirthData, profile: Optional[LocalizationProfile] = Non
     return {
         "baseline": _summary(baseline_claims, baseline_themes),
         "whole_sign_only": _summary(whole_claims, whole_themes),
-        "placidus_only": {"status": "not a supported synthesis mode", "reason": "Whole Sign is the pre-declared topical frame; Placidus-only is retained as technical comparison rather than a silently equivalent reading."},
+        "placidus_only": {"status": "canonical natal mode", "reason": "Placidus is the contracted natal psychological house system; this record prevents a legacy Whole Sign-only ablation from being treated as equivalent."},
         "angular_only": _summary(angle_claims, angle_themes),
         "without_angles": _summary(without_angles, synthesize_themes(without_angles, language)),
         "with_modern_secondary_points": _summary(with_secondary_claims, synthesize_themes(with_secondary_claims, language)),
@@ -69,14 +69,14 @@ def counterfactual_distinguishability(birth: BirthData, shift_hours: int = 4) ->
     shifted_dt = datetime.fromisoformat(birth.local_datetime) + timedelta(hours=shift_hours)
     shifted = replace(birth, local_datetime=shifted_dt.isoformat())
     alternative = analyse_birth_chart(shifted, include_timing=False)
-    baseline_houses = {key: value["whole_sign_house"] for key, value in baseline["chart"]["house_placements"].items()}
-    alternative_houses = {key: value["whole_sign_house"] for key, value in alternative["chart"]["house_placements"].items()}
+    baseline_houses = {key: value["placidus_house"] for key, value in baseline["chart"]["house_placements"].items()}
+    alternative_houses = {key: value["placidus_house"] for key, value in alternative["chart"]["house_placements"].items()}
     changed_houses = [key for key in baseline_houses if baseline_houses[key] != alternative_houses[key]]
     baseline_themes = set(item["id"] for item in baseline["themes"])
     alternative_themes = set(item["id"] for item in alternative["themes"])
     return {
         "shift_hours": shift_hours,
-        "changed_whole_sign_houses": changed_houses,
+        "changed_placidus_houses": changed_houses,
         "theme_jaccard": round(len(baseline_themes & alternative_themes) / max(1, len(baseline_themes | alternative_themes)), 4),
         "report_identical": baseline["report"] == alternative["report"],
         "pass": bool(changed_houses) and baseline["report"] != alternative["report"],

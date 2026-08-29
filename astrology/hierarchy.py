@@ -29,9 +29,8 @@ def calculate_hierarchy(chart: Chart, question_topics: Iterable[int] = (), activ
             aspect_count[aspect.left] += 1
             aspect_count[aspect.right] += 1
     conditions = {factor.bodies[0]: factor.data.get("conditions", []) for factor in chart.factors if factor.kind == "planetary_condition"}
-    # An exact Ascendant is still a valid angle when a *stress test* crosses a
-    # sign boundary.  Its Whole Sign topology is not.  Do not quietly recreate
-    # unsafe houses/rulers from the angle inside the hierarchy layer.
+    # Whole Sign rulership is retained as traditional technique metadata only.
+    # It must not route natal psychological prominence or topical relevance.
     topology_is_safe = (
         bool(chart.angles)
         and chart.stability.get("whole_sign_topology_status", "stable") != "conditional"
@@ -41,9 +40,12 @@ def calculate_hierarchy(chart: Chart, question_topics: Iterable[int] = (), activ
         asc_start = int(chart.angles["asc"] // 30) * 30
         whole_signs = {house: sign_for(asc_start + (house - 1) * 30)[0] for house in range(1, 13)}
         house_rulers = {house: SIGN_RULERS[sign] for house, sign in whole_signs.items()}
-        asc_ruler = house_rulers[1]
+        whole_sign_rulers = house_rulers
     else:
-        house_rulers, asc_ruler = {}, None
+        whole_sign_rulers = {}
+    # The chart ruler is a reliable Ascendant-sign fact, not a Whole Sign
+    # topical derivation.  It remains available whenever the ASC itself is.
+    asc_ruler = SIGN_RULERS[sign_for(chart.angles["asc"])[0]] if chart.angles and chart.stability.get("allow_angle_claims", True) else None
     # The MC sign itself is an independently calculated angle, not a Whole
     # Sign-house claim.  It remains available when the MC stability gate allows
     # it; its ruler must not restore an unsafe Ascendant topology.
@@ -60,7 +62,7 @@ def calculate_hierarchy(chart: Chart, question_topics: Iterable[int] = (), activ
         if body in ("sun", "moon"):
             roles.append("luminary")
             prominence += 1
-        governed = [house for house, ruler in house_rulers.items() if ruler == body]
+        governed = [house for house, ruler in whole_sign_rulers.items() if ruler == body]
         if body == asc_ruler:
             roles.append("asc_ruler")
             prominence += 2
@@ -81,8 +83,6 @@ def calculate_hierarchy(chart: Chart, question_topics: Iterable[int] = (), activ
         if exact_aspects:
             roles.append("exact_aspect")
             prominence += 1
-        if len(governed) >= 2:
-            roles.append("multiple_house_rulership")
         if any(factor.kind == "final_dispositor" and body in factor.bodies for factor in chart.factors):
             roles.append("final_dispositor")
             prominence += 1
@@ -92,11 +92,8 @@ def calculate_hierarchy(chart: Chart, question_topics: Iterable[int] = (), activ
         if body in active:
             roles.append("timing_activated")
             topical += 1
-        if selected and any(house in selected for house in governed):
-            roles.append("query_topic_ruler")
-            topical += 2
-        elif governed:
-            topical += 1
+        # Question topics no longer pull natal hierarchy through Whole Sign
+        # rulership.  Technique-specific timing may use that metadata itself.
         planet_conditions = conditions.get(body, [])
         resources += int("domicile" in planet_conditions) + int("exaltation" in planet_conditions) + int("cazimi" in planet_conditions)
         frictions += int("detriment" in planet_conditions) + int("fall" in planet_conditions)
@@ -114,6 +111,7 @@ def calculate_hierarchy(chart: Chart, question_topics: Iterable[int] = (), activ
         output[body] = {
             "roles": roles,
             "governs_whole_sign_houses": governed,
+            "natal_placidus_house": chart.house_placements.get(body).placidus_house if body in chart.house_placements else None,
             "prominence": ordinal(prominence),
             "condition_resources": ordinal(resources),
             "condition_frictions": ordinal(frictions),
