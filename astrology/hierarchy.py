@@ -29,20 +29,6 @@ def calculate_hierarchy(chart: Chart, question_topics: Iterable[int] = (), activ
             aspect_count[aspect.left] += 1
             aspect_count[aspect.right] += 1
     conditions = {factor.bodies[0]: factor.data.get("conditions", []) for factor in chart.factors if factor.kind == "planetary_condition"}
-    # Whole Sign rulership is retained as traditional technique metadata only.
-    # It must not route natal psychological prominence or topical relevance.
-    topology_is_safe = (
-        bool(chart.angles)
-        and chart.stability.get("whole_sign_topology_status", "stable") != "conditional"
-        and chart.stability.get("allow_house_claims", True)
-    )
-    if topology_is_safe:
-        asc_start = int(chart.angles["asc"] // 30) * 30
-        whole_signs = {house: sign_for(asc_start + (house - 1) * 30)[0] for house in range(1, 13)}
-        house_rulers = {house: SIGN_RULERS[sign] for house, sign in whole_signs.items()}
-        whole_sign_rulers = house_rulers
-    else:
-        whole_sign_rulers = {}
     # The chart ruler is a reliable Ascendant-sign fact, not a Whole Sign
     # topical derivation.  It remains available whenever the ASC itself is.
     asc_ruler = SIGN_RULERS[sign_for(chart.angles["asc"])[0]] if chart.angles and chart.stability.get("allow_angle_claims", True) else None
@@ -62,7 +48,6 @@ def calculate_hierarchy(chart: Chart, question_topics: Iterable[int] = (), activ
         if body in ("sun", "moon"):
             roles.append("luminary")
             prominence += 1
-        governed = [house for house, ruler in whole_sign_rulers.items() if ruler == body]
         if body == asc_ruler:
             roles.append("asc_ruler")
             prominence += 2
@@ -110,7 +95,6 @@ def calculate_hierarchy(chart: Chart, question_topics: Iterable[int] = (), activ
             reliability = 2
         output[body] = {
             "roles": roles,
-            "governs_whole_sign_houses": governed,
             "natal_placidus_house": chart.house_placements.get(body).placidus_house if body in chart.house_placements else None,
             "prominence": ordinal(prominence),
             "condition_resources": ordinal(resources),

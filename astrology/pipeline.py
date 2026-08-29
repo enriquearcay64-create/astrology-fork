@@ -55,7 +55,7 @@ def analyse_birth_chart(birth: BirthData, profile: Optional[LocalizationProfile]
     natal_timing_interactions = build_natal_timing_interactions(chart, natal_hierarchy, claims, themes, timing)
     if timing:
         timing["current_phase"]["natal_timing_interactions"] = natal_timing_interactions[:6]
-    reasoning_packet = build_reasoning_packet(chart, natal_hierarchy, claims, timing, language, profile, packet_id)
+    reasoning_packet = build_reasoning_packet(chart, natal_hierarchy, claims, timing, timeline, intervals, language, profile, packet_id)
     report = render_report(report_depth, chart, claims, themes, natal_hierarchy, timing, timeline, paradoxes, compensations, structure, profile, reasoned_syntheses, narrative_plan, intervals, chart_signature)
     return {
         "packet_id": packet_id, "chart": raw_chart.as_dict(), "safe_interpretive_view": to_primitive(chart), "hierarchy": natal_hierarchy, "current_hierarchy": current_hierarchy,
@@ -97,7 +97,9 @@ def consult(birth: BirthData, question: str, profile: Optional[LocalizationProfi
 def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProfile] = None, report_depth: str = "deep", include_timing: bool = True, as_of: Optional[datetime] = None, horizon_days: int = 366) -> Dict[str, object]:
     """Debug handoff; normal Codex use follows the same stages internally."""
     _require_premium_birth_time(birth)
-    core = analyse_birth_chart(birth, profile, report_depth, include_timing, as_of, horizon_days)
+    if report_depth != "deep":
+        raise ValueError("Premium Complete preparation requires report_depth='deep'.")
+    core = analyse_birth_chart(birth, profile, "deep", include_timing, as_of, horizon_days)
     return {
         "stage": "reasoning_packet_ready",
         "premium_report_depth": "deep",
@@ -127,7 +129,7 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
 
 def validate_premium_syntheses(birth: BirthData, synthesis_payload: Iterable[Dict[str, object]], profile: Optional[LocalizationProfile] = None, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True) -> Dict[str, object]:
     """Deterministically gate manually authored High syntheses; no API call."""
-    core = analyse_birth_chart(birth, profile, "executive", include_timing, as_of, horizon_days)
+    core = analyse_birth_chart(birth, profile, "deep", include_timing, as_of, horizon_days)
     allowed_fields = set(ReasonedSynthesis.__dataclass_fields__)
     items = [ReasonedSynthesis(**{key: value for key, value in item.items() if key in allowed_fields}) for item in synthesis_payload]
     chart = build_safe_interpretive_view(calculate_chart(birth))
@@ -152,25 +154,45 @@ def _substantive_paragraphs(report: str) -> List[str]:
     return result
 
 
-def _validate_paragraph_sources(report: object, paragraph_sources: object, approved_ids: set[str], timing_ids: set[str]) -> List[str]:
+def _validated_paragraph_sources(report: object, paragraph_sources: object, approved_ids: set[str], timing_ids: set[str]) -> tuple[List[str], List[Dict[str, object]]]:
     if not isinstance(report, str) or not report.strip():
-        return ["missing_final_report"]
+        return ["missing_final_report"], []
     if not isinstance(paragraph_sources, list):
-        return ["missing_paragraph_source_map"]
-    by_hash = {str(item.get("paragraph_sha256")): item for item in paragraph_sources if isinstance(item, dict)}
+        return ["missing_paragraph_source_map"], []
+    expected_hashes = list(dict.fromkeys(_canonical_hash(paragraph) for paragraph in _substantive_paragraphs(report)))
+    expected_hash_set = set(expected_hashes)
+    by_hash: Dict[str, Dict[str, object]] = {}
     errors = []
-    for paragraph in _substantive_paragraphs(report):
-        source = by_hash.get(_canonical_hash(paragraph))
-        if not source:
-            errors.append("interpretive_paragraph_without_source_map")
+    for source in paragraph_sources:
+        if not isinstance(source, dict):
+            errors.append("invalid_paragraph_source_map")
             continue
+        paragraph_hash = str(source.get("paragraph_sha256"))
+        if paragraph_hash in by_hash:
+            errors.append("duplicate_paragraph_source_map")
+            if by_hash[paragraph_hash] != source:
+                errors.append("conflicting_duplicate_paragraph_source_map")
+            continue
+        by_hash[paragraph_hash] = source
+    source_hashes = set(by_hash)
+    if expected_hash_set - source_hashes:
+        errors.append("interpretive_paragraph_without_source_map")
+    if source_hashes - expected_hash_set:
+        errors.append("orphan_paragraph_source_map")
+    for paragraph_hash in expected_hash_set.intersection(source_hashes):
+        source = by_hash[paragraph_hash]
         synthesis_ids = set(source.get("synthesis_ids", []))
         timing_refs = set(source.get("timing_ids", []))
         if not synthesis_ids or not synthesis_ids.issubset(approved_ids):
             errors.append("untraceable_paragraph_source")
         if not timing_refs.issubset(timing_ids):
             errors.append("invented_or_unapproved_timing_evidence")
-    return list(dict.fromkeys(errors))
+    errors = list(dict.fromkeys(errors))
+    return errors, ([] if errors else [by_hash[item] for item in expected_hashes])
+
+
+def _validate_paragraph_sources(report: object, paragraph_sources: object, approved_ids: set[str], timing_ids: set[str]) -> List[str]:
+    return _validated_paragraph_sources(report, paragraph_sources, approved_ids, timing_ids)[0]
 
 
 def _validate_mandatory_coverage(report: object, paragraph_sources: object, approved_syntheses: Iterable[Dict[str, object]], coverage: object) -> List[str]:
@@ -202,7 +224,10 @@ def _validate_mandatory_coverage(report: object, paragraph_sources: object, appr
 
 def paragraph_source_template(report: str) -> List[Dict[str, object]]:
     """Return the exact substantial-paragraph hashes an Author must source."""
-    return [{"paragraph_sha256": _canonical_hash(paragraph), "synthesis_ids": [], "timing_ids": []} for paragraph in _substantive_paragraphs(report)]
+    return [
+        {"paragraph_sha256": paragraph_hash, "synthesis_ids": [], "timing_ids": []}
+        for paragraph_hash in dict.fromkeys(_canonical_hash(paragraph) for paragraph in _substantive_paragraphs(report))
+    ]
 
 
 def validate_premium_author_bundle(birth: BirthData, author_bundle: Dict[str, object], profile: Optional[LocalizationProfile] = None, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True) -> Dict[str, object]:
@@ -219,8 +244,9 @@ def validate_premium_author_bundle(birth: BirthData, author_bundle: Dict[str, ob
     if author_bundle.get("draft_report_sha256") != _canonical_hash(draft):
         errors.append("draft_report_hash_mismatch")
     approved_ids = {item["id"] for item in checked["reasoned_synthesis"] if item["status"] == "allowed"}
-    errors.extend(_validate_paragraph_sources(draft, author_bundle.get("paragraph_sources"), approved_ids, set(checked["timing_evidence_ids"])))
-    errors.extend(_validate_mandatory_coverage(draft, author_bundle.get("paragraph_sources"), checked["approved_reasoned_syntheses"] if "approved_reasoned_syntheses" in checked else [item for item in checked["reasoned_synthesis"] if item["status"] == "allowed"], checked.get("coverage")))
+    source_errors, valid_sources = _validated_paragraph_sources(draft, author_bundle.get("paragraph_sources"), approved_ids, set(checked["timing_evidence_ids"]))
+    errors.extend(source_errors)
+    errors.extend(_validate_mandatory_coverage(draft, valid_sources, checked["approved_reasoned_syntheses"] if "approved_reasoned_syntheses" in checked else [item for item in checked["reasoned_synthesis"] if item["status"] == "allowed"], checked.get("coverage")))
     if isinstance(draft, str) and _contains_prohibited_extension(draft):
         errors.append("prohibited_extension_in_author_draft")
     if not birth.birth_time_known:
@@ -248,8 +274,9 @@ def validate_premium_narrative(narrative_payload: Dict[str, object], provenance:
         errors.append("reviewer_not_approved")
     if narrative_payload.get("final_report_sha256") != _canonical_hash(report):
         errors.append("final_report_hash_mismatch")
-    errors.extend(_validate_paragraph_sources(report, narrative_payload.get("paragraph_sources"), approved_ids, set(provenance.get("timing_evidence_ids", []))))
-    errors.extend(_validate_mandatory_coverage(report, narrative_payload.get("paragraph_sources"), provenance.get("approved_reasoned_syntheses", []), provenance.get("coverage")))
+    source_errors, valid_sources = _validated_paragraph_sources(report, narrative_payload.get("paragraph_sources"), approved_ids, set(provenance.get("timing_evidence_ids", [])))
+    errors.extend(source_errors)
+    errors.extend(_validate_mandatory_coverage(report, valid_sources, provenance.get("approved_reasoned_syntheses", []), provenance.get("coverage")))
     if isinstance(report, str) and _contains_prohibited_extension(report):
         errors.append("prohibited_extension_in_final_narrative")
     return {

@@ -8,11 +8,11 @@ import pytest
 from astrology.engine import calculate_chart
 from astrology.models import Aspect, BirthData, Claim, Factor, ReasonedSynthesis
 from astrology.pipeline import _canonical_hash, analyse_birth_chart, paragraph_source_template, prepare_premium_handoff, validate_premium_author_bundle, validate_premium_narrative, validate_premium_syntheses
-from astrology.reasoning import ASPECT_OPERATIONS, build_chart_signature, build_narrative_plan, validate_reasoned_syntheses
+from astrology.reasoning import ASPECT_OPERATIONS, _promoted_configurations, build_chart_signature, build_narrative_plan, validate_reasoned_syntheses
 from astrology.safe_view import build_safe_interpretive_view
 from astrology.semantics import _claim_from_aspect, build_claims, verify_claims
 from astrology.structure import detect_configurations
-from astrology.timing import ORB_BOUNDARY_TOLERANCE_DEGREES, _cycle_occurrences, _deviation, _jd_for_datetime, _longitude, developmental_intervals
+from astrology.timing import ORB_BOUNDARY_TOLERANCE_DEGREES, _cycle_occurrences, _deviation, _jd_for_datetime, _longitude, annual_profection, developmental_intervals
 
 
 def birth() -> BirthData:
@@ -26,26 +26,30 @@ def _coverage_bundle(result):
     """
     required = result["reasoning_packet"]["facts"]["coverage"]["required_evidence"]
     by_evidence = {
-        claim["evidence"][0]: claim
+        evidence: claim
         for claim in result["claims"]
-        if claim["status"] == "allowed" and len(claim["evidence"]) == 1
+        if claim["status"] == "allowed"
+        for evidence in claim["evidence"]
     }
+    fallback_claim = next(claim for claim in result["claims"] if claim["status"] == "allowed" and claim["id"].startswith("claim.position."))
     syntheses = []
     for ordinal, evidence in enumerate(sorted({item for values in required.values() for item in values}), 1):
-        claim = by_evidence[evidence]
+        claim = by_evidence.get(evidence, fallback_claim)
+        timed = evidence.startswith("timing.")
         synthesis = ReasonedSynthesis(
-            id=f"coverage.{ordinal}", observation=claim["statement"], primary_factors=[evidence], modifiers=[], counterweights=[],
-            reasoning_class="single_structural_factor", confidence_within_astrological_model=claim["astrological_support"],
+            id=f"coverage.{ordinal}", observation=claim["statement"], primary_factors=[claim["evidence"][0], evidence] if timed else [evidence], modifiers=[], counterweights=[],
+            reasoning_class="natal_timing_interaction" if timed else "single_structural_factor", confidence_within_astrological_model=claim["astrological_support"],
             possible_expressions=[claim["statement"]], alternative_reading="", prohibited_extensions=[],
-            source_claim_ids=[claim["id"]], source_motif_ids=claim["authorized_motifs"], composition_operations=["contextualization"],
+            source_claim_ids=[claim["id"]], source_motif_ids=claim["authorized_motifs"], composition_operations=["contextualization", "timing_activation"] if timed else ["contextualization"],
             derived_propositions=[{"text": claim["statement"], "sources": [claim["id"]]}],
         )
         syntheses.append(asdict(synthesis))
-    paragraphs = ["Esta cobertura usa somente a síntese autorizada correspondente e permanece uma hipótese simbólica, não uma certeza biográfica." for _ in syntheses]
+    paragraphs = [f"Esta cobertura número {ordinal} usa somente a síntese autorizada correspondente e permanece uma hipótese simbólica, não uma certeza biográfica." for ordinal in range(1, len(syntheses) + 1)]
     draft = "\n\n".join(paragraphs)
     sources = paragraph_source_template(draft)
     for source, synthesis in zip(sources, syntheses):
         source["synthesis_ids"] = [synthesis["id"]]
+        source["timing_ids"] = [item for item in synthesis["primary_factors"] if item.startswith("timing.")]
     return syntheses, draft, sources
 
 
@@ -89,7 +93,9 @@ def test_v41_nodal_axis_is_one_deterministic_factor_with_derived_south_node():
     view = build_safe_interpretive_view(raw).semantic_chart()
     claims = verify_claims(build_claims(view), view)
     node_claim = next(item for item in claims if item.id.startswith("claim.node_axis"))
-    assert node_claim.evidence == ["node_axis.natal"]
+    assert node_claim.evidence[0] == "node_axis.natal"
+    assert set(node_claim.evidence[1:]) == set(factor.data["contact_ids"])
+    assert node_claim.evidence_families == ["natal_node_axis"]
 
 
 def test_v41_configuration_factor_has_stable_id_and_guard_rechecks_record():
@@ -114,6 +120,110 @@ def test_v41_configuration_factor_has_stable_id_and_guard_rechecks_record():
     assert "invalid_configuration_provenance" in validate_reasoned_syntheses([synthesis], view, claims)[0].verification_errors
 
 
+def test_v41_safe_view_withholds_configuration_when_a_required_aspect_is_unstable():
+    raw = calculate_chart(birth())
+    aspect_configuration = next(item for item in raw.factors if item.kind == "configuration" and not str(item.data["kind"]).startswith("stellium_"))
+    raw.stability["unstable_aspect_ids"] = [aspect_configuration.data["evidence"][0]]
+    view = build_safe_interpretive_view(raw)
+    assert aspect_configuration.id not in {factor.id for factor in view.factors}
+    assert any(factor.kind == "configuration" and str(factor.data["kind"]).startswith("stellium_") for factor in view.factors)
+
+
+def test_v41_whole_sign_is_not_general_premium_evidence_but_profection_remains_available():
+    raw = calculate_chart(birth())
+    view = build_safe_interpretive_view(raw)
+    assert not any(factor.kind == "whole_sign_house" for factor in view.factors)
+    assert all("governs_whole_sign_houses" not in item for item in analyse_birth_chart(birth(), include_timing=False)["reasoning_packet"]["facts"]["structural_bodies"])
+    claim = next(item for item in build_claims(view.semantic_chart()) if item.id.startswith("claim.position."))
+    synthesis = ReasonedSynthesis(
+        id="whole-sign-forbidden", observation=claim.statement, primary_factors=["house.whole_sign.sun"], modifiers=[], counterweights=[],
+        reasoning_class="single_structural_factor", confidence_within_astrological_model="light", possible_expressions=[claim.statement],
+        alternative_reading="", prohibited_extensions=[], source_claim_ids=[claim.id], source_motif_ids=claim.authorized_motifs,
+        composition_operations=["contextualization"], derived_propositions=[{"text": claim.statement, "sources": [claim.id]}],
+    )
+    assert "unknown_or_unsafe_factor" in validate_reasoned_syntheses([synthesis], view, build_claims(view.semantic_chart()))[0].verification_errors
+    assert annual_profection(raw)["time_lord"]
+
+
+def test_v41_configuration_promotion_is_selective_and_deduplicates_a_structural_family():
+    configurations = [
+        {"id": "configuration.stellium_sign.none.moon.mars.sun", "kind": "stellium_sign", "bodies": ["sun", "moon", "mars"], "group_id": "configuration_group.stellium.mars.moon.sun"},
+        {"id": "configuration.stellium_placidus_house.1.moon.mars.sun", "kind": "stellium_placidus_house", "bodies": ["sun", "moon", "mars"], "group_id": "configuration_group.stellium.mars.moon.sun"},
+        {"id": "configuration.grand_trine.none.neptune.uranus.pluto", "kind": "grand_trine", "bodies": ["uranus", "neptune", "pluto"]},
+    ]
+    hierarchy = {
+        "sun": {"prominence": "strong"}, "moon": {"prominence": "moderate"}, "mars": {"prominence": "light"},
+        "uranus": {"prominence": "none"}, "neptune": {"prominence": "none"}, "pluto": {"prominence": "none"},
+    }
+    promoted = _promoted_configurations(configurations, hierarchy)
+    assert [item["id"] for item in promoted] == ["configuration.stellium_placidus_house.1.moon.mars.sun"]
+    result = analyse_birth_chart(birth(), include_timing=False)
+    facts = result["reasoning_packet"]["facts"]
+    mandatory = set(facts["coverage"]["promoted_configuration_ids"])
+    assert mandatory.issubset(set(facts["coverage"]["detected_configuration_ids"]))
+    assert set(facts["coverage"]["detected_configuration_ids"]) - mandatory
+
+
+def test_v41_node_axis_contacts_have_one_authorised_semantic_ancestry_and_do_not_anchor():
+    raw = calculate_chart(birth())
+    view = build_safe_interpretive_view(raw)
+    claims = verify_claims(build_claims(view.semantic_chart()), view.semantic_chart())
+    claim = next(item for item in claims if item.id.startswith("claim.node_axis"))
+    contact = next(item for item in view.aspects if item.id in claim.evidence[1:])
+    synthesis = ReasonedSynthesis(
+        id="node-contact", observation=claim.statement, primary_factors=["node_axis.natal", contact.id], modifiers=[], counterweights=[],
+        reasoning_class="integrated_pattern", confidence_within_astrological_model="light", possible_expressions=[claim.statement],
+        alternative_reading="", prohibited_extensions=[], source_claim_ids=[claim.id], source_motif_ids=claim.authorized_motifs,
+        composition_operations=["contextualization", ASPECT_OPERATIONS[contact.kind]], derived_propositions=[{"text": claim.statement, "sources": [claim.id]}],
+    )
+    assert validate_reasoned_syntheses([synthesis], view, claims)[0].status == "allowed"
+    hierarchy = analyse_birth_chart(birth(), include_timing=False)["hierarchy"]
+    signature = build_chart_signature(view, hierarchy, {"configurations": []}, [{"id": "node-contact", "status": "allowed", "primary_factors": ["node_axis.natal", contact.id], "counterweights": [], "composition_operations": [ASPECT_OPERATIONS[contact.kind]]}])
+    assert "true_node" not in signature["central_dynamic"]["bodies"]
+
+
+def test_v41_source_map_requires_the_exact_substantive_paragraph_universe():
+    fallback = analyse_birth_chart(birth(), include_timing=False)
+    syntheses, draft, mapping = _coverage_bundle(fallback)
+    judged = validate_premium_syntheses(birth(), syntheses, include_timing=False)
+    author = {
+        "packet_id": judged["packet_id"], "reasoned_syntheses": syntheses, "draft_report": draft,
+        "paragraph_sources": mapping, "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft),
+    }
+    assert validate_premium_author_bundle(birth(), author, include_timing=False)["approved"]
+    orphan = dict(author, paragraph_sources=[*mapping, {"paragraph_sha256": "not-a-real-paragraph", "synthesis_ids": [syntheses[0]["id"]], "timing_ids": []}])
+    assert "orphan_paragraph_source_map" in validate_premium_author_bundle(birth(), orphan, include_timing=False)["verification_errors"]
+    duplicate = dict(author, paragraph_sources=[*mapping, dict(mapping[0])])
+    assert "duplicate_paragraph_source_map" in validate_premium_author_bundle(birth(), duplicate, include_timing=False)["verification_errors"]
+    conflicting = dict(author, paragraph_sources=[*mapping, dict(mapping[0], synthesis_ids=[syntheses[-1]["id"]])])
+    assert "conflicting_duplicate_paragraph_source_map" in validate_premium_author_bundle(birth(), conflicting, include_timing=False)["verification_errors"]
+    missing = dict(author, paragraph_sources=mapping[1:])
+    assert "interpretive_paragraph_without_source_map" in validate_premium_author_bundle(birth(), missing, include_timing=False)["verification_errors"]
+    provenance = validate_premium_author_bundle(birth(), author, include_timing=False)
+    shortened = draft.split("\n\n", 1)[0]
+    reviewer = {
+        "packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"],
+        "reviewed_draft_sha256": provenance["draft_report_sha256"], "verdict": "approved", "final_report": shortened,
+        "final_report_sha256": _canonical_hash(shortened), "paragraph_sources": mapping,
+    }
+    assert "orphan_paragraph_source_map" in validate_premium_narrative(reviewer, provenance)["verification_errors"]
+
+
+def test_v41_reused_configuration_family_does_not_inflate_theme_priority():
+    group = "configuration_group.stellium.mars.moon.sun"
+    sign = Factor("configuration.stellium_sign.aries.mars.moon.sun", "structure", "configuration", ["sun", "moon", "mars"], {"group_id": group})
+    house = Factor("configuration.stellium_placidus_house.1.mars.moon.sun", "structure", "configuration", ["sun", "moon", "mars"], {"group_id": group})
+    chart = SimpleNamespace(aspects=[], angle_contacts=[], factors=[sign, house], positions={body: object() for body in ("sun", "moon", "mars")}, house_placements={})
+    hierarchy = {body: {"prominence": "strong", "roles": []} for body in chart.positions}
+    syntheses = [
+        {"id": "reasoned.first", "status": "allowed", "primary_factors": [sign.id], "counterweights": [], "composition_operations": []},
+        {"id": "reasoned.second", "status": "allowed", "primary_factors": [house.id], "counterweights": [], "composition_operations": []},
+    ]
+    signature = build_chart_signature(chart, hierarchy, {"configurations": []}, syntheses)
+    priorities = {item["theme"]: item["score"] for item in signature["theme_priorities"]}
+    assert priorities["first"] > priorities["second"]
+
+
 def test_v41_premium_deep_handoff_exposes_coverage_voice_and_existing_cycles():
     handoff = prepare_premium_handoff(birth(), include_timing=True)
     facts = handoff["reasoning_packet"]["facts"]
@@ -122,6 +232,33 @@ def test_v41_premium_deep_handoff_exposes_coverage_voice_and_existing_cycles():
     assert handoff["timeline"] is not None and handoff["developmental_intervals"] is not None
     assert "predominantemente" in handoff["author_voice_instruction"]
     assert "The Pattern" not in handoff["author_voice_instruction"]
+
+
+def test_v41_premium_prepare_rejects_non_deep_depth():
+    with pytest.raises(ValueError, match="requires report_depth='deep'"):
+        prepare_premium_handoff(birth(), report_depth="executive", include_timing=False)
+
+
+def test_v41_timing_and_developmental_evidence_is_typed_and_validated_at_deep_depth():
+    as_of = datetime(2026, 8, 27, tzinfo=timezone.utc)
+    handoff = prepare_premium_handoff(birth(), include_timing=True, as_of=as_of, horizon_days=45)
+    evidence = handoff["reasoning_packet"]["facts"]["timing_evidence"]
+    ids = {item["id"] for item in evidence}
+    assert any(item["kind"] == "annual_profection" for item in evidence)
+    developmental_id = next(item["id"] for item in evidence if item["kind"] == "developmental_interval")
+    assert developmental_id in handoff["reasoning_packet"]["facts"]["coverage"]["required_evidence"]["developmental_material"]
+    source = next(item for item in handoff["reasoning_packet"]["facts"]["allowed_claims"] if item["id"].startswith("claim.position."))
+    synthesis = asdict(ReasonedSynthesis(
+        id="developmental-proof", observation=source["statement"], primary_factors=[source["evidence"][0], developmental_id], modifiers=[], counterweights=[],
+        reasoning_class="natal_timing_interaction", confidence_within_astrological_model="light", possible_expressions=[source["statement"]],
+        alternative_reading="", prohibited_extensions=[], source_claim_ids=[source["id"]], source_motif_ids=source["authorized_motifs"],
+        composition_operations=["contextualization", "timing_activation"], derived_propositions=[{"text": source["statement"], "sources": [source["id"]]}],
+    ))
+    checked = validate_premium_syntheses(birth(), [synthesis], as_of=as_of, horizon_days=45)
+    assert checked["reasoned_synthesis"][0]["status"] == "allowed"
+    assert set(checked["timing_evidence_ids"]) == ids
+    synthesis["primary_factors"][-1] = "timing.developmental.fabricated"
+    assert "unknown_or_unsafe_factor" in validate_premium_syntheses(birth(), [synthesis], as_of=as_of, horizon_days=45)["reasoned_synthesis"][0]["verification_errors"]
 
 
 def test_planner_uses_typed_factor_bodies_not_aspect_words_as_shared_evidence():
@@ -294,7 +431,7 @@ def test_provenance_guard_closes_claim_motif_factor_operation_and_confidence_con
 
 
 def test_premium_guards_block_identity_hash_source_coverage_and_timing_mismatches():
-    fallback = analyse_birth_chart(birth(), as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
+    fallback = analyse_birth_chart(birth(), report_depth="deep", as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
     coverage_syntheses, draft, mapping = _coverage_bundle(fallback)
     judged = validate_premium_syntheses(birth(), coverage_syntheses, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
     author = {"packet_id": judged["packet_id"], "reasoned_syntheses": coverage_syntheses, "draft_report": draft, "paragraph_sources": mapping, "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft)}

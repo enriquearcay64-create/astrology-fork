@@ -309,12 +309,19 @@ def _claim_from_node_axis(chart: Chart, index: int, language: str) -> Claim:
     else:
         statement = f"The nodal axis links the North Node in {north['sign']} and South Node in {south['sign']}{houses}: developmental direction and familiar available patterns, without turning either pole into destiny or something to discard."
         examples = ["consider the tension between what is already available and less automatic engagement"]
+    contacts = [aspect for aspect in chart.aspects if aspect.id in set(factor.data.get("contact_ids", []))]
+    contact_evidence = [aspect.id for aspect in contacts]
+    contact_motifs = [
+        motif
+        for aspect in contacts
+        for motif in (f"nodal_axis_{aspect.kind}_contact", *_claim_from_aspect(aspect, 0, language).authorized_motifs)
+    ]
     return Claim(
         id=f"claim.node_axis.{index}", theme="purpose", type="symbolic_tendency", statement=statement,
-        evidence=["node_axis.natal"], evidence_families=["natal_node_axis"], counterweights=[],
+        evidence=["node_axis.natal", *contact_evidence], evidence_families=["natal_node_axis"], counterweights=[],
         allowed_specificity="behavioral_possibility", allowed_examples=examples,
         prohibited_inferences=["destino inevitável", "missão predestinada", "abandono do Nodo Sul"], astrological_support="light",
-        authorized_motifs=["natal_node_axis_developmental_direction"],
+        authorized_motifs=["natal_node_axis_developmental_direction", *contact_motifs],
     )
 
 
@@ -485,7 +492,15 @@ def verify_claims(claims: Iterable[Claim], chart: Optional[Chart] = None) -> Lis
             expected_example_variants = set()
             expected_prohibited_variants = set()
             semantic_source_count = 0
+            node_axis_factor = factor_by_id.get("node_axis.natal") if "node_axis.natal" in claim.evidence else None
+            node_contact_ids = set(node_axis_factor.data.get("contact_ids", [])) if node_axis_factor else set()
+            if node_axis_factor and set(claim.evidence[1:]) != node_contact_ids:
+                errors.append("invalid_nodal_axis_contact_ancestry")
             for evidence_id in claim.evidence:
+                # Nodal contacts qualify the one axis claim.  They are not
+                # independent aspect claims or a second semantic family.
+                if node_axis_factor and evidence_id in node_contact_ids:
+                    continue
                 aspect = aspect_by_id.get(evidence_id)
                 if aspect:
                     semantic_source_count += 1

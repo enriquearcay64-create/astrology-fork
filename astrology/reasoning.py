@@ -59,6 +59,8 @@ def build_reasoning_packet(
     hierarchy: Dict[str, Dict[str, object]],
     claims: Iterable[Claim],
     timing: Dict[str, object] | None = None,
+    timeline: List[Dict[str, object]] | None = None,
+    developmental_intervals: List[Dict[str, object]] | None = None,
     language: str = "pt-BR",
     localization_profile: object | None = None,
     packet_id: str | None = None,
@@ -94,22 +96,26 @@ def build_reasoning_packet(
         for body, placement in chart.house_placements.items()
         if body in PRIMARY_BODIES
     ]
-    timing_evidence = _timing_evidence(timing)
-    configurations = [to_primitive(item) for item in chart.factors if item.kind == "configuration"]
+    timing_evidence = _timing_evidence(timing, timeline, developmental_intervals)
+    configurations = [dict(item.data) for item in chart.factors if item.kind == "configuration"]
+    promoted_configurations = _promoted_configurations(configurations, hierarchy)
     node_axis = next((to_primitive(item) for item in chart.factors if item.kind == "natal_node_axis"), None)
     coverage = {
         "required_primary_planets": [body for body in PRIMARY_BODIES if body in chart.positions],
         "ascendant_required": any(item.kind == "ascendant" for item in chart.factors),
         "chart_ruler_required": any(item.kind == "chart_ruler" for item in chart.factors),
         "natal_node_axis_required": node_axis is not None,
-        "promoted_configuration_ids": [item["id"] for item in configurations],
+        "detected_configuration_ids": [item["id"] for item in configurations],
+        "promoted_configuration_ids": [item["id"] for item in promoted_configurations],
         "rule": "Coverage is mandatory but verbosity is adaptive. A structural group may be reused contextually, but its group_id is one evidence family and one full structural explanation.",
         "required_evidence": {
             **{f"planet.{body}": [f"position.{body}"] for body in PRIMARY_BODIES if body in chart.positions},
             **({"ascendant": ["ascendant.natal"]} if any(item.kind == "ascendant" for item in chart.factors) else {}),
             **({"chart_ruler": ["chart_ruler.natal"]} if any(item.kind == "chart_ruler" for item in chart.factors) else {}),
             **({"natal_node_axis": ["node_axis.natal"]} if node_axis else {}),
-            **{f"configuration.{item['id']}": [item["id"]] for item in configurations},
+            **{f"configuration.{item['id']}": [item["id"]] for item in promoted_configurations},
+            **({"current_phase": [item["id"] for item in timing_evidence if item["kind"] in {"annual_profection", "activation_instance", "secondary_progression", "solar_arc"}]} if any(item["kind"] in {"annual_profection", "activation_instance", "secondary_progression", "solar_arc"} for item in timing_evidence) else {}),
+            **({"developmental_material": [item["id"] for item in timing_evidence if item["kind"] in {"timeline_phase", "developmental_interval"}]} if any(item["kind"] in {"timeline_phase", "developmental_interval"} for item in timing_evidence) else {}),
         },
     }
     return {
@@ -230,12 +236,19 @@ def validate_reasoned_syntheses(
     return output
 
 
-def _timing_evidence(timing: Dict[str, object] | None) -> List[Dict[str, object]]:
+def _timing_evidence(
+    timing: Dict[str, object] | None,
+    timeline: List[Dict[str, object]] | None = None,
+    developmental_intervals: List[Dict[str, object]] | None = None,
+) -> List[Dict[str, object]]:
     """Expose timing windows as closed, typed evidence for premium reasoning."""
     if not timing:
         return []
-    evidence = []
+    evidence: List[Dict[str, object]] = []
+    selected_transits = set(timing.get("current_phase", {}).get("selected_transit_ids", []))
     for event in timing.get("modern_stream", {}).get("major_transits", []):
+        if event.get("id") not in selected_transits:
+            continue
         activation = str(event.get("activation_instance", ""))
         if activation:
             evidence.append({
@@ -245,7 +258,79 @@ def _timing_evidence(timing: Dict[str, object] | None) -> List[Dict[str, object]
                 "window_end": event.get("window_end"), "exact_at": event.get("exact_at"),
                 "closest_approach_at": event.get("closest_approach_at"), "perfected": event.get("perfected"),
             })
+    profection = timing.get("traditional_stream", {})
+    if profection.get("status") not in {"conditional", "unavailable"} and profection.get("time_lord"):
+        evidence.append({
+            "id": f"timing.profection.{profection['start']}", "kind": "annual_profection",
+            "house": profection.get("house"), "sign": profection.get("sign"), "time_lord": profection.get("time_lord"),
+            "window_start": profection.get("start"), "window_end": profection.get("end"),
+        })
+    for kind, records in (
+        ("secondary_progression", timing.get("current_phase", {}).get("progression_contacts", [])),
+        ("solar_arc", timing.get("current_phase", {}).get("solar_arc_contacts", [])),
+    ):
+        for index, record in enumerate(records, 1):
+            evidence.append({
+                "id": f"timing.{kind}.{record['body']}.{record['aspect']}.{record['target']}.{index}", "kind": kind,
+                **dict(record),
+            })
+    phase = _selected_timeline_phase(timing, timeline or [])
+    if phase:
+        evidence.append({
+            "id": f"timing.timeline.{phase['range'].replace('–', '_')}", "kind": "timeline_phase",
+            "range": phase["range"], "activation_instances": [item.get("activation_instance") for item in phase.get("activations", [])],
+        })
+    interval = _selected_developmental_interval(timing, developmental_intervals or [])
+    if interval:
+        evidence.append({
+            "id": f"timing.developmental.{interval['id']}", "kind": "developmental_interval",
+            "interval_id": interval["id"], "age_range": interval["age_range"],
+            "window_start": interval["window_start"], "window_end": interval["window_end"],
+            "activation_instances": [item.get("activation_instance") for item in interval.get("activations", [])],
+        })
     return evidence
+
+
+def _selected_timeline_phase(timing: Dict[str, object], timeline: List[Dict[str, object]]) -> Dict[str, object] | None:
+    age = int(float(timing.get("modern_stream", {}).get("progressions", {}).get("age_years", -1)))
+    return next((item for item in timeline if len(bounds := re.findall(r"\d+", str(item.get("range", "")))) == 2 and int(bounds[0]) <= age <= int(bounds[1])), None)
+
+
+def _selected_developmental_interval(timing: Dict[str, object], intervals: List[Dict[str, object]]) -> Dict[str, object] | None:
+    if not intervals:
+        return None
+    age = float(timing.get("modern_stream", {}).get("progressions", {}).get("age_years", -1))
+    def start(item: Dict[str, object]) -> float:
+        return float(str(item["age_range"]).split("–")[0])
+    def end(item: Dict[str, object]) -> float:
+        return float(str(item["age_range"]).split("–")[1])
+    active = next((item for item in intervals if start(item) <= age <= end(item)), None)
+    if active:
+        return active
+    future = [item for item in intervals if start(item) > age]
+    return min(future, key=start) if future else max(intervals, key=end)
+
+
+def _promoted_configurations(configurations: List[Dict[str, object]], hierarchy: Dict[str, Dict[str, object]]) -> List[Dict[str, object]]:
+    """Choose a material subset and one representative per structural family."""
+    ranked = sorted(
+        configurations,
+        key=lambda item: (0 if item.get("kind") == "stellium_placidus_house" else 1, str(item["id"])),
+    )
+    promoted: List[Dict[str, object]] = []
+    seen_families = set()
+    for item in ranked:
+        family = str(item.get("group_id") or item["id"])
+        if family in seen_families:
+            continue
+        members = [hierarchy.get(str(body), {}) for body in item.get("bodies", [])]
+        material_members = sum(member.get("prominence") in {"strong", "moderate"} for member in members)
+        focal = str(item.get("apex", ""))
+        focal_material = focal and hierarchy.get(focal, {}).get("prominence") in {"strong", "moderate"}
+        if focal_material or material_members >= 2:
+            promoted.append(item)
+            seen_families.add(family)
+    return promoted
 
 
 def _incompatible_operations(item: ReasonedSynthesis, chart: SafeInterpretiveChart, timing_ids: set[str]) -> bool:
@@ -255,7 +340,7 @@ def _incompatible_operations(item: ReasonedSynthesis, chart: SafeInterpretiveCha
     for factor_id in item.primary_factors:
         if factor_id in aspects:
             supported.add(ASPECT_OPERATIONS[aspects[factor_id].kind])
-        elif factor_kinds.get(factor_id) in {"whole_sign_house", "placidus_house", "house_system_robustness"}:
+        elif factor_kinds.get(factor_id) in {"placidus_house", "house_system_robustness"}:
             supported.add("contextualization")
         elif factor_id in timing_ids:
             supported.add("timing_activation")
@@ -517,10 +602,23 @@ def build_chart_signature(
                 item["bodies"].append(body)
     strongest_domains = sorted(domain_scores.values(), key=lambda item: (-int(item["score"]), int(item["house"])))[:4]
     theme_priorities = []
+    configuration_families = {
+        factor.id: str(factor.data.get("group_id") or factor.id)
+        for factor in chart.factors if factor.kind == "configuration"
+    }
+    seen_configuration_families = set()
     for synthesis in usable:
         theme = str(synthesis["id"]).removeprefix("reasoned.")
-        bodies = sorted(set().union(*(evidence_bodies.get(factor, set()) for factor in synthesis["primary_factors"])))
-        score = sum(sorted((body_scores.get(body, 0) for body in bodies), reverse=True)[:2]) + min(2, len(synthesis["primary_factors"]))
+        scoring_factors = []
+        for factor in synthesis["primary_factors"]:
+            family = configuration_families.get(factor)
+            if family and family in seen_configuration_families:
+                continue
+            if family:
+                seen_configuration_families.add(family)
+            scoring_factors.append(factor)
+        bodies = sorted(set().union(*(evidence_bodies.get(factor, set()) for factor in scoring_factors)))
+        score = sum(sorted((body_scores.get(body, 0) for body in bodies), reverse=True)[:2]) + min(2, len(scoring_factors))
         theme_priorities.append({"theme": theme, "score": score, "bodies": bodies, "source_syntheses": [synthesis["id"]]})
     theme_priorities.sort(key=lambda item: (-int(item["score"]), str(item["theme"])))
     core_factor_ids = []
