@@ -75,7 +75,7 @@ São faixas de QA para produtos compactos, não quotas de preenchimento. Premium
 - Deep Reading / Premium Complete: extensão adaptativa; cerca de 6–10 minutos apenas quando a arquitetura do mapa sustenta esse fôlego.
 - Fase atual no corpo principal: 150–350 palavras.
 - Ciclos visíveis: 120–300 palavras; mapa completo recolhido.
-- Technical Appendix: tão longo quanto a auditoria exigir, preferencialmente 2.000–5.000 palavras, com política e listas longas recolhidas.
+- Technical Appendix: extensão definida pelo conteúdo determinístico útil ao leitor e pela divulgação progressiva; não há quota de palavras. O apêndice voltado ao cliente permanece curado e conciso. A divulgação técnica longa, a política JSON e as listas completas pertencem ao `audit_sidecar`, não ao relatório comercial.
 
 ## Consulta específica
 
