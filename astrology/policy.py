@@ -20,7 +20,7 @@ def policy_manifest() -> Dict[str, object]:
         "schema_version": SCHEMA_VERSION,
         "semantic_registry_version": "2.5.0",
         "timing_version": "4.0.1",
-        "report_template_version": "4.0.1-signature-led",
+        "report_template_version": "4.1.1-reader-experience",
         "zodiac": "tropical",
         "reference_frame": "geocentric",
         "ephemeris_range": [EPHEMERIS_START_YEAR, EPHEMERIS_END_YEAR],

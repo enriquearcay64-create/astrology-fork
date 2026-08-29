@@ -1,8 +1,8 @@
-# Premium Complete Report Contract — V4.1
+# Premium Complete Report Contract — V4.1.1
 
 ## Status and purpose
 
-This document is the canonical product and methodology contract for the V4.1
+This document is the canonical product and methodology contract for the V4.1.1
 **Premium Complete** natal report. It defines the reader-facing promise,
 interpretive boundaries, mandatory coverage, editorial standards, and premium
 publication path. It does not prescribe an implementation, data model, or
@@ -165,8 +165,15 @@ know private history.
 
 - Lead with interpretation and human meaning; introduce technical terms only
   when they clarify the mechanism.
+- Central interpretive sections should normally lead with a psychologically
+  recognisable pattern when that improves reader recognition, then reveal the
+  astrology supporting it. Do not force this order when beginning with the
+  astrological structure is clearer or more natural.
 - Translate an aspect, configuration, sign, or house into ordinary language in
   the same interpretive movement.
+- Develop leading dynamics into a recognisable mechanism, resource, tension or
+  failure mode, material counterweight, and cross-factor interaction only where
+  each element adds meaning; this is not a repeated prose template.
 - Use concrete hypothetical examples only when they make a mechanism easier to
   recognise. They are invitations to test, not implied biographical facts.
 - Avoid Barnum statements, guru language, moralised "shadow," and repeated
@@ -207,9 +214,12 @@ importance and cognitive load, not a quota.
 Timing activates natal architecture; it does not replace natal interpretation,
 manufacture a new personality narrative, or predict inevitable events.
 
-Where supported by the existing calculations and reliability gates, Premium
-Complete may include the current phase, relevant transits, annual profection,
-progressions, solar arcs, and existing developmental or life-cycle intervals.
+Where supported by the existing calculations, relevance/priority selection, and
+reliability gates, Premium Complete may include the current phase, relevant
+transits, annual profection, progressions, solar arcs, and existing
+developmental or life-cycle intervals. Typed timing records are candidates, not
+mandatory prose: material stays out of the reader flow when it cannot support a
+useful, sufficiently specific human field linked to natal architecture.
 The reader receives the human field first: what an activation may bring into
 focus, what pressure or capacity it can amplify, and what remains unknowable.
 Technical names, dates, streams, and convergence detail may be progressively
@@ -235,16 +245,17 @@ axis receives dedicated coverage but is not central merely because it is nodal.
 
 ## Technical appendix
 
-The Technical Appendix makes the report auditable without making the main
-reading feel like a calculation dump. It is predominantly deterministic:
+The client-facing Technical Appendix makes the report useful without making the
+main reading feel like a calculation dump. It is predominantly deterministic:
 versions, input quality, positions, Placidus houses and their reliability,
-angles, aspects, configurations, hierarchy, claims, authorised syntheses,
-timing evidence, and policy disclosures belong there.
+angles, conditions, aspects/orbs, configurations, nodal axis, and selected
+timing evidence belong there.
 
-The appendix should not consume expensive generated prose merely to paraphrase
-the main reading. Interpretive prose belongs where it helps the reader;
-deterministic records belong in the appendix or other progressive-disclosure
-layers.
+An internal audit sidecar retains policy disclosures, raw structured data,
+claims, authorised syntheses, Chart Signature, Narrative Plan, evidence IDs,
+and guard/run records. It remains auditable but is not part of the commercial
+report. Neither artifact should consume expensive generated prose merely to
+paraphrase the main reading.
 
 ## Premium publication contract
 

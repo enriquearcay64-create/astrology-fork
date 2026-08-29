@@ -603,7 +603,7 @@ def deep_reading(chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: 
         lines.append("*Symbolic predisposition, capacity and reported manifestation are different categories. Disagreeing with a hypothesis is a valid result. This reading does not diagnose or predict concrete events.*")
     return "\n".join(lines)
 
-def technical_appendix(chart: SafeInterpretiveChart, hierarchy: Dict[str, Dict[str, object]], claims: Iterable[Claim], timing: Optional[Dict[str, object]], structure: Dict[str, object], profile: Optional[LocalizationProfile], reasoned_syntheses: Optional[List[Dict[str, object]]] = None, narrative_plan: Optional[Dict[str, object]] = None, chart_signature: Optional[Dict[str, object]] = None) -> str:
+def audit_sidecar(chart: SafeInterpretiveChart, hierarchy: Dict[str, Dict[str, object]], claims: Iterable[Claim], timing: Optional[Dict[str, object]], structure: Dict[str, object], profile: Optional[LocalizationProfile], reasoned_syntheses: Optional[List[Dict[str, object]]] = None, narrative_plan: Optional[Dict[str, object]] = None, chart_signature: Optional[Dict[str, object]] = None) -> str:
     lang = _lang(profile)
     lines = [
         "# Technical Appendix" if lang == "en" else "# Apêndice Técnico", "",
@@ -685,11 +685,113 @@ def technical_appendix(chart: SafeInterpretiveChart, hierarchy: Dict[str, Dict[s
     return "\n".join(lines)
 
 
+def technical_appendix(chart: SafeInterpretiveChart, hierarchy: Dict[str, Dict[str, object]], claims: Iterable[Claim], timing: Optional[Dict[str, object]], structure: Dict[str, object], profile: Optional[LocalizationProfile], reasoned_syntheses: Optional[List[Dict[str, object]]] = None, narrative_plan: Optional[Dict[str, object]] = None, chart_signature: Optional[Dict[str, object]] = None) -> str:
+    """Render deterministic chart data useful to the report reader.
+
+    The full audit representation remains available through ``audit_sidecar``.
+    Parameters retained for the established renderer signature are deliberately
+    unused here: claims, hierarchy, syntheses, plan and signature are internal.
+    """
+    del hierarchy, claims, reasoned_syntheses, narrative_plan, chart_signature
+    lang = _lang(profile)
+    title = "# Technical Appendix" if lang == "en" else "# Apêndice Técnico"
+    lines = [
+        title,
+        "",
+        "> Deterministic chart data for reference. The main reading remains complete without this appendix." if lang == "en" else "> Dados determinísticos para consulta. A leitura principal permanece completa sem este apêndice.",
+        "",
+        "## Data quality" if lang == "en" else "## Qualidade dos dados",
+        "",
+        f"- Schema: {chart.schema_version}",
+        f"- Methodology: {chart.methodology_version}",
+        f"- Semantic registry: {chart.policy.get('semantic_registry_version', 'unknown')}" if lang == "en" else f"- Registro semântico: {chart.policy.get('semantic_registry_version', 'desconhecido')}",
+        f"- Timing methodology: {chart.policy.get('timing_version', 'unknown')}" if lang == "en" else f"- Metodologia de timing: {chart.policy.get('timing_version', 'desconhecida')}",
+        f"- Report template: {chart.policy.get('report_template_version', 'unknown')}" if lang == "en" else f"- Template do relatório: {chart.policy.get('report_template_version', 'desconhecido')}",
+        f"- Birth-time mode: {chart.stability.get('birth_time_mode', 'unknown')}" if lang == "en" else f"- Modo da hora natal: {chart.stability.get('birth_time_mode', 'desconhecido')}",
+        f"- Declared uncertainty: {chart.stability.get('declared_uncertainty_minutes', 'unknown')} minutes." if lang == "en" else f"- Incerteza declarada: {chart.stability.get('declared_uncertainty_minutes', 'desconhecida')} minutos.",
+        f"- Placidus natal houses: {'available' if chart.placidus_available else 'unavailable'}." if lang == "en" else f"- Casas natais Placidus: {'disponíveis' if chart.placidus_available else 'indisponíveis'}.",
+        "",
+        "## Positions" if lang == "en" else "## Posições",
+        "",
+    ]
+    for item in chart.positions.values():
+        placement = chart.house_placements.get(item.key)
+        conditional = chart.conditional_house_scenarios.get(item.key)
+        if placement:
+            house_text = f"Placidus {placement.placidus_house} (canonical natal)" if lang == "en" else f"Placidus {placement.placidus_house} (natal canônico)"
+        elif conditional:
+            house_text = f"conditional Placidus {conditional.primary_placidus_house}; not interpretive evidence" if lang == "en" else f"Placidus condicional {conditional.primary_placidus_house}; não é evidência interpretativa"
+        else:
+            house_text = "houses unavailable" if lang == "en" else "casas indisponíveis"
+        label = _token(item.key, lang)
+        if lang == "pt":
+            lines.append(f"- {label}: {_degree(item.longitude, lang)}; velocidade {item.speed_longitude:.6f}°/dia; {house_text}.")
+        else:
+            lines.append(f"- {label}: {_degree(item.longitude, lang)}; speed {item.speed_longitude:.6f}°/day; {house_text}.")
+    lines.extend(["", "## Angles" if lang == "en" else "## Ângulos", ""])
+    lines.extend(f"- {name.upper()}: {_degree(value, lang)}" for name, value in chart.angles.items())
+
+    conditions = [item for item in chart.factors if item.kind == "planetary_condition"]
+    if conditions:
+        lines.extend(["", "## Conditions" if lang == "en" else "## Condições", ""])
+        for item in conditions:
+            label = _token(item.bodies[0], lang)
+            values = ", ".join(str(value) for value in item.data.get("conditions", []))
+            lines.append(f"- {label}: {values or ('none' if lang == 'en' else 'nenhuma')}.")
+
+    node_axis = next((item for item in chart.factors if item.kind == "natal_node_axis"), None)
+    if node_axis:
+        north, south = node_axis.data["north"], node_axis.data["south"]
+        lines.extend(["", "## Natal nodal axis" if lang == "en" else "## Eixo nodal natal", ""])
+        if lang == "pt":
+            lines.append(f"- Nodo Norte: {north['sign']} ({north['degree_in_sign']:.4f}°); Nodo Sul derivado: {south['sign']} ({south['degree_in_sign']:.4f}°).")
+            lines.append(f"- Casas Placidus: Norte {north['placidus_house']}; Sul {south['placidus_house']}; confiáveis: {node_axis.data['placidus_house_reliable']}.")
+        else:
+            lines.append(f"- North Node: {north['sign']} ({north['degree_in_sign']:.4f}°); derived South Node: {south['sign']} ({south['degree_in_sign']:.4f}°).")
+            lines.append(f"- Placidus houses: North {north['placidus_house']}; South {south['placidus_house']}; reliable: {node_axis.data['placidus_house_reliable']}.")
+
+    lines.extend(["", "## Aspects" if lang == "en" else "## Aspectos", ""])
+    lines.extend(
+        f"- {_token(item.left, lang)} {_token(item.kind, lang)} {_token(item.right, lang)}; orbe {item.orb:.4f}°; aplicando: {'indeterminado' if item.applying is None else 'sim' if item.applying else 'não'}."
+        if lang == "pt" else
+        f"- {_token(item.left, lang)} {_token(item.kind, lang)} {_token(item.right, lang)}; orb {item.orb:.4f}°; applying: {item.applying}."
+        for item in chart.aspects
+    )
+    lines.extend(["", "## Structure and configurations" if lang == "en" else "## Estrutura e configurações", ""])
+    for item in structure.get("configurations", []):
+        name = CONFIGURATIONS[lang].get(str(item["kind"]), str(item["kind"]).replace("_", " "))
+        bodies = ", ".join(_token(str(body), lang) for body in item["bodies"])
+        lines.append(f"- **{name}{_configuration_basis(item, lang)}:** {bodies}.")
+
+    if timing:
+        lines.extend(["", "## Timing" if lang == "en" else "## Timing", ""])
+        focus = timing["current_phase"]["traditional_focus"]
+        if focus["time_lord"]:
+            if lang == "pt":
+                lines.append(f"- Profecção anual (técnica de Signo Inteiro): casa {focus['house']}; senhor do ano: {_token(focus['time_lord'], lang)}.")
+            else:
+                lines.append(f"- Annual profection (Whole Sign technique): house {focus['house']}; time lord: {_token(focus['time_lord'], lang)}.")
+        selected = set(timing["current_phase"].get("selected_transit_ids", []))
+        selected_windows = [item for item in timing["modern_stream"]["major_transits"] if item["id"] in selected]
+        if selected_windows:
+            lines.append("- Selected major transits:" if lang == "en" else "- Trânsitos maiores selecionados:")
+            lines.extend(f"  - {_format_transit_window(item, lang)}." for item in selected_windows)
+        progression_contacts = timing["current_phase"].get("progression_contacts", [])
+        if progression_contacts:
+            lines.append("- Selected secondary progressions:" if lang == "en" else "- Progressões secundárias selecionadas:")
+            lines.extend(f"  - {_token(item['body'], lang)} {_token(item['aspect'], lang)} {_token(item['target'], lang)}; {'orb' if lang == 'en' else 'orbe'} {item['orb']:.4f}°." for item in progression_contacts)
+        solar_arc_contacts = timing["current_phase"].get("solar_arc_contacts", [])
+        if solar_arc_contacts:
+            lines.append("- Selected solar arcs:" if lang == "en" else "- Arcos solares selecionados:")
+            lines.extend(f"  - {_token(item['body'], lang)} {_token(item['aspect'], lang)} {_token(item['target'], lang)}; {'orb' if lang == 'en' else 'orbe'} {item['orb']:.4f}°." for item in solar_arc_contacts)
+    return "\n".join(lines)
+
+
 def render_report(depth: str, chart: SafeInterpretiveChart, claims: Iterable[Claim], themes: List[Dict[str, object]], hierarchy: Dict[str, Dict[str, object]], timing: Optional[Dict[str, object]], timeline: Optional[List[Dict[str, object]]], paradoxes: List[Dict[str, object]], compensations: List[Dict[str, object]], structure: Dict[str, object], profile: Optional[LocalizationProfile], reasoned_syntheses: Optional[List[Dict[str, object]]] = None, narrative_plan: Optional[Dict[str, object]] = None, developmental_intervals: Optional[List[Dict[str, object]]] = None, chart_signature: Optional[Dict[str, object]] = None) -> str:
     if depth == "executive":
         return executive_reading(chart, claims, themes, timing, paradoxes, profile, narrative_plan, chart_signature)
     if depth == "technical":
-        return technical_appendix(chart, hierarchy, claims, timing, structure, profile, reasoned_syntheses, narrative_plan, chart_signature)
+        return audit_sidecar(chart, hierarchy, claims, timing, structure, profile, reasoned_syntheses, narrative_plan, chart_signature)
     if depth != "deep":
         raise ValueError("report_depth must be executive, deep or technical")
     return deep_reading(chart, claims, themes, hierarchy, timing, timeline, paradoxes, compensations, structure, profile, reasoned_syntheses, narrative_plan, developmental_intervals, chart_signature)

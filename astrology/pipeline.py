@@ -14,7 +14,7 @@ from .interpretation import build_compensation_hypotheses, build_paradoxes
 from .localization import localization_audit
 from .models import BirthData, Claim, LocalizationProfile, ReasonedSynthesis, to_primitive
 from .privacy import record_boundaries
-from .report import render_report
+from .report import render_report, technical_appendix
 from .reasoning import build_chart_signature, build_narrative_plan, build_natal_timing_interactions, build_reasoning_packet, compose_reasoned_syntheses, humanization_instructions, humanization_verifier_instructions, llm_reasoning_instructions, validate_reasoned_syntheses
 from .safe_view import build_safe_interpretive_view
 from .semantics import build_claims, verify_claims
@@ -100,6 +100,7 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
     if report_depth != "deep":
         raise ValueError("Premium Complete preparation requires report_depth='deep'.")
     core = analyse_birth_chart(birth, profile, "deep", include_timing, as_of, horizon_days)
+    handoff_chart = build_safe_interpretive_view(calculate_chart(birth))
     return {
         "stage": "reasoning_packet_ready",
         "premium_report_depth": "deep",
@@ -115,9 +116,10 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
         "narrative_plan": core["narrative_plan"],
         "timeline": core["timeline"],
         "developmental_intervals": core["developmental_intervals"],
-        # The deterministic renderer supplies this sidecar without asking the
-        # Author to spend reasoning tokens restating stable facts.
-        "technical_appendix": render_report("technical", build_safe_interpretive_view(calculate_chart(birth)), [], [], core["hierarchy"], core["timing"], core["timeline"], [], [], core["chart_structure"], profile, [], core["narrative_plan"], core["developmental_intervals"], core["chart_signature"]),
+        # The client appendix is concise deterministic reference data; the
+        # established full technical renderer remains an internal audit sidecar.
+        "technical_appendix": technical_appendix(handoff_chart, core["hierarchy"], [], core["timing"], core["chart_structure"], profile),
+        "audit_sidecar": render_report("technical", handoff_chart, [], [], core["hierarchy"], core["timing"], core["timeline"], [], [], core["chart_structure"], profile, [], core["narrative_plan"], core["developmental_intervals"], core["chart_signature"]),
         "reasoned_synthesis_schema": list(ReasonedSynthesis.__dataclass_fields__),
         "author_bundle_contract": {"packet_id": core["packet_id"], "reasoned_syntheses": "list[ReasonedSynthesis]", "draft_report": "string", "paragraph_sources": [{"paragraph_sha256": "sha256", "synthesis_ids": ["reasoned.id"], "timing_ids": ["timing.activation.id"]}], "synthesis_bundle_sha256": "sha256", "draft_report_sha256": "sha256"},
         "reviewer_bundle_contract": {"packet_id": core["packet_id"], "synthesis_bundle_sha256": "sha256", "reviewed_draft_sha256": "sha256", "verdict": "approved|blocked", "corrections_made": ["string"], "remaining_warnings": ["string"], "final_report": "string", "final_report_sha256": "sha256", "paragraph_sources": "same mapping contract"},

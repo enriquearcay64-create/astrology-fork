@@ -8,11 +8,11 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 
 1. **Executive Reading:** assinatura essencial, 3–4 temas realmente sustentados, dinâmica central (ou centros distribuídos), fase atual e um experimento. Deve ser útil se for a única parte lida.
 2. **Deep Reading:** acrescenta dinâmica psicológica, exemplos vividos, áreas da vida, fase atual, ciclos e integração. Cada seção precisa adicionar uma dimensão, não apenas repetir o resumo.
-3. **Technical Appendix:** versões, dados, posições, casas seguras/condicionais, aspectos, configurações, hierarquia, claims, `ReasonedSynthesis`, plano narrativo, evidência e timing auditável. A pessoa leiga pode ignorá-lo completamente.
+3. **Technical Appendix:** versões, qualidade dos dados, posições, casas Placidus seguras/condicionais, ângulos, condições, aspectos/orbes, configurações, eixo nodal e timing selecionado. A pessoa leiga pode ignorá-lo completamente. Política JSON, claims, `ReasonedSynthesis`, plano narrativo, hashes e registros de guard ficam no audit sidecar interno.
 
 ## Ordem da leitura profunda
 
-1. Arquitetura central do mapa em um parágrafo específico.
+1. Arquitetura central do mapa em um parágrafo específico; comece por um padrão humano reconhecível quando isso ajudar, mas abra pela estrutura astrológica quando ela for mais clara ou natural.
 2. Dinâmica organizadora ou 2–3 dinâmicas distribuídas, somente quando sustentadas.
 3. Três ou quatro temas centrais em prosa com movimento variado: recurso, tensão, risco contextual, contrapeso ou integração conforme a carta — nunca fórmula fixa nem quota de cinco.
 4. Um exemplo vivido somente quando ele concretiza o mecanismo; normalmente até três no total.
@@ -33,13 +33,13 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 
 ## Linguagem humana antes da técnica
 
-Comece por uma capacidade, tensão ou escolha observável. Não comece com aspecto, casa, dignidade, profecção, regente ou sistema de casas. Se a evidência técnica for útil, apresente-a depois ou no apêndice.
+Comece normalmente por uma capacidade, tensão ou escolha observável quando isso melhorar reconhecimento. Não imponha essa sequência: um aspecto, casa, configuração ou outra estrutura pode abrir a seção quando for mais claro ou natural, desde que seja traduzido imediatamente. Nomes de aspectos importantes podem permanecer visíveis quando ajudarem orientação e vierem acompanhados de linguagem comum.
 
 Placidus fornece o contexto natal psicológico. Whole Sign só aparece no corpo principal quando uma técnica nomeada o exige, como a profecção anual. Nunca apresente os dois como narrativas natais concorrentes nem repita notas de robustez em cada planeta.
 
 Se o teste de sensibilidade torna a topologia Whole Sign condicional, não use casas, profecções ou regentes tópicos para dar cor ao exemplo. Explique a cautela uma vez, em linguagem simples; cenários alternativos pertencem à profundidade opcional ou ao apêndice.
 
-Timing segue a mesma regra: primeiro explique o campo humano e a negociação simbólica; depois forneça datas. Aspectos, streams e convergência entre técnicas ficam em bloco recolhível ou no apêndice. Data é janela de observação, não promessa de acontecimento.
+Timing segue a mesma regra: primeiro explique o campo humano e a negociação simbólica; depois forneça datas e técnica. Material tipado é candidato, não quota: omita uma janela segura quando ela não sustentar uma interpretação suficientemente específica. Aspectos, streams e convergência entre técnicas ficam em bloco recolhível ou no apêndice. Data é janela de observação, não promessa de acontecimento.
 
 ## Especificidade sem biografia inventada
 

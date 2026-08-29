@@ -8,7 +8,8 @@ import pytest
 from astrology.engine import calculate_chart
 from astrology.models import Aspect, BirthData, Claim, Factor, ReasonedSynthesis
 from astrology.pipeline import _canonical_hash, analyse_birth_chart, paragraph_source_template, prepare_premium_handoff, validate_premium_author_bundle, validate_premium_narrative, validate_premium_syntheses
-from astrology.reasoning import ASPECT_OPERATIONS, _promoted_configurations, build_chart_signature, build_narrative_plan, validate_reasoned_syntheses
+from astrology.reasoning import ASPECT_OPERATIONS, _promoted_configurations, build_chart_signature, build_narrative_plan, humanization_instructions, humanization_verifier_instructions, validate_reasoned_syntheses
+from astrology.report import technical_appendix
 from astrology.safe_view import build_safe_interpretive_view
 from astrology.semantics import _claim_from_aspect, build_claims, verify_claims
 from astrology.structure import detect_configurations
@@ -246,7 +247,8 @@ def test_v41_timing_and_developmental_evidence_is_typed_and_validated_at_deep_de
     ids = {item["id"] for item in evidence}
     assert any(item["kind"] == "annual_profection" for item in evidence)
     developmental_id = next(item["id"] for item in evidence if item["kind"] == "developmental_interval")
-    assert developmental_id in handoff["reasoning_packet"]["facts"]["coverage"]["required_evidence"]["developmental_material"]
+    assert {"id": developmental_id, "kind": "developmental_interval"} in handoff["reasoning_packet"]["facts"]["reader_timing_candidates"]
+    assert "developmental_material" not in handoff["reasoning_packet"]["facts"]["coverage"]["required_evidence"]
     source = next(item for item in handoff["reasoning_packet"]["facts"]["allowed_claims"] if item["id"].startswith("claim.position."))
     synthesis = asdict(ReasonedSynthesis(
         id="developmental-proof", observation=source["statement"], primary_factors=[source["evidence"][0], developmental_id], modifiers=[], counterweights=[],
@@ -507,3 +509,76 @@ def test_premium_beta_requires_a_known_birth_time_without_blocking_safe_readings
     assert analyse_birth_chart(unknown, include_timing=False)["chart_signature"]["mode"] == "distributed"
     with pytest.raises(ValueError, match="Premium beta requires"):
         prepare_premium_handoff(unknown, include_timing=False)
+
+
+def test_v411_author_and_reviewer_instructions_require_depth_without_a_fixed_template():
+    author = humanization_instructions("pt-BR")
+    reviewer = humanization_verifier_instructions("pt-BR")
+
+    assert "não force essa ordem" in author
+    assert "sem transformar isso numa fórmula repetitiva" in author
+    assert "campo humano ativado" in author
+    assert "tecnicamente correto mas abstrato" in reviewer
+    assert "fácil de trocar por outro mapa" in reviewer
+    assert "corte-o em vez de preencher espaço" in reviewer
+
+
+def test_v411_narrative_plan_allows_translated_aspect_names():
+    result = analyse_birth_chart(birth(), include_timing=False)
+    details = result["narrative_plan"]["technical_details_to_hide"]
+
+    assert "aspect names" not in details
+    assert any("immediately translated" in item for item in details)
+
+
+def test_v411_timing_records_remain_auditable_without_becoming_mandatory_coverage():
+    result = analyse_birth_chart(
+        birth(), report_depth="deep", as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45,
+    )
+    facts = result["reasoning_packet"]["facts"]
+    timing = facts["timing_evidence"]
+
+    assert timing
+    assert facts["reader_timing_candidates"] == [
+        {"id": item["id"], "kind": item["kind"]} for item in timing
+    ]
+    required = facts["coverage"]["required_evidence"]
+    assert not {key for key in required if key.startswith(("current_phase", "developmental_material"))}
+    assert all(key.startswith(("planet.", "ascendant", "chart_ruler", "natal_node_axis", "configuration.")) for key in required)
+
+
+def test_v411_client_appendix_is_curated_and_prepare_keeps_full_audit_sidecar():
+    as_of = datetime(2026, 8, 27, tzinfo=timezone.utc)
+    result = analyse_birth_chart(birth(), report_depth="deep", as_of=as_of, horizon_days=45)
+    chart = build_safe_interpretive_view(calculate_chart(birth()))
+    client = technical_appendix(
+        chart, result["hierarchy"], result["claims"], result["timing"], result["chart_structure"], None,
+    )
+
+    assert "## Condições" in client
+    assert "## Eixo nodal" in client
+    assert "## Aspectos" in client
+    assert "## Estrutura e configurações" in client
+    assert "- Registro semântico: 2.5.0" in client
+    assert "- Metodologia de timing: 4.0.1" in client
+    assert "- Template do relatório: 4.1.1-reader-experience" in client
+    assert "Profecção anual (técnica de Signo Inteiro)" in client
+    positions = client.split("## Posições", 1)[1].split("## Ângulos", 1)[0]
+    assert "Signo Inteiro" not in positions
+    for internal_marker in ("Política versionada completa", "## Claims", "## Reasoned synthesis", "## Chart signature", "## Narrative plan", "evidence_family"):
+        assert internal_marker not in client
+
+    handoff = prepare_premium_handoff(birth(), as_of=as_of, horizon_days=45)
+    assert handoff["technical_appendix"] == client
+    assert "Política versionada completa" in handoff["audit_sidecar"]
+    assert "## Chart signature" in handoff["audit_sidecar"]
+
+
+def test_v411_versioning_updates_editorial_versions_only():
+    policy = calculate_chart(birth()).policy
+
+    assert policy["methodology_version"] == "4.1.1"
+    assert policy["report_template_version"] == "4.1.1-reader-experience"
+    assert policy["semantic_registry_version"] == "2.5.0"
+    assert policy["timing_version"] == "4.0.1"
+    assert policy["schema_version"] == "4.1.0"

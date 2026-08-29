@@ -97,6 +97,12 @@ def build_reasoning_packet(
         if body in PRIMARY_BODIES
     ]
     timing_evidence = _timing_evidence(timing, timeline, developmental_intervals)
+    # These are already selected, typed records. They are candidates for reader
+    # prose, not an additional timing ranking or a coverage obligation.
+    reader_timing_candidates = [
+        {"id": item["id"], "kind": item["kind"]}
+        for item in timing_evidence
+    ]
     configurations = [dict(item.data) for item in chart.factors if item.kind == "configuration"]
     promoted_configurations = _promoted_configurations(configurations, hierarchy)
     node_axis = next((to_primitive(item) for item in chart.factors if item.kind == "natal_node_axis"), None)
@@ -114,8 +120,6 @@ def build_reasoning_packet(
             **({"chart_ruler": ["chart_ruler.natal"]} if any(item.kind == "chart_ruler" for item in chart.factors) else {}),
             **({"natal_node_axis": ["node_axis.natal"]} if node_axis else {}),
             **{f"configuration.{item['id']}": [item["id"]] for item in promoted_configurations},
-            **({"current_phase": [item["id"] for item in timing_evidence if item["kind"] in {"annual_profection", "activation_instance", "secondary_progression", "solar_arc"}]} if any(item["kind"] in {"annual_profection", "activation_instance", "secondary_progression", "solar_arc"} for item in timing_evidence) else {}),
-            **({"developmental_material": [item["id"] for item in timing_evidence if item["kind"] in {"timeline_phase", "developmental_interval"}]} if any(item["kind"] in {"timeline_phase", "developmental_interval"} for item in timing_evidence) else {}),
         },
     }
     return {
@@ -138,6 +142,7 @@ def build_reasoning_packet(
             "allowed_claims": [to_primitive(item) for item in allowed_claims],
             "timing": timing or {},
             "timing_evidence": timing_evidence,
+            "reader_timing_candidates": reader_timing_candidates,
             "positions": [to_primitive(item) for item in chart.factors if item.kind == "position" and item.bodies[0] in PRIMARY_BODIES],
             "natal_node_axis": node_axis,
             "configurations": configurations,
@@ -149,7 +154,7 @@ def build_reasoning_packet(
             "may_not_infer": PROHIBITED_EXTENSIONS,
             "conditional_house_policy": "Do not use conditional house context as central evidence. It may be disclosed as a conditional alternative only.",
             "counterweight_policy": "Counterweights are candidates, not conclusions. Use one only when it materially qualifies the cited proposition or domain.",
-            "timing_context_policy": "Calculated timing context may orient selection, but every timing statement in prose must cite an authorised timing evidence id.",
+            "timing_context_policy": "Selected typed timing records are optional reader candidates, not mandatory coverage. Retain one in prose only when it supports a useful, specific human field linked to natal evidence; every timing statement must cite an authorised timing evidence id.",
             "configuration_reuse_policy": "A configuration may be cited in more than one synthesis only for a genuinely distinct role. Its group_id remains one structural evidence family: reuse cannot raise confidence, prominence, support count or evidence-family count, and the full configuration explanation appears once.",
             "localization_policy": "Localization may change language and examples, never factor weights, personality or prediction.",
         },
@@ -517,7 +522,7 @@ def build_narrative_plan(
         "sequence": "chart signature → differentiated themes → relevant areas → timing → integration",
         "cross_references": references[:6],
         "avoid_repetition": ["Explain each structural factor once; later sections reference it briefly.", "Do not force a light/shadow formula where a nuance or counterweight is more useful."],
-        "technical_details_to_hide": ["aspect names", "house-system labels when convergent", "orb values", "registry identifiers"],
+        "technical_details_to_hide": ["raw aspect labels unless they aid orientation and are immediately translated", "house-system labels when convergent", "orb values", "registry identifiers"],
         "integration_move": by_id[str(leading[0]["id"])]["narrative_moves"]["integration"] if leading else "",
         "life_area_priorities": signature.get("domain_priorities", []),
     }
@@ -686,17 +691,30 @@ def humanization_instructions(language: str = "pt-BR") -> str:
     if language.startswith("pt"):
         return (
             "Escreva em nossa voz: dirija-se predominantemente à pessoa em segunda pessoa natural, variando a construção quando "
-            "a repetição ficar mecânica. Seja direto, psicologicamente perceptivo, humano antes do técnico, emocionalmente legível, "
+            "a repetição ficar mecânica. Seja direto, psicologicamente perceptivo, priorize significado humano quando isso ajudar a clareza, emocionalmente legível, "
             "íntimo sem presumir biografia e de baixo jargão. Ao nomear astrologia, traduza imediatamente o termo para linguagem comum. "
-            "Interpretação vem antes de coaching. Não use voz acadêmica, legalista ou de QA interno. Não acrescente fator, biografia, "
-            "evento, diagnóstico ou certeza. Preserve citações internas de fatores para verificação, mas não as exponha no corpo principal."
+            "Nas seções centrais, comece normalmente por um padrão psicologicamente reconhecível quando isso ajudar o leitor e revele em seguida "
+            "a astrologia que o sustenta; não force essa ordem quando a estrutura astrológica for mais clara ou natural. Evite aberturas mecânicas "
+            "como 'você pode notar'. Para as três ou quatro dinâmicas principais, desenvolva, quando realmente acrescentar sentido, mecanismo interno, "
+            "expressão reconhecível, recurso, tensão ou modo de falha, contrapeso material e interação com outro fator importante — sem transformar isso "
+            "numa fórmula repetitiva. Prefira linguagem vivida a repetir registro semântico como função, coordenação disponível, estrutura, critério ou "
+            "possibilidade. Interpretação vem antes de coaching. No timing, comece pelo campo humano ativado e então apresente trânsito, profecção, "
+            "progressão, arco ou ciclo; use somente candidatos tipados selecionados quando puderem sustentar um campo específico. Não use voz acadêmica, "
+            "legalista ou de QA interno. Não acrescente fator, biografia, evento, diagnóstico ou certeza. Preserve citações internas de fatores para "
+            "verificação, mas não as exponha no corpo principal."
         )
     return (
         "Write in our house voice: address the reader predominantly in natural second person, varying construction whenever repeated "
-        "direct address would become mechanical. Be direct, psychologically perceptive, human-meaning-first, emotionally legible, "
+        "direct address would become mechanical. Be direct, psychologically perceptive, prioritize human meaning when that improves clarity, emotionally legible, "
         "intimate but non-presumptive, and low-jargon. When astrology is named, translate the term immediately into plain language. "
-        "Interpretation comes before coaching. Use no academic, legalistic, or internal-QA voice. Do not add a factor, biography, event, "
-        "diagnosis or certainty. Preserve internal factor citations for verification, but do not expose them in the main reading."
+        "In central sections, normally lead with a psychologically recognizable pattern when that helps the reader, then reveal the supporting "
+        "astrology; do not force that order when the astrological structure is clearer or more natural. Avoid mechanical openings such as 'you may notice'. "
+        "For the three or four leading dynamics, develop an inner mechanism, recognizable expression, resource, tension or failure mode, material "
+        "counterweight, and interaction with another important factor when each genuinely adds meaning, never as a repeated formula. Prefer lived language "
+        "over semantic-register repetition such as function, available coordination, structure, criterion, or possibility. Interpretation comes before coaching. "
+        "For timing, lead with the human field being activated and then name the transit, profection, progression, arc, or cycle; use selected typed candidates "
+        "only when they support a specific field. Use no academic, legalistic, or internal-QA voice. Do not add a factor, biography, event, diagnosis or certainty. "
+        "Preserve internal factor citations for verification, but do not expose them in the main reading."
     )
 
 
@@ -714,17 +732,22 @@ def humanization_verifier_instructions(language: str = "pt-BR") -> str:
             "e que cada contrapeso realmente qualifica a proposição. A prosa pode ser mais humana, mas não pode incluir novo "
             "fator, casa condicional como fato, biografia, diagnóstico, evento ou previsão. Exija voz direta, psicologicamente legível, "
             "íntima sem presunção, de baixo jargão, com tradução imediata de termos astrológicos e interpretação antes de coaching; "
-            "rejeite tom acadêmico, legalista ou de QA. Faça o swap test conceitual em cada parágrafo principal e corrija genericidade "
-            "por seleção ou mecanismo, nunca inventando detalhes de vida."
+            "rejeite texto tecnicamente correto mas abstrato, psicologicamente genérico, emocionalmente plano, excessivamente cauteloso, "
+            "fácil de trocar por outro mapa ou guiado por coaching. Nas dinâmicas centrais, exija desenvolvimento reconhecível do mecanismo "
+            "sem impor uma fórmula de abertura ou parágrafo. Retenha timing ou desenvolvimento somente quando a evidência tipada selecionada "
+            "sustentar um campo humano útil e específico ligado ao natal; caso contrário, corte-o em vez de preencher espaço. Faça o swap test "
+            "conceitual em cada parágrafo principal e corrija genericidade por seleção ou mecanismo, nunca inventando detalhes de vida."
         )
     return (
         "Compare each final paragraph with its authorised ReasonedSynthesis. Approve only if core meaning, certainty and "
         "limits are equivalent; also confirm that valid contradictions were not flattened and every counterweight materially "
         "qualifies the proposition. Prose may be more human but cannot add a factor, treat a conditional house as fact, add "
         "biography, diagnosis, event or forecast. Require direct, psychologically legible, intimate-but-non-presumptive, low-jargon "
-        "voice with immediate plain-language translation of astrology and interpretation before coaching; reject academic, legalistic, "
-        "or internal-QA voice. Apply a conceptual swap test to each major paragraph and correct genericity through selection or mechanism, "
-        "never invented life detail."
+        "voice with immediate plain-language translation of astrology and interpretation before coaching; reject prose that is technically correct "
+        "but abstract, psychologically generic, emotionally flat, overly cautious, easily swapped to another chart, or coaching-led. For central dynamics, "
+        "require recognizable development of the mechanism without imposing a fixed opening or paragraph formula. Retain timing or developmental material only "
+        "when selected typed evidence supports a useful, specific human field linked to natal evidence; otherwise cut it rather than pad. Apply a conceptual "
+        "swap test to each major paragraph and correct genericity through selection or mechanism, never invented life detail."
     )
 
 

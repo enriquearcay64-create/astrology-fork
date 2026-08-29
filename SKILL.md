@@ -19,9 +19,9 @@ Leia [references/input-schema.md](references/input-schema.md) antes de preparar 
 2. Construir `SafeInterpretiveChart` e aplicar gates de qualidade antes de qualquer interpretação. Casa, ângulo, Lot, profecção ou regente tópico instável não pode chegar à síntese como fato.
 3. Construir Claims/motifs autorizados, `ReasonedSynthesis`, `ChartSignature` e `NarrativePlanner` nessa ordem. A assinatura — não a lista de themes — governa seleção, abertura, ordem e áreas prioritárias.
 4. Aplicar integralmente o [padrão interpretativo operacional](references/methodology.md#padrão-interpretativo-operacional--v4): selecionar e omitir, compor mecanismos, preservar ancestralidade/contradição, exigir relevância real de contrapesos e resistir ao swap.
-5. No premium, o **Author High** cria uma única síntese holística e o rascunho a partir do packet fechado. Cada dedução cita 1–5 fatores existentes; exemplos são hipotéticos e não adicionam biografia. A voz é predominantemente direta em segunda pessoa natural, humana antes da técnica, psicologicamente legível, íntima sem presumir biografia e sem tom acadêmico, jurídico ou de QA interno.
+5. No premium, o **Author High** cria uma única síntese holística e o rascunho a partir do packet fechado. Cada dedução cita 1–5 fatores existentes; exemplos são hipotéticos e não adicionam biografia. Nas dinâmicas centrais, normalmente parte de um padrão humano reconhecível quando isso ajuda e então revela a astrologia; não força essa ordem quando a estrutura técnica for mais clara. A voz é predominantemente direta em segunda pessoa natural, psicologicamente legível, íntima sem presumir biografia e sem tom acadêmico, jurídico ou de QA interno. Aspectos importantes podem ser nomeados com tradução imediata; timing só entra quando sustenta um campo humano específico.
 6. Rodar o `Deterministic Provenance Guard`; ele verifica origem, permissões, operações, tetos, timing, hashes e cobertura por parágrafo, sem alegar prova semântica.
-7. Fazer um passe separado de **Reviewer/Editor High**. Ele corrige diretamente relevância, contradições achatadas, Barnum, genericidade, repetição, jargão não traduzido, coaching antes da interpretação e deriva semântica; só bloqueia quando falta dado ou evidência não corrigível editorialmente.
+7. Fazer um passe separado de **Reviewer/Editor High**. Ele corrige diretamente relevância, contradições achatadas, Barnum, genericidade, repetição, jargão não traduzido, abstração tecnicamente correta, achatamento emocional, cautela excessiva, coaching antes da interpretação e deriva semântica; remove timing ou desenvolvimento que não justifique espaço leitor. Só bloqueia quando falta dado ou evidência não corrigível editorialmente.
 8. Rodar o `Publication Guard` e publicar apenas a versão exata aprovada. Se houver fator, certeza, timing ou extensão não autorizada, reduzir especificidade ou regenerar.
 9. Seguir [report-design.md](references/report-design.md) para divulgação progressiva e experiência do leitor. Localization altera somente apresentação; feedback contextualiza exemplos, nunca suporte astrológico. Timing descreve ativações, não eventos garantidos.
 
@@ -61,7 +61,7 @@ python3 scripts/astrology_skill.py /caminho/entrada.json --solar-return-year 202
 python3 scripts/astrology_skill.py /caminho/entrada.json --depth deep --format report
 ```
 
-O JSON resultante contém payload técnico, claims, temas, timing e relatório. Apresente a seção `report` para o usuário e conserve o restante para auditoria ou apêndice técnico.
+O JSON resultante contém payload técnico, claims, temas, timing e relatório. No Premium Complete, apresente a leitura e o apêndice técnico voltado ao cliente; conserve o audit sidecar, guards e demais registros internos para auditoria.
 
 Bloquear ou reformular trauma, abuso, abandono, diagnóstico, morte, doença, gravidez, divórcio, falência e acontecimentos inevitáveis. Quando faltar suporte, declarar a lacuna em vez de improvisar.
 
