@@ -124,7 +124,7 @@ def test_life_cycles_exclude_natal_baseline_and_group_passes():
 
 def test_policy_schema_current_phase_and_directed_contacts_are_structured():
     result = analyse_birth_chart(birth(), as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=30)
-    assert result["chart"]["schema_version"] == "4.1.0"
+    assert result["chart"]["schema_version"] == "4.1.1"
     assert result["chart"]["policy"]["anti_cherry_picking"] if "anti_cherry_picking" in result["chart"]["policy"] else result["chart"]["policy"]["house_policy"]["anti_cherry_picking"]
     assert result["timing"]["current_phase"]["traditional_focus"]["time_lord"]
     assert "contacts" in result["progressions"] and "contacts" in result["solar_arcs"]

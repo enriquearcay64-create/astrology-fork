@@ -1,8 +1,8 @@
-# Premium Complete Report Contract — V4.1.1
+# Premium Complete Report Contract — V4.1.2
 
 ## Status and purpose
 
-This document is the canonical product and methodology contract for the V4.1.1
+This document is the canonical product and methodology contract for the V4.1.2
 **Premium Complete** natal report. It defines the reader-facing promise,
 interpretive boundaries, mandatory coverage, editorial standards, and premium
 publication path. It does not prescribe an implementation, data model, or
@@ -78,6 +78,20 @@ The report may disclose conditional alternatives in optional technical depth;
 it must not present them as settled psychological facts. Placidus agreement
 with another classification is a robustness note, never an additional evidence
 vote.
+
+### Placidus house-ruler routing
+
+When a Placidus cusp is available and its sign is stable across the declared
+birth-time uncertainty endpoints, Premium may retain the factual route:
+
+`Placidus house → cusp sign → configured traditional ruler → ruler’s separately authorised context`.
+
+This is routing evidence, not a second natal importance vote. It has no modern
+rulership alternative, Whole-Sign natal fallback, prominence bonus, confidence
+bonus, hierarchy score, Chart Signature score, counterweight, or configuration
+weight. A changed cusp sign with declared uncertainty withholds that house’s
+route; counterfactual stress tests disclose sensitivity without changing an
+exact-time route.
 
 ## Mandatory natal coverage
 
@@ -271,6 +285,15 @@ reader: relevance, naturalness, repetition, meaningful counterweights,
 preserved contradiction, and resistance to generic report swapping. The
 Publication Guard releases only the exact approved text.
 
+Premium handoff contract 1.1 requires every paragraph source row to include
+`synthesis_ids`, `claim_ids`, and `timing_ids`. Direct Claim provenance is
+allowed only for an explicitly renderable atomic house-ruler routing Claim.
+Any statement combining that route with the ruler’s natal position, house,
+aspect, condition, configuration, or timing requires an approved
+`ReasonedSynthesis`. The Reviewer compares a direct-Claim paragraph to that
+canonical atomic Claim and rewrites or removes unsupported expansion. A v1.0
+source row does not silently satisfy this contract.
+
 This contract adds no new agents, semantic judges, embeddings, databases, or
 premium workflow stages. It preserves the existing division between
 deterministic verification and human editorial judgment.
@@ -315,10 +338,10 @@ does not guarantee the full mandatory coverage required of Premium Complete.
 
 ## Explicit non-goals
 
-V4.1 does not:
+V4.1.2 does not:
 
-- introduce a new astrology technique, factor, predictive system, or house
-  calculation;
+- introduce a new astrology technique, predictive system, or house
+  calculation beyond factual reliable Placidus cusp-to-traditional-ruler routing;
 - make Whole Sign a second natal psychological house narrative;
 - turn every planet, house, or aspect into an equal standalone section;
 - expand pair-rule catalogues or generate canned placement matrices;

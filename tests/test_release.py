@@ -18,7 +18,7 @@ def birth() -> BirthData:
 
 def test_release_metadata_declares_cli_and_ephemeris_data_files():
     project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    assert 'version = "4.1.1"' in project
+    assert 'version = "4.1.2"' in project
     assert 'astrology-skill = "astrology.cli:main"' in project
     assert '"assets/ephe/*.se1"' in project
     assert all((EPHEMERIS_PATH / name).exists() for name in ("sepl_18.se1", "semo_18.se1", "seas_18.se1"))

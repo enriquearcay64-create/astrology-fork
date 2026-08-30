@@ -104,6 +104,7 @@ def build_reasoning_packet(
         for item in timing_evidence
     ]
     configurations = [dict(item.data) for item in chart.factors if item.kind == "configuration"]
+    house_rulers = [to_primitive(item) for item in chart.factors if item.kind == "placidus_house_ruler"]
     promoted_configurations = _promoted_configurations(configurations, hierarchy)
     node_axis = next((to_primitive(item) for item in chart.factors if item.kind == "natal_node_axis"), None)
     coverage = {
@@ -137,6 +138,7 @@ def build_reasoning_packet(
             "aspects": aspects,
             "conditions": [to_primitive(item) for item in chart.factors if item.kind == "planetary_condition"],
             "safe_house_context": house_context,
+            "placidus_house_rulers": house_rulers,
             "conditional_house_context": [asdict(item) for item in chart.conditional_house_scenarios.values()],
             "angle_contacts": [to_primitive(item) for item in chart.angle_contacts],
             "allowed_claims": [to_primitive(item) for item in allowed_claims],
@@ -156,6 +158,7 @@ def build_reasoning_packet(
             "counterweight_policy": "Counterweights are candidates, not conclusions. Use one only when it materially qualifies the cited proposition or domain.",
             "timing_context_policy": "Selected typed timing records are optional reader candidates, not mandatory coverage. Retain one in prose only when it supports a useful, specific human field linked to natal evidence; every timing statement must cite an authorised timing evidence id.",
             "configuration_reuse_policy": "A configuration may be cited in more than one synthesis only for a genuinely distinct role. Its group_id remains one structural evidence family: reuse cannot raise confidence, prominence, support count or evidence-family count, and the full configuration explanation appears once.",
+            "house_ruler_routing_policy": "A reliable Placidus house-ruler Claim may state only its atomic cusp-to-ruler route directly. Any use of the ruler's natal context requires an approved house-ruler-context synthesis with same-ruler ancestry.",
             "localization_policy": "Localization may change language and examples, never factor weights, personality or prediction.",
         },
         "localized_rendering_context": localization_audit(localization_profile).get("rendering_context"),
@@ -177,9 +180,11 @@ def validate_reasoned_syntheses(
     known = _evidence_ids(chart)
     timing_ids = set(timing_evidence_ids or [])
     claim_map = {claim.id: claim for claim in (claims or []) if claim.status == "allowed"}
+    factor_kinds = {factor.id: factor.kind for factor in chart.factors}
     output: List[ReasonedSynthesis] = []
     for item in items:
         errors: List[str] = []
+        source_claims: List[Claim] = []
         cited = list(item.primary_factors) + list(item.modifiers) + list(item.counterweights)
         if not item.primary_factors:
             errors.append("missing_primary_factors")
@@ -218,6 +223,11 @@ def validate_reasoned_syntheses(
                 errors.append("semantic_disconnect_from_sources")
             if _specificity_escalation(item):
                 errors.append("biographical_specificity_escalation")
+            errors.extend(_house_ruler_context_errors(item, chart, source_claims, factor_kinds))
+        # Cusp-to-ruler factors are not generic evidence.  Apply this check
+        # outside the Claim-map branch so a raw route cannot evade the
+        # specialised validator merely by omitting its canonical Claim.
+        errors.extend(_house_ruler_factor_contract_errors(item, chart, source_claims, factor_kinds))
         # One aspect already composes two planetary functions; a lone house or
         # condition does not.
         if item.reasoning_class == "natal_timing_interaction" and (not any(factor in timing_ids for factor in item.primary_factors) or not any(factor not in timing_ids for factor in item.primary_factors)):
@@ -239,6 +249,160 @@ def validate_reasoned_syntheses(
         item.status = "blocked" if errors else "allowed"
         output.append(item)
     return output
+
+
+def _house_ruler_factor_contract_errors(
+    item: ReasonedSynthesis,
+    chart: SafeInterpretiveChart,
+    source_claims: Sequence[Claim],
+    factor_kinds: Dict[str, str],
+) -> List[str]:
+    """Require every raw cusp-ruler factor to use the sole routing contract.
+
+    House-ruler factors are factual routes, not free-standing synthesis
+    material.  A valid occurrence is exactly one route in primary factors of
+    its canonical contextualisation synthesis; the specialised validator then
+    checks the required same-ruler context Claim and all modifiers.
+    """
+    factor_by_id = {factor.id: factor for factor in chart.factors}
+    cited = list(item.primary_factors) + list(item.modifiers) + list(item.counterweights)
+    routing_ids = [
+        factor_id
+        for factor_id in cited
+        if factor_kinds.get(factor_id) == "placidus_house_ruler"
+    ]
+    if not routing_ids:
+        return []
+
+    errors: List[str] = []
+    routing_primary = [
+        factor_id
+        for factor_id in item.primary_factors
+        if factor_kinds.get(factor_id) == "placidus_house_ruler"
+    ]
+    if any(factor_id in item.modifiers or factor_id in item.counterweights for factor_id in routing_ids):
+        errors.append("house_ruler_factor_must_be_routing_primary")
+    unique_routing_ids = list(dict.fromkeys(routing_ids))
+    if len(unique_routing_ids) != 1:
+        errors.append("house_ruler_factor_requires_single_routing_primary")
+        return errors
+    if len(routing_ids) != 1 or routing_primary != unique_routing_ids:
+        errors.append("house_ruler_factor_requires_single_routing_primary")
+
+    routing_factor = factor_by_id.get(unique_routing_ids[0])
+    if not routing_factor:
+        return [*errors, "invalid_house_ruler_context_ancestry"]
+    house = routing_factor.data.get("house")
+    ruler = routing_factor.data.get("ruler")
+    if not isinstance(house, int) or house not in range(1, 13) or not isinstance(ruler, str):
+        return [*errors, "invalid_house_ruler_context_ancestry"]
+    expected_claim_id = f"claim.house_ruler.placidus.{house}"
+    matching_claims = [
+        claim
+        for claim in source_claims
+        if claim.id == expected_claim_id
+        and claim.type == "placidus_house_ruler"
+        and claim.evidence == [routing_factor.id]
+    ]
+    if len(matching_claims) != 1:
+        errors.append("house_ruler_factor_requires_matching_routing_claim")
+    expected_id = f"reasoned.house_ruler_context.placidus.{house}.{ruler}"
+    if (
+        item.id != expected_id
+        or item.reasoning_class != "integrated_pattern"
+        or "contextualization" not in item.composition_operations
+    ):
+        errors.append("house_ruler_factor_requires_contextualization_contract")
+    return list(dict.fromkeys(errors))
+
+
+def _house_ruler_context_errors(
+    item: ReasonedSynthesis,
+    chart: SafeInterpretiveChart,
+    source_claims: Sequence[Claim],
+    factor_kinds: Dict[str, str],
+) -> List[str]:
+    """Keep cusp-ruler routing compositional without inventing topical themes."""
+    routing_claims = [claim for claim in source_claims if claim.type == "placidus_house_ruler"]
+    if not routing_claims:
+        return []
+    errors: List[str] = []
+    if len(routing_claims) != 1:
+        return ["house_ruler_context_requires_one_routing_claim"]
+    routing = routing_claims[0]
+    factor_by_id = {factor.id: factor for factor in chart.factors}
+    routing_factor = factor_by_id.get(routing.evidence[0]) if routing.evidence else None
+    if not routing_factor or routing_factor.kind != "placidus_house_ruler":
+        return ["invalid_house_ruler_context_ancestry"]
+    house = int(routing_factor.data["house"])
+    ruler = str(routing_factor.data["ruler"])
+    expected_id = f"reasoned.house_ruler_context.placidus.{house}.{ruler}"
+    if item.id != expected_id:
+        errors.append("noncanonical_house_ruler_context_id")
+    if item.reasoning_class != "integrated_pattern" or "contextualization" not in item.composition_operations:
+        errors.append("house_ruler_context_requires_contextualization")
+    if routing_factor.id not in item.primary_factors:
+        errors.append("house_ruler_factor_missing_from_primary")
+    context_claims = [claim for claim in source_claims if claim.id != routing.id]
+    if not context_claims:
+        errors.append("house_ruler_context_requires_authorized_ruler_claim")
+    allowed_context_kinds = {"position", "placidus_house", "angle_contact", "configuration", "aspect"}
+    for claim in context_claims:
+        if not claim.evidence:
+            errors.append("invalid_house_ruler_context_ancestry")
+            continue
+        for evidence_id in claim.evidence:
+            bodies, kind = _evidence_bodies_and_kind(evidence_id, chart, factor_by_id, factor_kinds)
+            if kind not in allowed_context_kinds or ruler not in bodies:
+                errors.append("house_ruler_context_not_owned_by_ruler")
+            if evidence_id not in item.primary_factors:
+                errors.append("house_ruler_context_factor_missing_from_primary")
+
+    # A routing synthesis may qualify an already-authorised ruler context, but
+    # it may not smuggle in another body's factors as modifiers or
+    # counterweights.  Conditions and hierarchy are the existing modifier
+    # roles; counterweights retain the existing Claim-level aspect contract.
+    for modifier in item.modifiers:
+        bodies, kind = _evidence_bodies_and_kind(modifier, chart, factor_by_id, factor_kinds)
+        if kind == "hierarchy":
+            if bodies != {ruler}:
+                errors.append("house_ruler_modifier_not_owned_by_ruler")
+        elif kind == "planetary_condition":
+            if bodies != {ruler}:
+                errors.append("house_ruler_condition_not_owned_by_ruler")
+        else:
+            errors.append("house_ruler_modifier_not_authorized")
+
+    allowed_counterweights = {
+        counterweight
+        for claim in context_claims
+        for counterweight in claim.counterweights
+    }
+    for counterweight in item.counterweights:
+        bodies, kind = _evidence_bodies_and_kind(counterweight, chart, factor_by_id, factor_kinds)
+        if kind != "aspect" or ruler not in bodies:
+            errors.append("house_ruler_counterweight_not_owned_by_ruler")
+        if counterweight not in allowed_counterweights:
+            errors.append("house_ruler_counterweight_not_authorized")
+    return list(dict.fromkeys(errors))
+
+
+def _evidence_bodies_and_kind(
+    evidence_id: str,
+    chart: SafeInterpretiveChart,
+    factor_by_id: Dict[str, object],
+    factor_kinds: Dict[str, str],
+) -> tuple[set[str], Optional[str]]:
+    """Resolve one existing evidence id through its canonical ownership path."""
+    if evidence_id.startswith("hierarchy."):
+        return {evidence_id.removeprefix("hierarchy.")}, "hierarchy"
+    aspect = next((entry for entry in chart.aspects if entry.id == evidence_id), None)
+    if aspect:
+        return {aspect.left, aspect.right}, "aspect"
+    factor = factor_by_id.get(evidence_id)
+    if factor:
+        return set(factor.bodies), factor_kinds.get(evidence_id)
+    return set(), None
 
 
 def _timing_evidence(
@@ -551,10 +715,25 @@ def build_chart_signature(
 ) -> Dict[str, object]:
     """Compact, traceable architecture used to plan rather than template prose."""
     usable = [item for item in syntheses if item.get("status") == "allowed"]
+    # Reliable cusp-to-ruler routes remain available to the Author and source
+    # map, but they are contextual routing rather than independent structural
+    # evidence.  The marker is reconstructed from an already-allowed synthesis
+    # plus its canonical routing Claim/factor ancestry, never from a model
+    # supplied label alone.
+    structural_syntheses = [
+        item for item in usable
+        if not _is_verified_house_ruler_context_synthesis(item, chart)
+    ]
+    routing_factor_ids = {
+        factor.id for factor in chart.factors
+        if factor.kind == "placidus_house_ruler"
+    }
     evidence_bodies = _evidence_bodies(chart)
     body_to_syntheses: Dict[str, set[str]] = defaultdict(set)
-    for synthesis in usable:
+    for synthesis in structural_syntheses:
         for factor_id in synthesis["primary_factors"]:
+            if factor_id in routing_factor_ids:
+                continue
             # A configuration's members may be contextually reused across
             # syntheses, but the structural family cannot become independent
             # connection/support votes for each member.
@@ -594,8 +773,13 @@ def build_chart_signature(
         "logic": "a structural body connects three or more authorised syntheses" if anchors else "no structural body connects three or more authorised syntheses; retain multiple centres",
         "connection_counts": {body: len(body_to_syntheses.get(body, set())) for body in selected_bodies},
     }
-    counterweights = sorted({item for synthesis in usable for item in synthesis.get("counterweights", [])})
-    contradictions = [item["id"] for item in usable if "polarity" in item.get("composition_operations", []) or "friction" in item.get("composition_operations", [])]
+    counterweights = sorted({
+        item
+        for synthesis in structural_syntheses
+        for item in synthesis.get("counterweights", [])
+        if item not in routing_factor_ids
+    })
+    contradictions = [item["id"] for item in structural_syntheses if "polarity" in item.get("composition_operations", []) or "friction" in item.get("composition_operations", [])]
     domain_scores: Dict[int, Dict[str, object]] = {}
     if chart.house_placements:
         for body, placement in chart.house_placements.items():
@@ -612,25 +796,35 @@ def build_chart_signature(
         for factor in chart.factors if factor.kind == "configuration"
     }
     seen_configuration_families = set()
-    for synthesis in usable:
+    for synthesis in structural_syntheses:
         theme = str(synthesis["id"]).removeprefix("reasoned.")
         scoring_factors = []
         for factor in synthesis["primary_factors"]:
+            if factor in routing_factor_ids:
+                continue
             family = configuration_families.get(factor)
             if family and family in seen_configuration_families:
                 continue
             if family:
                 seen_configuration_families.add(family)
             scoring_factors.append(factor)
+        # Preserve the existing zero-score record for a deduplicated
+        # configuration family, but do not manufacture a theme from a raw
+        # routing factor after its structural contribution was removed.
+        if not scoring_factors and any(factor in routing_factor_ids for factor in synthesis["primary_factors"]):
+            continue
         bodies = sorted(set().union(*(evidence_bodies.get(factor, set()) for factor in scoring_factors)))
         score = sum(sorted((body_scores.get(body, 0) for body in bodies), reverse=True)[:2]) + min(2, len(scoring_factors))
         theme_priorities.append({"theme": theme, "score": score, "bodies": bodies, "source_syntheses": [synthesis["id"]]})
     theme_priorities.sort(key=lambda item: (-int(item["score"]), str(item["theme"])))
     core_factor_ids = []
     for synthesis_id in selected_syntheses:
-        synthesis = next((item for item in usable if item["id"] == synthesis_id), None)
+        synthesis = next((item for item in structural_syntheses if item["id"] == synthesis_id), None)
         if synthesis:
-            core_factor_ids.extend(synthesis["primary_factors"])
+            core_factor_ids.extend(
+                factor for factor in synthesis["primary_factors"]
+                if factor not in routing_factor_ids
+            )
     return {
         "mode": mode,
         "core_factors": list(dict.fromkeys(core_factor_ids))[:12],
@@ -645,6 +839,34 @@ def build_chart_signature(
         "theme_priorities": theme_priorities,
         "configuration_summary": structure.get("configurations", []),
     }
+
+
+def _is_verified_house_ruler_context_synthesis(
+    synthesis: Dict[str, object],
+    chart: SafeInterpretiveChart,
+) -> bool:
+    """Recognise the approved non-scoring routing composition canonically."""
+    if synthesis.get("status") != "allowed":
+        return False
+    factors = {
+        factor.id: factor
+        for factor in chart.factors
+        if factor.kind == "placidus_house_ruler"
+    }
+    routing_ids = [factor_id for factor_id in synthesis.get("primary_factors", []) if factor_id in factors]
+    if len(routing_ids) != 1:
+        return False
+    routing = factors[routing_ids[0]]
+    house = routing.data.get("house")
+    ruler = routing.data.get("ruler")
+    if not isinstance(house, int) or not isinstance(ruler, str):
+        return False
+    return (
+        synthesis.get("id") == f"reasoned.house_ruler_context.placidus.{house}.{ruler}"
+        and synthesis.get("reasoning_class") == "integrated_pattern"
+        and "contextualization" in synthesis.get("composition_operations", [])
+        and f"claim.house_ruler.placidus.{house}" in synthesis.get("source_claim_ids", [])
+    )
 
 
 def build_natal_timing_interactions(
@@ -701,7 +923,9 @@ def humanization_instructions(language: str = "pt-BR") -> str:
             "possibilidade. Interpretação vem antes de coaching. No timing, comece pelo campo humano ativado e então apresente trânsito, profecção, "
             "progressão, arco ou ciclo; use somente candidatos tipados selecionados quando puderem sustentar um campo específico. Não use voz acadêmica, "
             "legalista ou de QA interno. Não acrescente fator, biografia, evento, diagnóstico ou certeza. Preserve citações internas de fatores para "
-            "verificação, mas não as exponha no corpo principal."
+            "verificação, mas não as exponha no corpo principal. Quando um parágrafo usar modo direto de Claim, use-o apenas para a rota atômica "
+            "da regência Placidus; nunca use esse modo para contexto natal do regente, personalidade, conclusão de domínio, timing ou outra composição, "
+            "que exigem uma ReasonedSynthesis aprovada."
         )
     return (
         "Write in our house voice: address the reader predominantly in natural second person, varying construction whenever repeated "
@@ -714,7 +938,9 @@ def humanization_instructions(language: str = "pt-BR") -> str:
         "over semantic-register repetition such as function, available coordination, structure, criterion, or possibility. Interpretation comes before coaching. "
         "For timing, lead with the human field being activated and then name the transit, profection, progression, arc, or cycle; use selected typed candidates "
         "only when they support a specific field. Use no academic, legalistic, or internal-QA voice. Do not add a factor, biography, event, diagnosis or certainty. "
-        "Preserve internal factor citations for verification, but do not expose them in the main reading."
+        "Preserve internal factor citations for verification, but do not expose them in the main reading. When a paragraph uses direct Claim mode, use it only "
+        "for the atomic Placidus house-ruler route; never use it for ruler natal context, personality, a domain conclusion, timing, or another composition, "
+        "which require an approved ReasonedSynthesis."
     )
 
 
@@ -736,7 +962,10 @@ def humanization_verifier_instructions(language: str = "pt-BR") -> str:
             "fácil de trocar por outro mapa ou guiado por coaching. Nas dinâmicas centrais, exija desenvolvimento reconhecível do mecanismo "
             "sem impor uma fórmula de abertura ou parágrafo. Retenha timing ou desenvolvimento somente quando a evidência tipada selecionada "
             "sustentar um campo humano útil e específico ligado ao natal; caso contrário, corte-o em vez de preencher espaço. Faça o swap test "
-            "conceitual em cada parágrafo principal e corrija genericidade por seleção ou mecanismo, nunca inventando detalhes de vida."
+            "conceitual em cada parágrafo principal e corrija genericidade por seleção ou mecanismo, nunca inventando detalhes de vida. Para cada "
+            "parágrafo em modo direto de Claim, compare-o com o Claim canônico indicado, não com uma síntese: um Claim de regência Placidus autoriza "
+            "somente a rota atômica casa–cúspide–regente. Reescreva ou remova qualquer contexto natal do regente, significado de personalidade, "
+            "conclusão de domínio, timing ou dedução multifatorial sem ReasonedSynthesis aprovada."
         )
     return (
         "Compare each final paragraph with its authorised ReasonedSynthesis. Approve only if core meaning, certainty and "
@@ -747,7 +976,10 @@ def humanization_verifier_instructions(language: str = "pt-BR") -> str:
         "but abstract, psychologically generic, emotionally flat, overly cautious, easily swapped to another chart, or coaching-led. For central dynamics, "
         "require recognizable development of the mechanism without imposing a fixed opening or paragraph formula. Retain timing or developmental material only "
         "when selected typed evidence supports a useful, specific human field linked to natal evidence; otherwise cut it rather than pad. Apply a conceptual "
-        "swap test to each major paragraph and correct genericity through selection or mechanism, never invented life detail."
+        "swap test to each major paragraph and correct genericity through selection or mechanism, never invented life detail. For every direct-Claim paragraph, "
+        "compare the prose with its cited canonical Claim rather than a synthesis: a Placidus house-ruler Claim authorises only the atomic house–cusp–ruler "
+        "route. Rewrite or remove ruler natal context, personality meaning, a domain conclusion, timing, or any multi-factor deduction unless an approved "
+        "ReasonedSynthesis authorises it."
     )
 
 

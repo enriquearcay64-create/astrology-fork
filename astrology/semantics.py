@@ -11,7 +11,7 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 from .config import BODY_LABELS, CORE_ANGLES, ELEMENT_BY_SIGN, MODALITY_BY_SIGN, POLARITY_BY_SIGN, SIGN_RULERS, THEME_LABELS_PT
 from .models import Chart, Claim
 
-SEMANTIC_REGISTRY_VERSION = "2.5.0"
+SEMANTIC_REGISTRY_VERSION = "2.6.0"
 
 THEME_LABELS_EN = {
     "autonomy_closeness": "autonomy and closeness", "stability_change": "stability and change",
@@ -258,6 +258,30 @@ def _claim_from_house(chart: Chart, body: str, index: int, language: str) -> Cla
     )
 
 
+def _claim_from_house_ruler(chart: Chart, factor, language: str) -> Claim:
+    """Authorize only a reliable Placidus cusp-to-ruler routing relation."""
+    lang = _language(language)
+    house = int(factor.data["house"])
+    sign = str(factor.data["cusp_sign"])
+    ruler = str(factor.data["ruler"])
+    label = BODY_LABELS[lang].get(ruler, ruler.title())
+    topic = HOUSE_TOPICS[lang].get(house, "invalid Placidus house")
+    if lang == "pt":
+        statement = f"A casa Placidus {house}, ligada a {topic}, tem cúspide em {sign} e é regida por {label}; isso apenas encaminha esse campo ao contexto natal já autorizado de {label}."
+        examples = [f"observar a rota factual da casa Placidus {house} até {label}"]
+    else:
+        statement = f"Placidus house {house}, linked to {topic}, has its cusp in {sign} and is ruled by {label}; this only routes that area to {label}'s separately authorised natal context."
+        examples = [f"observe the factual route from Placidus house {house} to {label}"]
+    return Claim(
+        id=f"claim.house_ruler.placidus.{house}", theme=HOUSE_THEME.get(house, "invalid_house_ruler_routing"), type="placidus_house_ruler",
+        statement=statement, evidence=[factor.id], evidence_families=[f"placidus_house_ruler_context.{ruler}"],
+        counterweights=[], allowed_specificity="structural_tendency", allowed_examples=examples,
+        prohibited_inferences=["interpretação do signo do regente", "interpretação da casa do regente", "resultado de vida", "causalidade"],
+        astrological_support="light", authorized_motifs=["placidus_house_ruler_routing"],
+        direct_paragraph_renderable=True,
+    )
+
+
 def _sign_mode(position, language: str) -> str:
     lang = _language(language)
     descriptors = {
@@ -423,6 +447,8 @@ def build_claims(chart: Chart, max_house_claims: int = 10, include_secondary_sem
     for index, body in enumerate(sorted(eligible, key=lambda item: _body_priority(chart, item))[:max_house_claims], 1):
         if chart.house_placements[body].placidus_house is not None:
             claims.append(_claim_from_house(chart, body, index, language))
+    for factor in sorted((item for item in chart.factors if item.kind == "placidus_house_ruler"), key=lambda item: int(item.data["house"])):
+        claims.append(_claim_from_house_ruler(chart, factor, language))
     for index, factor in enumerate((item for item in chart.factors if item.kind == "configuration"), 1):
         claims.append(_claim_from_configuration(chart, factor, index, language))
     return apply_counterweights(chart, claims, include_secondary_semantics)
@@ -491,6 +517,7 @@ def verify_claims(claims: Iterable[Claim], chart: Optional[Chart] = None) -> Lis
             expected_specificity = set()
             expected_example_variants = set()
             expected_prohibited_variants = set()
+            expected_direct_renderable = False
             semantic_source_count = 0
             node_axis_factor = factor_by_id.get("node_axis.natal") if "node_axis.natal" in claim.evidence else None
             node_contact_ids = set(node_axis_factor.data.get("contact_ids", [])) if node_axis_factor else set()
@@ -524,6 +551,37 @@ def verify_claims(claims: Iterable[Claim], chart: Optional[Chart] = None) -> Lis
                     body = factor.bodies[0]
                     for language in ("pt-BR", "en-US"):
                         canonical = _claim_from_house(chart, body, 0, language)
+                        expected_motifs.update(canonical.authorized_motifs)
+                        expected_families.update(canonical.evidence_families)
+                        expected_themes.add(canonical.theme)
+                        expected_types.add(canonical.type)
+                        expected_support.add(canonical.astrological_support)
+                        expected_statements.add(canonical.statement)
+                        expected_specificity.add(canonical.allowed_specificity)
+                        expected_example_variants.add(tuple(canonical.allowed_examples))
+                        expected_prohibited_variants.add(tuple(canonical.prohibited_inferences))
+                elif factor.kind == "placidus_house_ruler":
+                    from .engine import sign_for
+                    house = int(factor.data.get("house", 0))
+                    cusp_valid = bool(chart.house_cusps_placidus) and 1 <= house <= len(chart.house_cusps_placidus)
+                    expected_sign = sign_for(chart.house_cusps_placidus[house - 1])[0] if cusp_valid else None
+                    expected_ruler = SIGN_RULERS.get(expected_sign) if expected_sign else None
+                    if (
+                        not factor.data.get("cusp_sign_reliable")
+                        or not factor.data.get("available_for_house_ruler_claim")
+                        or factor.data.get("house_system") != "placidus"
+                        or factor.data.get("cusp_sign") != expected_sign
+                        or factor.data.get("ruler") != expected_ruler
+                        or factor.data.get("ruler_position_id") != f"position.{expected_ruler}"
+                        or factor.data.get("rulership_system") != "traditional_configured"
+                        or factor.bodies != [expected_ruler]
+                        or factor.id != f"house_ruler.placidus.{house}"
+                    ):
+                        errors.append("invalid_placidus_house_ruler_provenance")
+                    semantic_source_count += 1
+                    expected_direct_renderable = True
+                    for language in ("pt-BR", "en-US"):
+                        canonical = _claim_from_house_ruler(chart, factor, language)
                         expected_motifs.update(canonical.authorized_motifs)
                         expected_families.update(canonical.evidence_families)
                         expected_themes.add(canonical.theme)
@@ -639,6 +697,8 @@ def verify_claims(claims: Iterable[Claim], chart: Optional[Chart] = None) -> Lis
                 errors.append("examples_not_registry_rendered")
             if tuple(claim.prohibited_inferences) not in expected_prohibited_variants:
                 errors.append("prohibited_inferences_not_registry_rendered")
+            if claim.direct_paragraph_renderable != expected_direct_renderable:
+                errors.append("direct_paragraph_capability_not_authorized")
             if set(claim.counterweight_types) != set(claim.counterweights):
                 errors.append("counterweight_type_mismatch")
             source_bodies = set()

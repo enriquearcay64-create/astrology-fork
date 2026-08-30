@@ -145,6 +145,7 @@ class Claim:
     authorized_motifs: List[str] = field(default_factory=list)
     verification_errors: List[str] = field(default_factory=list)
     counterweight_types: Dict[str, str] = field(default_factory=dict)
+    direct_paragraph_renderable: bool = False
 
 
 @dataclass

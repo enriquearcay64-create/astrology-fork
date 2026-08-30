@@ -124,6 +124,12 @@ def build_safe_interpretive_view(chart: Chart) -> SafeInterpretiveChart:
     allowed_placidus_ids = {f"house.placidus.{body}" for body, item in stable_houses.items() if item.placidus_house is not None}
     allowed_house_ids = set(allowed_placidus_ids)
     allowed_house_ids.update(f"house.robustness.{body}" for body in stable_houses)
+    unstable_house_ruler_houses = set(stability.get("unstable_placidus_house_ruler_houses", []))
+    allowed_house_ruler_ids = {
+        f"house_ruler.placidus.{house}"
+        for house in range(1, 13)
+        if allow_houses and house not in unstable_house_ruler_houses
+    }
     allow_angles = bool(stability.get("allow_angle_claims", True))
     unstable_contacts = set(stability.get("unstable_angle_contact_ids", []))
     safe_contacts = [
@@ -134,8 +140,8 @@ def build_safe_interpretive_view(chart: Chart) -> SafeInterpretiveChart:
     factors = [
         factor for factor in chart.factors
         if (
-            factor.kind not in {"whole_sign_house", "placidus_house", "house_system_robustness", "angle_contact", "ascendant", "chart_ruler", "aspect"}
-            or factor.id in allowed_house_ids | allowed_angle_ids
+            factor.kind not in {"whole_sign_house", "placidus_house", "placidus_house_ruler", "house_system_robustness", "angle_contact", "ascendant", "chart_ruler", "aspect"}
+            or factor.id in allowed_house_ids | allowed_house_ruler_ids | allowed_angle_ids
             or (factor.kind in {"ascendant", "chart_ruler"} and allow_angles)
             or (factor.kind == "aspect" and factor.id not in unstable_aspects)
         )

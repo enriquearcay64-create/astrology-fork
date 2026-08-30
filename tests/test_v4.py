@@ -7,7 +7,7 @@ import pytest
 
 from astrology.engine import calculate_chart
 from astrology.models import Aspect, BirthData, Claim, Factor, ReasonedSynthesis
-from astrology.pipeline import _canonical_hash, analyse_birth_chart, paragraph_source_template, prepare_premium_handoff, validate_premium_author_bundle, validate_premium_narrative, validate_premium_syntheses
+from astrology.pipeline import _canonical_hash, _premium_handoff_contract, analyse_birth_chart, paragraph_source_template, prepare_premium_handoff, validate_premium_author_bundle, validate_premium_narrative, validate_premium_syntheses
 from astrology.reasoning import ASPECT_OPERATIONS, _promoted_configurations, build_chart_signature, build_narrative_plan, humanization_instructions, humanization_verifier_instructions, validate_reasoned_syntheses
 from astrology.report import technical_appendix
 from astrology.safe_view import build_safe_interpretive_view
@@ -18,6 +18,16 @@ from astrology.timing import ORB_BOUNDARY_TOLERANCE_DEGREES, _cycle_occurrences,
 
 def birth() -> BirthData:
     return BirthData("1990-07-12T14:30:00", "America/Sao_Paulo", -23.5505, -46.6333)
+
+
+def _contract_fields():
+    return {
+        "premium_handoff_contract_version": "1.1",
+        "premium_handoff_contract": _premium_handoff_contract(),
+        "premium_handoff_contract_sha256": _canonical_hash(_premium_handoff_contract()),
+        "corrections_made": [],
+        "remaining_warnings": [],
+    }
 
 
 def _coverage_bundle(result):
@@ -188,11 +198,12 @@ def test_v41_source_map_requires_the_exact_substantive_paragraph_universe():
     syntheses, draft, mapping = _coverage_bundle(fallback)
     judged = validate_premium_syntheses(birth(), syntheses, include_timing=False)
     author = {
+        **_contract_fields(),
         "packet_id": judged["packet_id"], "reasoned_syntheses": syntheses, "draft_report": draft,
         "paragraph_sources": mapping, "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft),
     }
     assert validate_premium_author_bundle(birth(), author, include_timing=False)["approved"]
-    orphan = dict(author, paragraph_sources=[*mapping, {"paragraph_sha256": "not-a-real-paragraph", "synthesis_ids": [syntheses[0]["id"]], "timing_ids": []}])
+    orphan = dict(author, paragraph_sources=[*mapping, {"paragraph_sha256": "not-a-real-paragraph", "synthesis_ids": [syntheses[0]["id"]], "claim_ids": [], "timing_ids": []}])
     assert "orphan_paragraph_source_map" in validate_premium_author_bundle(birth(), orphan, include_timing=False)["verification_errors"]
     duplicate = dict(author, paragraph_sources=[*mapping, dict(mapping[0])])
     assert "duplicate_paragraph_source_map" in validate_premium_author_bundle(birth(), duplicate, include_timing=False)["verification_errors"]
@@ -203,6 +214,7 @@ def test_v41_source_map_requires_the_exact_substantive_paragraph_universe():
     provenance = validate_premium_author_bundle(birth(), author, include_timing=False)
     shortened = draft.split("\n\n", 1)[0]
     reviewer = {
+        **_contract_fields(),
         "packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"],
         "reviewed_draft_sha256": provenance["draft_report_sha256"], "verdict": "approved", "final_report": shortened,
         "final_report_sha256": _canonical_hash(shortened), "paragraph_sources": mapping,
@@ -389,6 +401,7 @@ def test_manual_premium_workflow_has_separate_synthesis_and_narrative_gates():
     judged = validate_premium_syntheses(birth(), coverage_syntheses, include_timing=False)
     assert judged["approved"]
     author = {
+        **_contract_fields(),
         "packet_id": judged["packet_id"], "reasoned_syntheses": coverage_syntheses, "draft_report": draft,
         "paragraph_sources": sources, "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft),
     }
@@ -396,6 +409,7 @@ def test_manual_premium_workflow_has_separate_synthesis_and_narrative_gates():
     assert provenance["approved"]
     final_report = draft
     final = validate_premium_narrative({
+        **_contract_fields(),
         "packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"], "reviewed_draft_sha256": provenance["draft_report_sha256"],
         "verdict": "approved", "final_report": final_report, "final_report_sha256": _canonical_hash(final_report),
         "paragraph_sources": sources, "corrections_made": [], "remaining_warnings": [],
@@ -436,7 +450,7 @@ def test_premium_guards_block_identity_hash_source_coverage_and_timing_mismatche
     fallback = analyse_birth_chart(birth(), report_depth="deep", as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
     coverage_syntheses, draft, mapping = _coverage_bundle(fallback)
     judged = validate_premium_syntheses(birth(), coverage_syntheses, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
-    author = {"packet_id": judged["packet_id"], "reasoned_syntheses": coverage_syntheses, "draft_report": draft, "paragraph_sources": mapping, "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft)}
+    author = {**_contract_fields(), "packet_id": judged["packet_id"], "reasoned_syntheses": coverage_syntheses, "draft_report": draft, "paragraph_sources": mapping, "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft)}
     provenance = validate_premium_author_bundle(birth(), author, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
     assert provenance["approved"]
     bad_packet = dict(author, packet_id="other")
@@ -445,7 +459,7 @@ def test_premium_guards_block_identity_hash_source_coverage_and_timing_mismatche
     assert "synthesis_bundle_hash_mismatch" in validate_premium_author_bundle(birth(), bad_hash, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)["verification_errors"]
     no_sources = dict(author, paragraph_sources=[])
     assert "interpretive_paragraph_without_source_map" in validate_premium_author_bundle(birth(), no_sources, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)["verification_errors"]
-    reviewer = {"packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"], "reviewed_draft_sha256": provenance["draft_report_sha256"], "verdict": "approved", "final_report": draft, "final_report_sha256": _canonical_hash(draft), "paragraph_sources": mapping}
+    reviewer = {**_contract_fields(), "packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"], "reviewed_draft_sha256": provenance["draft_report_sha256"], "verdict": "approved", "final_report": draft, "final_report_sha256": _canonical_hash(draft), "paragraph_sources": mapping}
     assert validate_premium_narrative(reviewer, provenance)["approved"]
     reviewer["paragraph_sources"] = [dict(mapping[0], timing_ids=["timing.activation.invented"])]
     assert "invented_or_unapproved_timing_evidence" in validate_premium_narrative(reviewer, provenance)["verification_errors"]
@@ -559,7 +573,7 @@ def test_v411_client_appendix_is_curated_and_prepare_keeps_full_audit_sidecar():
     assert "## Eixo nodal" in client
     assert "## Aspectos" in client
     assert "## Estrutura e configurações" in client
-    assert "- Registro semântico: 2.5.0" in client
+    assert "- Registro semântico: 2.6.0" in client
     assert "- Metodologia de timing: 4.0.1" in client
     assert "- Template do relatório: 4.1.1-reader-experience" in client
     assert "Profecção anual (técnica de Signo Inteiro)" in client
@@ -577,8 +591,8 @@ def test_v411_client_appendix_is_curated_and_prepare_keeps_full_audit_sidecar():
 def test_v411_versioning_updates_editorial_versions_only():
     policy = calculate_chart(birth()).policy
 
-    assert policy["methodology_version"] == "4.1.1"
+    assert policy["methodology_version"] == "4.1.2"
     assert policy["report_template_version"] == "4.1.1-reader-experience"
-    assert policy["semantic_registry_version"] == "2.5.0"
+    assert policy["semantic_registry_version"] == "2.6.0"
     assert policy["timing_version"] == "4.0.1"
-    assert policy["schema_version"] == "4.1.0"
+    assert policy["schema_version"] == "4.1.1"

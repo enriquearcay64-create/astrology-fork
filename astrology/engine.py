@@ -321,6 +321,57 @@ def _tzdata_version() -> str:
         return "system-zoneinfo-unpinned"
 
 
+def _placidus_house_ruler_factors(cusps: Optional[List[float]]) -> List[Factor]:
+    """Record Placidus cusp-sign rulership as factual routing only."""
+    if not cusps:
+        return []
+    factors: List[Factor] = []
+    for house, cusp in enumerate(cusps, 1):
+        sign, degree = sign_for(cusp)
+        ruler = SIGN_RULERS[sign]
+        factors.append(Factor(
+            f"house_ruler.placidus.{house}", "placidus_house_ruler", "placidus_house_ruler", [ruler],
+            {
+                "house": house,
+                "house_system": "placidus",
+                "cusp_longitude": round(normalize(cusp), 6),
+                "cusp_sign": sign,
+                "cusp_degree_in_sign": round(degree, 6),
+                "ruler": ruler,
+                "ruler_position_id": f"position.{ruler}",
+                "rulership_system": "traditional_configured",
+                "cusp_sign_reliable": False,
+                "available_for_house_ruler_claim": False,
+            },
+        ))
+    return factors
+
+
+def _cusp_sign_unstable_houses(chart: Chart, variants: Iterable[Chart]) -> List[int]:
+    """Compare only declared-time endpoint cusp signs, never body placements."""
+    if not chart.house_cusps_placidus:
+        return list(range(1, 13))
+    endpoint_cusps = [item.house_cusps_placidus for item in variants]
+    unstable = []
+    for house, cusp in enumerate(chart.house_cusps_placidus, 1):
+        base_sign = sign_for(cusp)[0]
+        if any(not endpoint or len(endpoint) < house or sign_for(endpoint[house - 1])[0] != base_sign for endpoint in endpoint_cusps):
+            unstable.append(house)
+    return unstable
+
+
+def _set_house_ruler_reliability(chart: Chart) -> None:
+    """Annotate raw routing facts; SafeInterpretiveChart enforces usability."""
+    unstable = set(chart.stability.get("unstable_placidus_house_ruler_houses", []))
+    cusp_signs_available = bool(chart.house_cusps_placidus)
+    allowed = cusp_signs_available and bool(chart.stability.get("allow_house_claims", True))
+    for factor in chart.factors:
+        if factor.kind == "placidus_house_ruler":
+            house = int(factor.data["house"])
+            factor.data["cusp_sign_reliable"] = cusp_signs_available and house not in unstable
+            factor.data["available_for_house_ruler_claim"] = allowed and house not in unstable
+
+
 def calculate_chart(birth: BirthData, include_secondary: bool = True, _run_sensitivity_tests: bool = True) -> Chart:
     """Calculate the canonical chart with Whole Sign, Placidus and angles.
 
@@ -369,6 +420,7 @@ def calculate_chart(birth: BirthData, include_secondary: bool = True, _run_sensi
         )
         for key, position in positions.items()
     )
+    factors.extend(_placidus_house_ruler_factors(cusps))
     if angles:
         asc_sign, asc_degree = sign_for(angles["asc"])
         factors.extend([
@@ -453,6 +505,7 @@ def calculate_chart(birth: BirthData, include_secondary: bool = True, _run_sensi
             "declared_uncertainty_minutes": 0.0,
             "unstable_house_bodies": [],
             "unstable_placidus_house_bodies": [],
+            "unstable_placidus_house_ruler_houses": [],
             "unstable_whole_sign_house_bodies": [],
             "node_axis_placidus_house_reliable": bool(cusps),
             "unstable_angle_contact_ids": [],
@@ -461,6 +514,7 @@ def calculate_chart(birth: BirthData, include_secondary: bool = True, _run_sensi
         })
     if birth.birth_time_known and _run_sensitivity_tests:
         _apply_sensitivity_stress_tests(chart, birth, include_secondary)
+    _set_house_ruler_reliability(chart)
     return chart
 
 
@@ -498,6 +552,7 @@ def _apply_unknown_time_stability(chart: Chart, birth: BirthData, include_second
         "body_span_degrees": body_spans,
         "timing_excluded_natal_bodies": unstable_bodies,
         "unstable_placidus_house_bodies": sorted(chart.house_placements),
+        "unstable_placidus_house_ruler_houses": list(range(1, 13)),
         "unstable_whole_sign_house_bodies": sorted(chart.house_placements),
         "node_axis_placidus_house_reliable": False,
         "allow_house_claims": False,
@@ -528,6 +583,7 @@ def _apply_time_uncertainty(chart: Chart, birth: BirthData, include_secondary: b
     asc_change = max(angular_distance(chart.angles["asc"], item.angles["asc"]) for item in variants)
     changed_whole = sorted({body for body in chart.house_placements if any(chart.house_placements[body].whole_sign_house != item.house_placements[body].whole_sign_house for item in variants)})
     changed_placidus = sorted({body for body in chart.house_placements if any(chart.house_placements[body].placidus_house != item.house_placements[body].placidus_house for item in variants)})
+    unstable_house_ruler_houses = _cusp_sign_unstable_houses(chart, variants)
     node_axis_factor = next((factor for factor in chart.factors if factor.id == "node_axis.natal"), None)
     variant_node_axes = [next((factor for factor in item.factors if factor.id == "node_axis.natal"), None) for item in variants]
     node_axis_houses_stable = bool(node_axis_factor and all(
@@ -557,6 +613,7 @@ def _apply_time_uncertainty(chart: Chart, birth: BirthData, include_secondary: b
         # a stable Placidus natal placement.
         "unstable_house_bodies": changed_placidus,
         "unstable_placidus_house_bodies": changed_placidus,
+        "unstable_placidus_house_ruler_houses": unstable_house_ruler_houses,
         "unstable_whole_sign_house_bodies": changed_whole,
         "node_axis_placidus_house_reliable": node_axis_houses_stable and minutes <= HOUSE_CLAIM_MAX_UNCERTAINTY_MINUTES,
         "unstable_angle_contact_ids": sorted(base_contacts - stable_contacts),
@@ -598,6 +655,7 @@ def _apply_sensitivity_stress_tests(chart: Chart, birth: BirthData, include_seco
             body for body in chart.house_placements
             if any(chart.house_placements[body].placidus_house != item.house_placements[body].placidus_house for item in variants)
         })
+        changed_cusp_signs = _cusp_sign_unstable_houses(chart, variants)
         topology_changed = bool(base_asc_sign is not None and any(sign != base_asc_sign for sign in asc_signs))
         if topology_changed:
             sensitive_bodies.update(changed_whole or chart.house_placements.keys())
@@ -606,6 +664,7 @@ def _apply_sensitivity_stress_tests(chart: Chart, birth: BirthData, include_seco
             "whole_sign_topology_changed": topology_changed,
             "changed_whole_sign_bodies": changed_whole,
             "changed_placidus_bodies": changed_placidus,
+            "changed_placidus_cusp_sign_houses": changed_cusp_signs,
             "variant_ascendants": [round(item.angles["asc"], 6) for item in variants if item.angles],
         })
     chart.stability["sensitivity_tests"] = tests
