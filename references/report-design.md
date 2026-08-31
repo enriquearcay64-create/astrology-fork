@@ -7,26 +7,22 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 ## Três camadas editoriais
 
 1. **Executive Reading:** assinatura essencial, 3–4 temas realmente sustentados, dinâmica central (ou centros distribuídos), fase atual e um experimento. Deve ser útil se for a única parte lida.
-2. **Deep Reading:** acrescenta dinâmica psicológica, exemplos vividos, áreas da vida, fase atual, ciclos e integração. Cada seção precisa adicionar uma dimensão, não apenas repetir o resumo.
+2. **Deep Reading / Premium Complete:** abertura do mapa inteiro, 16 domínios humanos visíveis e integração final. Cobertura é fixa; profundidade, extensão e quantidade de parágrafos são ganhas pela carta. Cada seção precisa adicionar uma dimensão humana, não apenas repetir astrologia já explicada.
 3. **Technical Appendix:** versões, qualidade dos dados, posições, casas Placidus seguras/condicionais, ângulos, condições, aspectos/orbes, configurações, eixo nodal e timing selecionado. A pessoa leiga pode ignorá-lo completamente. Política JSON, claims, `ReasonedSynthesis`, plano narrativo, hashes e registros de guard ficam no audit sidecar interno.
 
 ## Ordem da leitura profunda
 
-1. Arquitetura central do mapa em um parágrafo específico; comece por um padrão humano reconhecível quando isso ajudar, mas abra pela estrutura astrológica quando ela for mais clara ou natural.
-2. Dinâmica organizadora ou 2–3 dinâmicas distribuídas, somente quando sustentadas.
-3. Três ou quatro temas centrais em prosa com movimento variado: recurso, tensão, risco contextual, contrapeso ou integração conforme a carta — nunca fórmula fixa nem quota de cinco.
-4. Um exemplo vivido somente quando ele concretiza o mecanismo; normalmente até três no total.
-5. Até quatro áreas Placidus mais relevantes; ocupação, proeminência e corpos estruturais informam a escolha sem reforço circular. As doze áreas ficam recolhidas. Regência Whole Sign só aparece dentro de técnica tradicional nomeada.
-6. Fase atual em linguagem humana; nomes técnicos ficam recolhidos.
-7. Intervalos emergentes de desenvolvimento (por exemplo, 28–31), explicando convergência, pressão possível, potencial e o que não pode ser inferido; o mapa completo de ciclos fica recolhido.
-8. Síntese, experimento observável e duas perguntas.
-9. Temas secundários, equilíbrio e qualidade dos dados em profundidade opcional.
+1. **Abertura do mapa inteiro:** arquitetura organizadora, três ou quatro mecanismos principais quando sustentados, tensões/paradoxos e conexões estruturais. Não é inventário nem sumário antecipado.
+2. **Dezesseis domínios humanos canônicos:** identidade; segurança emocional; mente e comunicação; desejo e limites; amor e intimidade; criatividade e prazer; trabalho e visibilidade; dinheiro e recursos; corpo e rotina; casa e raízes; amizade e pertencimento; significado e horizonte; sombra e padrões; crescimento pela contradição; direção de desenvolvimento; capítulo de vida ativo. Todos aparecem uma vez, na ordem contratual. Baixa ênfase pede concisão substantiva, não omissão. Ausência de timing admitido produz o aviso determinístico, nunca timing inventado.
+3. **Integração final:** conecta mecanismos recorrentes entre áreas, recursos e tensões sem recontar o relatório nem virar worksheet.
+
+Cada mecanismo central é explicado plenamente uma vez. Em domínios posteriores, mostre a consequência nova naquele contexto. Evidência reutilizada não ganha peso, confiança ou proeminência. Regência Whole Sign só aparece dentro de técnica tradicional nomeada.
 
 ## Ritmo e carga cognitiva
 
-- Prefira parágrafos de aproximadamente 60–130 palavras para ideias psicológicas completas. Menores são válidos para conclusões; ultrapassar 150 palavras exige razão editorial.
+- Prefira parágrafos com espaço suficiente para uma ideia psicológica completa. Parágrafos curtos são válidos quando substantivos; o contrato Premium não usa limiar de palavras para decidir cobertura.
 - Não transforme todo modo de expressão em bullet. Use prosa para relações e bullets para escolhas, janelas, passos ou mapeamentos.
-- Mantenha somente os 3–4 temas que a assinatura e o plano narrativo sustentam no fluxo principal. Temas restantes ficam recolhidos em tabela compacta.
+- Desenvolva plenamente apenas os 3–4 mecanismos que a assinatura congelada sustenta; os demais domínios continuam visíveis, com profundidade adaptativa e sem elevar fatores periféricos.
 - Use no máximo um exemplo por tema no corpo principal. Três exemplos totais normalmente bastam.
 - Evite mais de dois blocos emocionalmente pesados sem uma passagem por recurso, contexto ou agência.
 - Um heading deve responder a uma pergunta diferente. Se a seção só repete um tema anterior, fundir ou cortar.
@@ -62,9 +58,9 @@ Gênero, idade, ceticismo e estilo de leitura podem orientar auditoria editorial
 
 ## Gramática visual
 
-- Use tabelas apenas para comparações ou mapeamentos repetidos: cinco temas, áreas da vida e dados técnicos.
+- Na narrativa Premium canônica, headings são estrutura e cada uma das 18 seções contém prosa rastreável; tabelas, listas isoladas e metadata não contam como tratamento narrativo. Use tabelas para dados determinísticos no Apêndice Técnico do Cliente ou em outras superfícies não narrativas.
 - Use `↔` para uma polaridade quando isso melhora a navegação; o símbolo nunca substitui explicação.
-- Use `<details>` para as doze áreas, base técnica do timing, ciclos completos, temas secundários, qualidade dos dados e política metodológica.
+- Use `<details>` para base técnica do timing, ciclos completos, temas secundários, qualidade dos dados e política metodológica, nunca para esconder um dos 16 domínios obrigatórios.
 - Não use emoji em série, animação ou ornamentação que compita com a leitura.
 
 ## Alvos de extensão

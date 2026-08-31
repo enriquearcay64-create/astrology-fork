@@ -39,6 +39,23 @@ def _profile(data: Dict[str, object]) -> Optional[LocalizationProfile]:
     return LocalizationProfile(**profile)
 
 
+def _prepared_timing_parameters(handoff: Dict[str, object]) -> tuple[Optional[datetime], int, bool]:
+    parameters = handoff.get("preparation_parameters")
+    if not isinstance(parameters, dict):
+        raise ValueError("premium handoff is missing preparation_parameters")
+    effective = parameters.get("effective_as_of")
+    effective_as_of = datetime.fromisoformat(str(effective).replace("Z", "+00:00")) if effective is not None else None
+    if effective_as_of is not None and effective_as_of.tzinfo is None:
+        raise ValueError("premium handoff effective_as_of must include a UTC offset")
+    horizon_days = parameters.get("horizon_days")
+    include_timing = parameters.get("include_timing")
+    if not isinstance(horizon_days, int) or isinstance(horizon_days, bool) or horizon_days <= 0:
+        raise ValueError("premium handoff horizon_days must be a positive integer")
+    if not isinstance(include_timing, bool):
+        raise ValueError("premium handoff include_timing must be boolean")
+    return effective_as_of, horizon_days, include_timing
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Deterministic astrology calculation and structured reading.")
     parser.add_argument("input", help="JSON with birth data and optional localization_profile")
@@ -53,6 +70,7 @@ def main() -> int:
     parser.add_argument("--premium-stage", choices=("prepare", "validate-synthesis", "validate-narrative"), help="Manual Sol High handoff; does not call an external model")
     parser.add_argument("--premium-synthesis", help="AuthorBundle JSON, or a raw ReasonedSynthesis list for synthesis-only debugging")
     parser.add_argument("--premium-narrative", help="ReviewerBundle JSON with final_report and paragraph source mapping")
+    parser.add_argument("--premium-handoff", help="Original deterministic handoff JSON that authoritatively binds a premium lineage")
     args = parser.parse_args()
     try:
         data = _load(args.input)
@@ -68,20 +86,36 @@ def main() -> int:
                 raise ValueError("--premium-synthesis is required with --premium-stage validate-synthesis")
             payload = _load(args.premium_synthesis)
             if isinstance(payload, dict) and "reasoned_syntheses" in payload:
-                result = validate_premium_author_bundle(birth, payload, profile, as_of, args.horizon_days, not args.no_timing)
+                if not args.premium_handoff:
+                    raise ValueError("--premium-handoff is required when validating an AuthorBundle")
+                handoff = _load(args.premium_handoff)
+                prepared_as_of, prepared_horizon, prepared_timing = _prepared_timing_parameters(handoff)
+                result = validate_premium_author_bundle(
+                    birth, payload, profile, prepared_as_of, prepared_horizon, prepared_timing,
+                    prepared_handoff=handoff,
+                )
             else:
                 items = payload.get("reasoned_synthesis", payload) if isinstance(payload, dict) else payload
                 if not isinstance(items, list):
                     raise ValueError("premium synthesis must be a JSON list or an object with reasoned_synthesis")
                 result = validate_premium_syntheses(birth, items, profile, as_of, args.horizon_days, not args.no_timing)
         elif args.premium_stage == "validate-narrative":
-            if not args.premium_synthesis or not args.premium_narrative:
-                raise ValueError("--premium-synthesis and --premium-narrative are required with --premium-stage validate-narrative")
+            if not args.premium_synthesis or not args.premium_narrative or not args.premium_handoff:
+                raise ValueError("--premium-handoff, --premium-synthesis and --premium-narrative are required with --premium-stage validate-narrative")
             author_bundle = _load(args.premium_synthesis)
             if not isinstance(author_bundle, dict) or "reasoned_syntheses" not in author_bundle:
                 raise ValueError("--premium-synthesis must be an AuthorBundle JSON for narrative publication")
-            provenance = validate_premium_author_bundle(birth, author_bundle, profile, as_of, args.horizon_days, not args.no_timing)
-            result = validate_premium_narrative(_load(args.premium_narrative), provenance)
+            handoff = _load(args.premium_handoff)
+            prepared_as_of, prepared_horizon, prepared_timing = _prepared_timing_parameters(handoff)
+            provenance = validate_premium_author_bundle(
+                birth, author_bundle, profile, prepared_as_of, prepared_horizon, prepared_timing,
+                prepared_handoff=handoff,
+            )
+            result = validate_premium_narrative(
+                _load(args.premium_narrative), provenance, birth, profile,
+                prepared_as_of, prepared_horizon, prepared_timing,
+                prepared_handoff=handoff,
+            )
         elif args.solar_return_year:
             declared = data.get("solar_return_location")
             location = (birth.latitude, birth.longitude) if args.solar_return_location_policy == "birth_place" else (float(declared["latitude"]), float(declared["longitude"])) if isinstance(declared, dict) else None

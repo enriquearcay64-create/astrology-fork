@@ -18,6 +18,7 @@ from astrology.pipeline import (
 from astrology.reasoning import build_chart_signature, humanization_instructions, humanization_verifier_instructions, validate_reasoned_syntheses
 from astrology.safe_view import build_safe_interpretive_view
 from astrology.semantics import build_claims, verify_claims
+from tests.v413_helpers import build_author_bundle, contract_fields, reviewer_bundle
 
 
 def birth(**changes) -> BirthData:
@@ -32,13 +33,7 @@ def birth(**changes) -> BirthData:
 
 
 def _contract_fields() -> dict[str, object]:
-    return {
-        "premium_handoff_contract_version": "1.1",
-        "premium_handoff_contract": _premium_handoff_contract(),
-        "premium_handoff_contract_sha256": _canonical_hash(_premium_handoff_contract()),
-        "corrections_made": [],
-        "remaining_warnings": [],
-    }
+    return contract_fields()
 
 
 def _claims_and_view(item: BirthData | None = None):
@@ -111,40 +106,7 @@ def _ordinary_position_synthesis(claims: list[Claim]) -> tuple[ReasonedSynthesis
 
 
 def _coverage_author_with_direct_claim():
-    result = analyse_birth_chart(birth(), include_timing=False)
-    required = result["reasoning_packet"]["facts"]["coverage"]["required_evidence"]
-    by_evidence = {
-        evidence: claim
-        for claim in result["claims"] if claim["status"] == "allowed"
-        for evidence in claim["evidence"]
-    }
-    syntheses = []
-    for ordinal, evidence in enumerate(sorted({item for values in required.values() for item in values}), 1):
-        claim = by_evidence[evidence]
-        syntheses.append(asdict(ReasonedSynthesis(
-            id=f"coverage.{ordinal}", observation=claim["statement"], primary_factors=[evidence], modifiers=[], counterweights=[],
-            reasoning_class="single_structural_factor", confidence_within_astrological_model=claim["astrological_support"],
-            possible_expressions=[claim["statement"]], alternative_reading="", prohibited_extensions=[],
-            source_claim_ids=[claim["id"]], source_motif_ids=claim["authorized_motifs"], composition_operations=["contextualization"],
-            derived_propositions=[{"text": claim["statement"], "sources": [claim["id"]]}],
-        )))
-    direct = next(claim for claim in result["claims"] if claim["type"] == "placidus_house_ruler" and claim["status"] == "allowed")
-    paragraphs = [
-        f"Esta cobertura número {ordinal} permanece uma hipótese simbólica autorizada e não descreve certeza biográfica nem resultado inevitável."
-        for ordinal in range(1, len(syntheses) + 1)
-    ] + [direct["statement"]]
-    draft = "\n\n".join(paragraphs)
-    sources = paragraph_source_template(draft)
-    for source, synthesis in zip(sources, syntheses):
-        source["synthesis_ids"] = [synthesis["id"]]
-    sources[-1]["claim_ids"] = [direct["id"]]
-    judged = validate_premium_syntheses(birth(), syntheses, include_timing=False)
-    author = {
-        **_contract_fields(), "packet_id": judged["packet_id"], "reasoned_syntheses": syntheses,
-        "draft_report": draft, "paragraph_sources": sources,
-        "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft),
-    }
-    return author, direct
+    return build_author_bundle(birth(), include_timing=False, add_direct_claim=True)
 
 
 def test_v412_facts_are_traditional_placidus_routes_even_when_a_house_is_empty():
@@ -360,21 +322,29 @@ def test_v412_raw_house_ruler_factors_are_structurally_non_scoring_defense_in_de
 
 
 def test_v412_direct_claim_mode_is_capability_gated_and_never_compositional_coverage():
+    handoff = prepare_premium_handoff(birth(), include_timing=False)
     author, direct = _coverage_author_with_direct_claim()
-    provenance = validate_premium_author_bundle(birth(), author, include_timing=False)
+    provenance = validate_premium_author_bundle(birth(), author, include_timing=False, prepared_handoff=handoff)
     assert provenance["approved"]
     assert direct["id"] not in {item for values in provenance["coverage"]["required_evidence"].values() for item in values}
-    bad_multiple = dict(author, paragraph_sources=[*author["paragraph_sources"][:-1], {**author["paragraph_sources"][-1], "claim_ids": [direct["id"], direct["id"]]}])
+    direct_index = next(index for index, source in enumerate(author["paragraph_sources"]) if source["claim_ids"] == [direct["id"]])
+    def changed_direct(**changes):
+        rows = [dict(item) for item in author["paragraph_sources"]]
+        rows[direct_index].update(changes)
+        return dict(author, paragraph_sources=rows)
+    bad_multiple = changed_direct(claim_ids=[direct["id"], direct["id"]])
     assert "invalid_direct_claim_paragraph_source" in validate_premium_author_bundle(birth(), bad_multiple, include_timing=False)["verification_errors"]
-    bad_timing = dict(author, paragraph_sources=[*author["paragraph_sources"][:-1], {**author["paragraph_sources"][-1], "timing_ids": ["timing.invented"]}])
+    bad_timing = changed_direct(timing_ids=["timing.invented"])
     errors = validate_premium_author_bundle(birth(), bad_timing, include_timing=False)["verification_errors"]
     assert "invalid_direct_claim_paragraph_source" in errors and "invented_or_unapproved_timing_evidence" in errors
-    old_row = dict(author, paragraph_sources=[*author["paragraph_sources"][:-1], {key: value for key, value in author["paragraph_sources"][-1].items() if key != "claim_ids"}])
+    old_rows = [dict(item) for item in author["paragraph_sources"]]
+    old_rows[direct_index].pop("claim_ids")
+    old_row = dict(author, paragraph_sources=old_rows)
     assert "premium_handoff_source_row_missing_field" in validate_premium_author_bundle(birth(), old_row, include_timing=False)["verification_errors"]
     nonrenderable = next(claim for claim in analyse_birth_chart(birth(), include_timing=False)["claims"] if claim["id"].startswith("claim.position.") and claim["status"] == "allowed")
-    bad_capability = dict(author, paragraph_sources=[*author["paragraph_sources"][:-1], {**author["paragraph_sources"][-1], "claim_ids": [nonrenderable["id"]]}])
+    bad_capability = changed_direct(claim_ids=[nonrenderable["id"]])
     assert "invalid_direct_claim_paragraph_source" in validate_premium_author_bundle(birth(), bad_capability, include_timing=False)["verification_errors"]
-    bad_mixed = dict(author, paragraph_sources=[*author["paragraph_sources"][:-1], {**author["paragraph_sources"][-1], "synthesis_ids": [author["reasoned_syntheses"][0]["id"]]}])
+    bad_mixed = changed_direct(synthesis_ids=[author["reasoned_syntheses"][0]["id"]])
     assert "untraceable_paragraph_source" in validate_premium_author_bundle(birth(), bad_mixed, include_timing=False)["verification_errors"]
     semantic = build_safe_interpretive_view(calculate_chart(birth())).semantic_chart()
     forged_capability = next(claim for claim in build_claims(semantic) if claim.id.startswith("claim.position."))
@@ -383,29 +353,27 @@ def test_v412_direct_claim_mode_is_capability_gated_and_never_compositional_cove
 
 
 def test_v412_handoff_contract_is_hashed_and_required_by_both_guards():
+    handoff = prepare_premium_handoff(birth(), include_timing=False)
     author, _direct = _coverage_author_with_direct_claim()
-    provenance = validate_premium_author_bundle(birth(), author, include_timing=False)
+    provenance = validate_premium_author_bundle(birth(), author, include_timing=False, prepared_handoff=handoff)
     assert provenance["approved"]
     v10 = dict(author)
     v10.pop("premium_handoff_contract_version")
     assert "premium_handoff_contract_version_mismatch" in validate_premium_author_bundle(birth(), v10, include_timing=False)["verification_errors"]
     bad_hash = dict(author, premium_handoff_contract_sha256="bad")
     assert "premium_handoff_contract_hash_mismatch" in validate_premium_author_bundle(birth(), bad_hash, include_timing=False)["verification_errors"]
-    reviewer = {
-        **_contract_fields(), "packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"],
-        "reviewed_draft_sha256": provenance["draft_report_sha256"], "verdict": "approved", "final_report": author["draft_report"],
-        "final_report_sha256": _canonical_hash(author["draft_report"]), "paragraph_sources": author["paragraph_sources"],
-    }
-    assert validate_premium_narrative(reviewer, provenance)["approved"]
+    reviewer = reviewer_bundle(author, provenance)
+    assert validate_premium_narrative(reviewer, provenance, birth(), include_timing=False, prepared_handoff=handoff)["approved"]
     reviewer["premium_handoff_contract_version"] = "1.0"
-    assert "premium_handoff_contract_version_mismatch" in validate_premium_narrative(reviewer, provenance)["verification_errors"]
+    assert "premium_handoff_contract_version_mismatch" in validate_premium_narrative(reviewer, provenance, birth(), include_timing=False, prepared_handoff=handoff)["verification_errors"]
     reviewer = {key: value for key, value in reviewer.items() if key != "premium_handoff_contract_version"}
-    assert "premium_handoff_contract_version_mismatch" in validate_premium_narrative(reviewer, provenance)["verification_errors"]
+    assert "premium_handoff_contract_version_mismatch" in validate_premium_narrative(reviewer, provenance, birth(), include_timing=False, prepared_handoff=handoff)["verification_errors"]
 
 
 def test_v412_handoff_contract_body_and_descriptive_contract_are_enforced_together():
+    handoff = prepare_premium_handoff(birth(), include_timing=False)
     author, _direct = _coverage_author_with_direct_claim()
-    assert validate_premium_author_bundle(birth(), author, include_timing=False)["approved"]
+    assert validate_premium_author_bundle(birth(), author, include_timing=False, prepared_handoff=handoff)["approved"]
     altered_body = {**_premium_handoff_contract(), "version": "tampered"}
     altered = dict(author, premium_handoff_contract=altered_body)
     errors = validate_premium_author_bundle(birth(), altered, include_timing=False)["verification_errors"]
@@ -413,20 +381,15 @@ def test_v412_handoff_contract_body_and_descriptive_contract_are_enforced_togeth
     assert "premium_handoff_contract_body_hash_mismatch" in errors
     bad_version = dict(author, premium_handoff_contract_version="1.0")
     assert "premium_handoff_contract_version_mismatch" in validate_premium_author_bundle(birth(), bad_version, include_timing=False)["verification_errors"]
-    provenance = validate_premium_author_bundle(birth(), author, include_timing=False)
-    reviewer = {
-        **_contract_fields(), "packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"],
-        "reviewed_draft_sha256": provenance["draft_report_sha256"], "verdict": "approved", "final_report": author["draft_report"],
-        "final_report_sha256": _canonical_hash(author["draft_report"]), "paragraph_sources": author["paragraph_sources"],
-    }
-    assert validate_premium_narrative(reviewer, provenance)["approved"]
+    provenance = validate_premium_author_bundle(birth(), author, include_timing=False, prepared_handoff=handoff)
+    reviewer = reviewer_bundle(author, provenance)
+    assert validate_premium_narrative(reviewer, provenance, birth(), include_timing=False, prepared_handoff=handoff)["approved"]
     reviewer_altered = dict(reviewer, premium_handoff_contract=altered_body)
-    reviewer_errors = validate_premium_narrative(reviewer_altered, provenance)["verification_errors"]
+    reviewer_errors = validate_premium_narrative(reviewer_altered, provenance, birth(), include_timing=False, prepared_handoff=handoff)["verification_errors"]
     assert "premium_handoff_contract_body_mismatch" in reviewer_errors
     assert "premium_handoff_contract_body_hash_mismatch" in reviewer_errors
     missing_corrections = {key: value for key, value in reviewer.items() if key != "corrections_made"}
-    assert "premium_handoff_reviewer_bundle_missing_required_field:corrections_made" in validate_premium_narrative(missing_corrections, provenance)["verification_errors"]
-    handoff = prepare_premium_handoff(birth(), include_timing=False)
+    assert "premium_handoff_reviewer_bundle_missing_required_field:corrections_made" in validate_premium_narrative(missing_corrections, provenance, birth(), include_timing=False, prepared_handoff=handoff)["verification_errors"]
     contract = handoff["premium_handoff_contract"]
     assert set(handoff["author_bundle_contract"]) == set(contract["author_bundle_required_fields"])
     assert set(handoff["reviewer_bundle_contract"]) == set(contract["reviewer_bundle_required_fields"])

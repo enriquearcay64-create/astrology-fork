@@ -54,6 +54,31 @@ OUTER_PLANETS = frozenset({"uranus", "neptune", "pluto"})
 PERSONALIZING_BODIES = frozenset({"sun", "moon", "mercury", "venus", "mars"})
 
 
+READER_DOMAIN_DEFINITIONS = (
+    {"id": "identity_presence", "en": "Central identity and presence", "pt": "Identidade central e presença", "question_en": "How do identity, direction and presence organise themselves?", "question_pt": "Como identidade, direção e presença se organizam?", "houses": (1,), "angles": ("asc",), "intrinsic": {"sun": "identity, vitality and direction"}},
+    {"id": "emotional_security", "en": "Emotional world and inner security", "pt": "Mundo emocional e segurança interna", "question_en": "What supports emotional regulation and inner security?", "question_pt": "O que sustenta regulação emocional e segurança interna?", "houses": (4,), "angles": ("ic",), "intrinsic": {"moon": "needs and emotional regulation"}},
+    {"id": "mind_learning_communication", "en": "Mind, learning, decisions and communication", "pt": "Mente, aprendizagem, decisões e comunicação", "question_en": "How do thought, learning and communication operate?", "question_pt": "Como pensamento, aprendizagem e comunicação operam?", "houses": (3, 9), "angles": (), "intrinsic": {"mercury": "thinking and communication"}},
+    {"id": "desire_action_limits", "en": "Desire, action, assertiveness and limits", "pt": "Desejo, ação, assertividade e limites", "question_en": "How do desire, action and boundaries work together?", "question_pt": "Como desejo, ação e limites trabalham juntos?", "houses": (1, 6, 8), "angles": (), "intrinsic": {"mars": "action, desire and boundaries"}},
+    {"id": "love_intimacy_relationship", "en": "Love, attraction, intimacy and relationship", "pt": "Amor, atração, intimidade e relacionamentos", "question_en": "What supports connection, reciprocity and intimacy?", "question_pt": "O que sustenta vínculo, reciprocidade e intimidade?", "houses": (5, 7, 8), "angles": ("dsc",), "intrinsic": {"venus": "connection, pleasure and values"}},
+    {"id": "creativity_pleasure_aliveness", "en": "Creativity, pleasure, play and aliveness", "pt": "Criatividade, prazer, brincadeira e vitalidade", "question_en": "Where do pleasure, expression and aliveness become available?", "question_pt": "Onde prazer, expressão e vitalidade se tornam disponíveis?", "houses": (5,), "angles": (), "intrinsic": {"sun": "vitality and aliveness", "venus": "pleasure and values"}},
+    {"id": "work_vocation_visibility", "en": "Work, vocation, contribution and visibility", "pt": "Trabalho, vocação, contribuição e visibilidade", "question_en": "How do contribution, work and visibility take form?", "question_pt": "Como contribuição, trabalho e visibilidade ganham forma?", "houses": (6, 10), "angles": ("mc",), "intrinsic": {}},
+    {"id": "money_resources_value", "en": "Money, resources, value and material security", "pt": "Dinheiro, recursos, valor e segurança material", "question_en": "How are resources, value and material security approached?", "question_pt": "Como recursos, valor e segurança material são abordados?", "houses": (2, 8), "angles": (), "intrinsic": {}},
+    {"id": "body_energy_routine", "en": "Body, energy, routine and sustainability", "pt": "Corpo, energia, rotina e sustentabilidade", "question_en": "What supports energy, effort and sustainable routine?", "question_pt": "O que sustenta energia, esforço e rotina sustentável?", "houses": (1, 6), "angles": (), "intrinsic": {"sun": "vitality and energy", "mars": "action and effort"}},
+    {"id": "home_roots_private_life", "en": "Home, roots, family and private life", "pt": "Lar, raízes, família e vida privada", "question_en": "What supports roots, privacy and a psychological base?", "question_pt": "O que sustenta raízes, privacidade e uma base psicológica?", "houses": (4,), "angles": ("ic",), "intrinsic": {}},
+    {"id": "friendship_community_belonging", "en": "Friendship, community and belonging", "pt": "Amizade, comunidade e pertencimento", "question_en": "How do community, networks and belonging operate?", "question_pt": "Como comunidade, redes e pertencimento operam?", "houses": (11,), "angles": (), "intrinsic": {}},
+    {"id": "meaning_beliefs_horizon", "en": "Meaning, beliefs, study and horizon", "pt": "Sentido, crenças, estudo e horizonte", "question_en": "How are meaning, study and wider perspective developed?", "question_pt": "Como sentido, estudo e perspectiva mais ampla se desenvolvem?", "houses": (3, 9), "angles": (), "intrinsic": {"jupiter": "growth, meaning and exploration", "mercury": "learning and communication"}},
+    {"id": "shadow_defenses_patterns", "en": "Shadow, defenses, power and repeating patterns", "pt": "Sombra, defesas, poder e padrões repetitivos", "question_en": "Which authorised tensions or background patterns deserve awareness?", "question_pt": "Quais tensões ou padrões de fundo autorizados merecem consciência?", "houses": (8, 12), "angles": (), "intrinsic": {}, "hard_relational": True},
+    {"id": "growth_through_contradiction", "en": "Growth through contradiction", "pt": "Crescimento através da contradição", "question_en": "Which legitimate needs repeatedly ask to coexist?", "question_pt": "Quais necessidades legítimas pedem repetidamente para coexistir?", "houses": (), "angles": (), "intrinsic": {}, "hard_relational": True},
+    {"id": "developmental_direction", "en": "Developmental direction", "pt": "Direção de desenvolvimento", "question_en": "What is familiar, and what asks for less automatic engagement?", "question_pt": "O que é familiar e o que pede um engajamento menos automático?", "houses": (), "angles": (), "intrinsic": {}, "node_axis": True},
+    {"id": "active_life_chapter", "en": "The chapter of life active now", "pt": "O capítulo de vida ativo agora", "question_en": "Which natal field is being activated now?", "question_pt": "Qual campo natal está sendo ativado agora?", "houses": (), "angles": (), "intrinsic": {}, "timing": True},
+)
+
+READER_OPENING_HEADINGS = {"en": "Whole-chart architecture", "pt": "Arquitetura do mapa"}
+READER_INTEGRATION_HEADINGS = {"en": "Final integration", "pt": "Integração final"}
+HARD_RELATIONAL_OPERATIONS = frozenset({"friction", "polarity", "adjustment"})
+HARD_CONFIGURATION_KINDS = frozenset({"t_square", "yod", "grand_cross", "mystic_rectangle"})
+
+
 def build_reasoning_packet(
     chart: SafeInterpretiveChart,
     hierarchy: Dict[str, Dict[str, object]],
@@ -177,41 +202,18 @@ def validate_reasoned_syntheses(
     deduction that is disconnected from its cited semantic units before prose
     is considered by the separate Narrative Judge.
     """
-    known = _evidence_ids(chart)
     timing_ids = set(timing_evidence_ids or [])
     claim_map = {claim.id: claim for claim in (claims or []) if claim.status == "allowed"}
-    factor_kinds = {factor.id: factor.kind for factor in chart.factors}
     output: List[ReasonedSynthesis] = []
     for item in items:
-        errors: List[str] = []
-        source_claims: List[Claim] = []
-        cited = list(item.primary_factors) + list(item.modifiers) + list(item.counterweights)
-        if not item.primary_factors:
-            errors.append("missing_primary_factors")
-        if any(factor not in known and factor not in timing_ids for factor in cited):
-            errors.append("unknown_or_unsafe_factor")
-        if item.reasoning_class not in REASONING_CLASSES:
-            errors.append("invalid_reasoning_class")
+        errors = synthesis_ancestry_errors(item, chart, claim_map.values(), timing_ids)
+        source_claims = [claim_map[claim_id] for claim_id in item.source_claim_ids if claim_id in claim_map]
         if item.confidence_within_astrological_model not in CONFIDENCE:
             errors.append("invalid_confidence")
         if claim_map:
-            if not item.source_claim_ids:
-                errors.append("missing_source_claim_ids")
-            if any(claim_id not in claim_map for claim_id in item.source_claim_ids):
-                errors.append("unknown_source_claim_id")
-            source_claims = [claim_map[claim_id] for claim_id in item.source_claim_ids if claim_id in claim_map]
             allowed_motifs = {motif for claim in source_claims for motif in claim.authorized_motifs}
             if any(motif not in allowed_motifs for motif in item.source_motif_ids):
                 errors.append("source_motif_not_authorized_by_source_claim")
-            allowed_primary = {factor for claim in source_claims for factor in claim.evidence}
-            natal_primary = {factor for factor in item.primary_factors if factor not in timing_ids}
-            if not natal_primary.issubset(allowed_primary):
-                errors.append("primary_factor_not_authorized_by_source_claim")
-            if not item.composition_operations:
-                errors.append("missing_composition_operation")
-            incompatible = _incompatible_operations(item, chart, timing_ids)
-            if incompatible:
-                errors.append("composition_operation_not_supported_by_factor")
             if _confidence_exceeds_sources(item, source_claims, chart):
                 errors.append("confidence_exceeds_source_ceiling")
             for proposition in item.derived_propositions:
@@ -223,25 +225,6 @@ def validate_reasoned_syntheses(
                 errors.append("semantic_disconnect_from_sources")
             if _specificity_escalation(item):
                 errors.append("biographical_specificity_escalation")
-            errors.extend(_house_ruler_context_errors(item, chart, source_claims, factor_kinds))
-        # Cusp-to-ruler factors are not generic evidence.  Apply this check
-        # outside the Claim-map branch so a raw route cannot evade the
-        # specialised validator merely by omitting its canonical Claim.
-        errors.extend(_house_ruler_factor_contract_errors(item, chart, source_claims, factor_kinds))
-        # One aspect already composes two planetary functions; a lone house or
-        # condition does not.
-        if item.reasoning_class == "natal_timing_interaction" and (not any(factor in timing_ids for factor in item.primary_factors) or not any(factor not in timing_ids for factor in item.primary_factors)):
-            errors.append("natal_timing_interaction_requires_natal_and_timing_evidence")
-        if item.reasoning_class != "single_structural_factor" and len(set(item.primary_factors)) < 2 and not any(factor.startswith("aspect.") for factor in item.primary_factors):
-            errors.append("insufficient_composition_support")
-        configuration_factors = {factor.id: factor for factor in chart.factors if factor.kind == "configuration"}
-        if any(factor in configuration_factors for factor in item.primary_factors):
-            from .structure import detect_configurations
-            detected = {str(record["id"]): record for record in detect_configurations(chart.semantic_chart())}
-            for factor_id in set(item.primary_factors).intersection(configuration_factors):
-                factor = configuration_factors[factor_id]
-                if detected.get(factor_id) != factor.data:
-                    errors.append("invalid_configuration_provenance")
         folded = " ".join([item.observation, item.alternative_reading, *item.possible_expressions]).casefold()
         if any(token in folded for token in ("diagnóstico", "diagnosis", "trauma", "morte", "death", "doença", "disease", "vai acontecer", "will happen")):
             errors.append("prohibited_extension_in_reasoning")
@@ -249,6 +232,64 @@ def validate_reasoned_syntheses(
         item.status = "blocked" if errors else "allowed"
         output.append(item)
     return output
+
+
+def synthesis_ancestry_errors(
+    item: ReasonedSynthesis,
+    chart: SafeInterpretiveChart,
+    claims: Iterable[Claim],
+    timing_evidence_ids: Iterable[str] = (),
+) -> List[str]:
+    """Validate non-literary Claim/factor ancestry for synthesis and routing.
+
+    Reader-domain availability uses this same path as the full synthesis guard;
+    prose, confidence and literary specificity remain later validation layers.
+    """
+    known = _evidence_ids(chart)
+    timing_ids = set(timing_evidence_ids)
+    claim_map = {claim.id: claim for claim in claims if claim.status == "allowed"}
+    factor_kinds = {factor.id: factor.kind for factor in chart.factors}
+    cited = list(item.primary_factors) + list(item.modifiers) + list(item.counterweights)
+    errors: List[str] = []
+    source_claims: List[Claim] = []
+    if not item.primary_factors:
+        errors.append("missing_primary_factors")
+    if any(factor not in known and factor not in timing_ids for factor in cited):
+        errors.append("unknown_or_unsafe_factor")
+    if item.reasoning_class not in REASONING_CLASSES:
+        errors.append("invalid_reasoning_class")
+    if claim_map:
+        if not item.source_claim_ids:
+            errors.append("missing_source_claim_ids")
+        if any(claim_id not in claim_map for claim_id in item.source_claim_ids):
+            errors.append("unknown_source_claim_id")
+        source_claims = [claim_map[claim_id] for claim_id in item.source_claim_ids if claim_id in claim_map]
+        allowed_primary = {factor for claim in source_claims for factor in claim.evidence}
+        natal_primary = {factor for factor in item.primary_factors if factor not in timing_ids}
+        if not natal_primary.issubset(allowed_primary):
+            errors.append("primary_factor_not_authorized_by_source_claim")
+        if not item.composition_operations:
+            errors.append("missing_composition_operation")
+        if _incompatible_operations(item, chart, timing_ids):
+            errors.append("composition_operation_not_supported_by_factor")
+        errors.extend(_house_ruler_context_errors(item, chart, source_claims, factor_kinds))
+    # A raw route cannot evade its specialised contract by omitting a Claim.
+    errors.extend(_house_ruler_factor_contract_errors(item, chart, source_claims, factor_kinds))
+    if item.reasoning_class == "natal_timing_interaction" and (
+        not any(factor in timing_ids for factor in item.primary_factors)
+        or not any(factor not in timing_ids for factor in item.primary_factors)
+    ):
+        errors.append("natal_timing_interaction_requires_natal_and_timing_evidence")
+    if item.reasoning_class != "single_structural_factor" and len(set(item.primary_factors)) < 2 and not any(factor.startswith("aspect.") for factor in item.primary_factors):
+        errors.append("insufficient_composition_support")
+    configuration_factors = {factor.id: factor for factor in chart.factors if factor.kind == "configuration"}
+    if any(factor in configuration_factors for factor in item.primary_factors):
+        from .structure import detect_configurations
+        detected = {str(record["id"]): record for record in detect_configurations(chart.semantic_chart())}
+        for factor_id in set(item.primary_factors).intersection(configuration_factors):
+            if detected.get(factor_id) != configuration_factors[factor_id].data:
+                errors.append("invalid_configuration_provenance")
+    return list(dict.fromkeys(errors))
 
 
 def _house_ruler_factor_contract_errors(
@@ -500,6 +541,246 @@ def _promoted_configurations(configurations: List[Dict[str, object]], hierarchy:
             promoted.append(item)
             seen_families.add(family)
     return promoted
+
+
+def build_reader_domain_manifest(
+    chart: SafeInterpretiveChart,
+    claims: Iterable[Claim],
+    prepared_syntheses: List[Dict[str, object]],
+    chart_signature: Dict[str, object],
+    timing_evidence: Iterable[Dict[str, object]] = (),
+    language: str = "pt-BR",
+) -> Dict[str, object]:
+    """Route existing semantic authority to reader questions without scoring it."""
+    lang = "pt" if language.startswith("pt") else "en"
+    allowed_claims = [claim for claim in claims if claim.status == "allowed"]
+    claim_map = {claim.id: claim for claim in allowed_claims}
+    factors = {factor.id: factor for factor in chart.factors}
+    aspects = {aspect.id: aspect for aspect in chart.aspects}
+    evidence_bodies = _evidence_bodies(chart)
+    timing_records = {str(item["id"]): dict(item) for item in timing_evidence if item.get("id")}
+    activation_targets = {
+        str(item.get("activation_instance")): str(item.get("target"))
+        for item in timing_records.values()
+        if item.get("kind") == "activation_instance" and item.get("activation_instance") and item.get("target")
+    }
+    position_claims = {
+        claim.evidence[0].removeprefix("position."): claim
+        for claim in allowed_claims
+        if claim.id.startswith("claim.position.") and len(claim.evidence) == 1 and claim.evidence[0].startswith("position.")
+    }
+    core_factors = set(map(str, chart_signature.get("core_factors", [])))
+    central_bodies = set(map(str, chart_signature.get("central_dynamic", {}).get("bodies", [])))
+    strongest_houses = {int(item["house"]) for item in chart_signature.get("strongest_domains", []) if isinstance(item, dict) and str(item.get("house", "")).isdigit()}
+
+    def legal(item: ReasonedSynthesis) -> bool:
+        return not synthesis_ancestry_errors(item, chart, allowed_claims, timing_records)
+
+    def record(kind: str, item: ReasonedSynthesis, scope: str, house: int | None = None) -> Dict[str, object] | None:
+        if not legal(item):
+            return None
+        return {
+            "kind": kind,
+            "source_claim_ids": list(item.source_claim_ids),
+            "primary_factor_ids": list(item.primary_factors),
+            "reasoning_class": item.reasoning_class,
+            "composition_operations": list(item.composition_operations),
+            "authorized_scope": scope,
+            **({"placidus_house": house} if house is not None else {}),
+        }
+
+    def single_claim_path(claim: Claim, scope: str) -> Dict[str, object] | None:
+        if claim.direct_paragraph_renderable or not claim.evidence:
+            return None
+        factor_id = claim.evidence[0]
+        operation = ASPECT_OPERATIONS[aspects[factor_id].kind] if factor_id in aspects else "contextualization"
+        reasoning_class = "integrated_pattern" if operation in HARD_RELATIONAL_OPERATIONS else "single_structural_factor"
+        item = ReasonedSynthesis(
+            id=f"reader.route.{claim.id}", observation="", primary_factors=[factor_id], modifiers=[], counterweights=[],
+            reasoning_class=reasoning_class, confidence_within_astrological_model="light", possible_expressions=[], alternative_reading="",
+            prohibited_extensions=[], source_claim_ids=[claim.id], source_motif_ids=[], composition_operations=[operation], derived_propositions=[],
+        )
+        return record("claim_anchored", item, scope)
+
+    def house_path(claim: Claim, house: int, scope: str) -> Dict[str, object] | None:
+        if claim.direct_paragraph_renderable or not claim.evidence:
+            return None
+        item = ReasonedSynthesis(
+            id=f"reader.route.{claim.id}", observation="", primary_factors=[claim.evidence[0]], modifiers=[], counterweights=[],
+            reasoning_class="single_structural_factor", confidence_within_astrological_model="light", possible_expressions=[], alternative_reading="",
+            prohibited_extensions=[], source_claim_ids=[claim.id], source_motif_ids=[], composition_operations=["contextualization"], derived_propositions=[],
+        )
+        return record("topical_placidus", item, scope, house)
+
+    def house_ruler_path(house: int, scope: str) -> Dict[str, object] | None:
+        routing = claim_map.get(f"claim.house_ruler.placidus.{house}")
+        if not routing or not routing.evidence:
+            return None
+        factor = factors.get(routing.evidence[0])
+        if not factor or factor.kind != "placidus_house_ruler":
+            return None
+        ruler = str(factor.data.get("ruler", ""))
+        context = position_claims.get(ruler)
+        if not context:
+            return None
+        item = ReasonedSynthesis(
+            id=f"reasoned.house_ruler_context.placidus.{house}.{ruler}", observation="",
+            primary_factors=[factor.id, context.evidence[0]], modifiers=[], counterweights=[], reasoning_class="integrated_pattern",
+            confidence_within_astrological_model="light", possible_expressions=[], alternative_reading="", prohibited_extensions=[],
+            source_claim_ids=[routing.id, context.id], source_motif_ids=[], composition_operations=["contextualization"], derived_propositions=[],
+        )
+        return record("house_ruler_context", item, scope, house)
+
+    def timing_paths(scope: str) -> List[Dict[str, object]]:
+        paths: List[Dict[str, object]] = []
+        for timing_id, timing_item in sorted(timing_records.items()):
+            kind = str(timing_item.get("kind", ""))
+            targets: List[str] = []
+            if kind in {"activation_instance", "secondary_progression", "solar_arc"} and timing_item.get("target"):
+                targets.append(str(timing_item["target"]))
+            elif kind == "annual_profection" and timing_item.get("time_lord"):
+                targets.append(str(timing_item["time_lord"]))
+            elif kind in {"timeline_phase", "developmental_interval"}:
+                targets.extend(
+                    activation_targets[activation]
+                    for activation in timing_item.get("activation_instances", [])
+                    if activation in activation_targets
+                )
+            for target in dict.fromkeys(targets):
+                claim = position_claims.get(target)
+                if not claim:
+                    continue
+                item = ReasonedSynthesis(
+                    id=f"reader.route.timing.{kind}.{target}", observation="", primary_factors=[claim.evidence[0], timing_id], modifiers=[], counterweights=[],
+                    reasoning_class="natal_timing_interaction", confidence_within_astrological_model="light", possible_expressions=[], alternative_reading="",
+                    prohibited_extensions=[], source_claim_ids=[claim.id], source_motif_ids=[], composition_operations=["contextualization", "timing_activation"], derived_propositions=[],
+                )
+                candidate = record("timing_natal", item, scope)
+                if candidate:
+                    candidate["timing_ids"] = [timing_id]
+                    paths.append(candidate)
+        return paths
+
+    domains = []
+    house_claims: Dict[int, List[Claim]] = defaultdict(list)
+    for claim in allowed_claims:
+        if claim.type != "topical_tendency" or not claim.evidence or not claim.evidence[0].startswith("house.placidus."):
+            continue
+        body = claim.evidence[0].removeprefix("house.placidus.")
+        placement = chart.house_placements.get(body)
+        if placement and placement.placidus_house is not None:
+            house_claims[int(placement.placidus_house)].append(claim)
+
+    for definition in READER_DOMAIN_DEFINITIONS:
+        paths: List[Dict[str, object]] = []
+        for body, scope in definition.get("intrinsic", {}).items():
+            claim = position_claims.get(body)
+            candidate = single_claim_path(claim, scope) if claim else None
+            if candidate:
+                paths.append(candidate)
+        for angle in definition.get("angles", ()):
+            prefix = "claim.ascendant." if angle == "asc" else f"claim.angle."
+            for claim in allowed_claims:
+                is_match = claim.id.startswith(prefix) and (angle == "asc" or f".{angle}." in claim.id)
+                if is_match:
+                    candidate = single_claim_path(claim, f"the authorised {angle.upper()} function")
+                    if candidate:
+                        paths.append(candidate)
+            if angle == "asc":
+                for claim in allowed_claims:
+                    if claim.id.startswith("claim.chart_ruler."):
+                        candidate = single_claim_path(claim, "orientation and ways of beginning")
+                        if candidate:
+                            paths.append(candidate)
+        for house in definition.get("houses", ()):
+            scope = f"the existing Placidus house {house} topic"
+            for claim in house_claims.get(house, []):
+                candidate = house_path(claim, house, scope)
+                if candidate:
+                    paths.append(candidate)
+            candidate = house_ruler_path(house, scope)
+            if candidate:
+                paths.append(candidate)
+        if definition.get("hard_relational"):
+            for claim in allowed_claims:
+                factor_id = claim.evidence[0] if claim.evidence else ""
+                if factor_id in aspects and ASPECT_OPERATIONS[aspects[factor_id].kind] in HARD_RELATIONAL_OPERATIONS:
+                    candidate = single_claim_path(claim, "the authorised friction, polarity or adjustment between the cited functions")
+                    if candidate:
+                        paths.append(candidate)
+                factor = factors.get(factor_id)
+                if factor and factor.kind == "configuration" and factor.data.get("kind") in HARD_CONFIGURATION_KINDS:
+                    candidate = single_claim_path(claim, "the authorised integrated tension in the detected configuration")
+                    if candidate:
+                        paths.append(candidate)
+        if definition.get("node_axis"):
+            for claim in allowed_claims:
+                if claim.id.startswith("claim.node_axis."):
+                    candidate = single_claim_path(claim, "developmental direction and familiar available patterning")
+                    if candidate:
+                        paths.append(candidate)
+        if definition.get("timing"):
+            paths.extend(timing_paths("the human field activated by the selected timing record and its natal target"))
+
+        unique: List[Dict[str, object]] = []
+        seen = set()
+        for candidate in paths:
+            key = (
+                candidate["kind"], tuple(candidate["source_claim_ids"]), tuple(candidate["primary_factor_ids"]),
+                tuple(candidate.get("timing_ids", [])), candidate.get("placidus_house"), candidate["authorized_scope"],
+            )
+            if key not in seen:
+                seen.add(key)
+                unique.append(candidate)
+        unique.sort(key=lambda item: (str(item["kind"]), tuple(item["source_claim_ids"]), tuple(item["primary_factor_ids"])))
+        for index, candidate in enumerate(unique, 1):
+            candidate["id"] = f"reader_path.{definition['id']}.{candidate['kind']}.{index}"
+        path_factors = {factor for candidate in unique for factor in candidate["primary_factor_ids"]}
+        path_bodies = set().union(*(evidence_bodies.get(factor, set()) for factor in path_factors)) if path_factors else set()
+        supporting_claim_ids = sorted({
+            claim.id for claim in allowed_claims
+            if not claim.direct_paragraph_renderable
+            and any(path_bodies.intersection(evidence_bodies.get(evidence, set())) for evidence in claim.evidence)
+        } - {claim_id for candidate in unique for claim_id in candidate["source_claim_ids"]})
+        supporting_synthesis_ids = sorted({
+            str(item["id"]) for item in prepared_syntheses if item.get("status") == "allowed"
+            and path_factors.intersection(map(str, item.get("primary_factors", [])))
+        })
+        high = any(
+            core_factors.intersection(candidate["primary_factor_ids"])
+            or central_bodies.intersection(set().union(*(evidence_bodies.get(factor, set()) for factor in candidate["primary_factor_ids"])))
+            or candidate.get("placidus_house") in strongest_houses
+            for candidate in unique
+        )
+        heading = str(definition[lang])
+        unavailable = not unique
+        notice = None
+        if unavailable:
+            if definition["id"] == "active_life_chapter":
+                text = (f"Em “{heading}”, a evidência de timing selecionada não sustenta uma ativação atual suficientemente específica; por isso, o relatório não infere uma."
+                        if lang == "pt" else f"For “{heading},” the selected timing evidence does not support a sufficiently specific current activation, so this report does not infer one.")
+            else:
+                text = (f"Em “{heading}”, o mapa não oferece evidência suficientemente confiável e específica; por isso, o relatório deixa a questão em aberto em vez de inventar uma interpretação."
+                        if lang == "pt" else f"For “{heading},” the chart does not provide sufficiently reliable, specific evidence, so this report leaves the question open rather than inventing an interpretation.")
+            import hashlib
+            notice = {"id": f"reader_notice.unavailable.{definition['id']}", "text": text, "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest()}
+        domains.append({
+            "id": definition["id"], "position": len(domains) + 1, "heading": heading,
+            "human_question": definition[f"question_{lang}"], "legal_coverage_paths": unique,
+            "supporting_claim_ids": supporting_claim_ids, "supporting_synthesis_ids": supporting_synthesis_ids,
+            "availability": "unavailable" if unavailable else "available", "emphasis": "low" if unavailable or not high else "high",
+            "unavailable_notice": notice,
+        })
+    return {
+        "contract_version": "1.0", "locale": language,
+        "opening": {"heading": READER_OPENING_HEADINGS[lang]},
+        "domains": domains,
+        "integration": {"heading": READER_INTEGRATION_HEADINGS[lang]},
+        "rules": {
+            "coverage": "fixed", "depth": "adaptive", "path_kinds": ["claim_anchored", "topical_placidus", "house_ruler_context", "timing_natal"],
+            "direct_claim_satisfies_domain": False, "reused_evidence_changes_structural_weight": False,
+        },
+    }
 
 
 def _incompatible_operations(item: ReasonedSynthesis, chart: SafeInterpretiveChart, timing_ids: set[str]) -> bool:
@@ -925,7 +1206,11 @@ def humanization_instructions(language: str = "pt-BR") -> str:
             "legalista ou de QA interno. Não acrescente fator, biografia, evento, diagnóstico ou certeza. Preserve citações internas de fatores para "
             "verificação, mas não as exponha no corpo principal. Quando um parágrafo usar modo direto de Claim, use-o apenas para a rota atômica "
             "da regência Placidus; nunca use esse modo para contexto natal do regente, personalidade, conclusão de domínio, timing ou outra composição, "
-            "que exigem uma ReasonedSynthesis aprovada."
+            "que exigem uma ReasonedSynthesis aprovada. Estruture o Premium em abertura do mapa inteiro, exatamente os 16 headings canônicos do manifest e "
+            "integração final. Cada domínio disponível recebe tratamento próprio; low emphasis reduz profundidade, não cobertura. Use somente as legal coverage "
+            "paths e seu authorized_scope: um apoio não fabrica âncora e uma âncora estreita não autoriza todos os conceitos do heading. Explique um mecanismo "
+            "central por inteiro uma vez e, em domínio posterior, acrescente a consequência específica daquele campo. Para domínio indisponível, reproduza apenas "
+            "o aviso determinístico exato, sem editar nem acrescentar prosa. As sínteses de cobertura não alteram a ChartSignature preparada."
         )
     return (
         "Write in our house voice: address the reader predominantly in natural second person, varying construction whenever repeated "
@@ -940,7 +1225,11 @@ def humanization_instructions(language: str = "pt-BR") -> str:
         "only when they support a specific field. Use no academic, legalistic, or internal-QA voice. Do not add a factor, biography, event, diagnosis or certainty. "
         "Preserve internal factor citations for verification, but do not expose them in the main reading. When a paragraph uses direct Claim mode, use it only "
         "for the atomic Placidus house-ruler route; never use it for ruler natal context, personality, a domain conclusion, timing, or another composition, "
-        "which require an approved ReasonedSynthesis."
+        "which require an approved ReasonedSynthesis. Structure Premium as a whole-chart opening, exactly the manifest's 16 canonical headings, and final "
+        "integration. Every available domain receives its own treatment; low emphasis reduces depth, not coverage. Use only legal coverage paths and their "
+        "authorized_scope: support cannot manufacture an anchor, and a narrow anchor does not authorise every concept in a heading. Explain a central mechanism "
+        "fully once, then add the distinct consequence in each later domain. For an unavailable domain, reproduce only the exact deterministic notice with no "
+        "editing or added prose. Coverage syntheses do not alter the prepared ChartSignature."
     )
 
 
@@ -965,7 +1254,10 @@ def humanization_verifier_instructions(language: str = "pt-BR") -> str:
             "conceitual em cada parágrafo principal e corrija genericidade por seleção ou mecanismo, nunca inventando detalhes de vida. Para cada "
             "parágrafo em modo direto de Claim, compare-o com o Claim canônico indicado, não com uma síntese: um Claim de regência Placidus autoriza "
             "somente a rota atômica casa–cúspide–regente. Reescreva ou remova qualquer contexto natal do regente, significado de personalidade, "
-            "conclusão de domínio, timing ou dedução multifatorial sem ReasonedSynthesis aprovada."
+            "conclusão de domínio, timing ou dedução multifatorial sem ReasonedSynthesis aprovada. Proteja as três camadas: bloqueie heading ausente, domínio "
+            "superficial, abertura que inventarie placements e conclusão que apenas resuma. Compare cada tratamento com authorized_scope de sua legal path; um "
+            "fator de apoio não cria âncora e um escopo estreito não cobre automaticamente todo o heading. Low emphasis continua obrigatório. Exija que reutilização "
+            "acrescente consequência própria do domínio, comprima reexplicação e preserve exatamente qualquer aviso determinístico indisponível."
         )
     return (
         "Compare each final paragraph with its authorised ReasonedSynthesis. Approve only if core meaning, certainty and "
@@ -979,7 +1271,10 @@ def humanization_verifier_instructions(language: str = "pt-BR") -> str:
         "swap test to each major paragraph and correct genericity through selection or mechanism, never invented life detail. For every direct-Claim paragraph, "
         "compare the prose with its cited canonical Claim rather than a synthesis: a Placidus house-ruler Claim authorises only the atomic house–cusp–ruler "
         "route. Rewrite or remove ruler natal context, personality meaning, a domain conclusion, timing, or any multi-factor deduction unless an approved "
-        "ReasonedSynthesis authorises it."
+        "ReasonedSynthesis authorises it. Protect all three layers: block a missing heading, superficial domain, placement-inventory opening, or merely summarising "
+        "ending. Compare each treatment with the authorized_scope of its legal path; a supporting factor cannot create an anchor and a narrow scope cannot cover "
+        "every concept in the heading. Low emphasis remains mandatory. Require reused mechanisms to add a domain-specific consequence, compress repeated teaching, "
+        "and preserve any deterministic unavailable notice exactly."
     )
 
 

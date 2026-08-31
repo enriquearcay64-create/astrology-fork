@@ -14,6 +14,7 @@ from astrology.safe_view import build_safe_interpretive_view
 from astrology.semantics import _claim_from_aspect, build_claims, verify_claims
 from astrology.structure import detect_configurations
 from astrology.timing import ORB_BOUNDARY_TOLERANCE_DEGREES, _cycle_occurrences, _deviation, _jd_for_datetime, _longitude, annual_profection, developmental_intervals
+from tests.v413_helpers import build_author_bundle, contract_fields, reviewer_bundle
 
 
 def birth() -> BirthData:
@@ -21,13 +22,7 @@ def birth() -> BirthData:
 
 
 def _contract_fields():
-    return {
-        "premium_handoff_contract_version": "1.1",
-        "premium_handoff_contract": _premium_handoff_contract(),
-        "premium_handoff_contract_sha256": _canonical_hash(_premium_handoff_contract()),
-        "corrections_made": [],
-        "remaining_warnings": [],
-    }
+    return contract_fields()
 
 
 def _coverage_bundle(result):
@@ -194,15 +189,10 @@ def test_v41_node_axis_contacts_have_one_authorised_semantic_ancestry_and_do_not
 
 
 def test_v41_source_map_requires_the_exact_substantive_paragraph_universe():
-    fallback = analyse_birth_chart(birth(), include_timing=False)
-    syntheses, draft, mapping = _coverage_bundle(fallback)
-    judged = validate_premium_syntheses(birth(), syntheses, include_timing=False)
-    author = {
-        **_contract_fields(),
-        "packet_id": judged["packet_id"], "reasoned_syntheses": syntheses, "draft_report": draft,
-        "paragraph_sources": mapping, "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft),
-    }
-    assert validate_premium_author_bundle(birth(), author, include_timing=False)["approved"]
+    handoff = prepare_premium_handoff(birth(), include_timing=False)
+    author, _direct = build_author_bundle(birth(), include_timing=False)
+    syntheses, draft, mapping = author["reasoned_syntheses"], author["draft_report"], author["paragraph_sources"]
+    assert validate_premium_author_bundle(birth(), author, include_timing=False, prepared_handoff=handoff)["approved"]
     orphan = dict(author, paragraph_sources=[*mapping, {"paragraph_sha256": "not-a-real-paragraph", "synthesis_ids": [syntheses[0]["id"]], "claim_ids": [], "timing_ids": []}])
     assert "orphan_paragraph_source_map" in validate_premium_author_bundle(birth(), orphan, include_timing=False)["verification_errors"]
     duplicate = dict(author, paragraph_sources=[*mapping, dict(mapping[0])])
@@ -211,15 +201,11 @@ def test_v41_source_map_requires_the_exact_substantive_paragraph_universe():
     assert "conflicting_duplicate_paragraph_source_map" in validate_premium_author_bundle(birth(), conflicting, include_timing=False)["verification_errors"]
     missing = dict(author, paragraph_sources=mapping[1:])
     assert "interpretive_paragraph_without_source_map" in validate_premium_author_bundle(birth(), missing, include_timing=False)["verification_errors"]
-    provenance = validate_premium_author_bundle(birth(), author, include_timing=False)
+    provenance = validate_premium_author_bundle(birth(), author, include_timing=False, prepared_handoff=handoff)
     shortened = draft.split("\n\n", 1)[0]
-    reviewer = {
-        **_contract_fields(),
-        "packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"],
-        "reviewed_draft_sha256": provenance["draft_report_sha256"], "verdict": "approved", "final_report": shortened,
-        "final_report_sha256": _canonical_hash(shortened), "paragraph_sources": mapping,
-    }
-    assert "orphan_paragraph_source_map" in validate_premium_narrative(reviewer, provenance)["verification_errors"]
+    reviewer = reviewer_bundle(author, provenance)
+    reviewer.update(final_report=shortened, final_report_sha256=_canonical_hash(shortened))
+    assert "orphan_paragraph_source_map" in validate_premium_narrative(reviewer, provenance, birth(), include_timing=False, prepared_handoff=handoff)["verification_errors"]
 
 
 def test_v41_reused_configuration_family_does_not_inflate_theme_priority():
@@ -396,24 +382,14 @@ def test_manual_premium_workflow_has_separate_synthesis_and_narrative_gates():
     handoff = prepare_premium_handoff(birth(), include_timing=False)
     assert handoff["premium_required_for_publication"]
     assert handoff["workflow"][1].startswith("2. Premium Author")
-    fallback = analyse_birth_chart(birth(), include_timing=False)
-    coverage_syntheses, draft, sources = _coverage_bundle(fallback)
+    author, _direct = build_author_bundle(birth(), include_timing=False)
+    coverage_syntheses, draft, sources = author["reasoned_syntheses"], author["draft_report"], author["paragraph_sources"]
     judged = validate_premium_syntheses(birth(), coverage_syntheses, include_timing=False)
     assert judged["approved"]
-    author = {
-        **_contract_fields(),
-        "packet_id": judged["packet_id"], "reasoned_syntheses": coverage_syntheses, "draft_report": draft,
-        "paragraph_sources": sources, "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft),
-    }
-    provenance = validate_premium_author_bundle(birth(), author, include_timing=False)
+    provenance = validate_premium_author_bundle(birth(), author, include_timing=False, prepared_handoff=handoff)
     assert provenance["approved"]
     final_report = draft
-    final = validate_premium_narrative({
-        **_contract_fields(),
-        "packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"], "reviewed_draft_sha256": provenance["draft_report_sha256"],
-        "verdict": "approved", "final_report": final_report, "final_report_sha256": _canonical_hash(final_report),
-        "paragraph_sources": sources, "corrections_made": [], "remaining_warnings": [],
-    }, provenance)
+    final = validate_premium_narrative(reviewer_bundle(author, provenance), provenance, birth(), include_timing=False, prepared_handoff=handoff)
     assert final["approved"]
     assert final["semantic_status"] == "reviewer_attested_not_deterministically_proven"
 
@@ -447,11 +423,11 @@ def test_provenance_guard_closes_claim_motif_factor_operation_and_confidence_con
 
 
 def test_premium_guards_block_identity_hash_source_coverage_and_timing_mismatches():
-    fallback = analyse_birth_chart(birth(), report_depth="deep", as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
-    coverage_syntheses, draft, mapping = _coverage_bundle(fallback)
-    judged = validate_premium_syntheses(birth(), coverage_syntheses, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
-    author = {**_contract_fields(), "packet_id": judged["packet_id"], "reasoned_syntheses": coverage_syntheses, "draft_report": draft, "paragraph_sources": mapping, "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(draft)}
-    provenance = validate_premium_author_bundle(birth(), author, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)
+    as_of = datetime(2026, 8, 27, tzinfo=timezone.utc)
+    handoff = prepare_premium_handoff(birth(), as_of=as_of, horizon_days=45)
+    author, _direct = build_author_bundle(birth(), include_timing=True, as_of=as_of, horizon_days=45)
+    draft, mapping = author["draft_report"], author["paragraph_sources"]
+    provenance = validate_premium_author_bundle(birth(), author, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45, prepared_handoff=handoff)
     assert provenance["approved"]
     bad_packet = dict(author, packet_id="other")
     assert "packet_id_mismatch" in validate_premium_author_bundle(birth(), bad_packet, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)["verification_errors"]
@@ -459,10 +435,10 @@ def test_premium_guards_block_identity_hash_source_coverage_and_timing_mismatche
     assert "synthesis_bundle_hash_mismatch" in validate_premium_author_bundle(birth(), bad_hash, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)["verification_errors"]
     no_sources = dict(author, paragraph_sources=[])
     assert "interpretive_paragraph_without_source_map" in validate_premium_author_bundle(birth(), no_sources, as_of=datetime(2026, 8, 27, tzinfo=timezone.utc), horizon_days=45)["verification_errors"]
-    reviewer = {**_contract_fields(), "packet_id": provenance["packet_id"], "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"], "reviewed_draft_sha256": provenance["draft_report_sha256"], "verdict": "approved", "final_report": draft, "final_report_sha256": _canonical_hash(draft), "paragraph_sources": mapping}
-    assert validate_premium_narrative(reviewer, provenance)["approved"]
+    reviewer = reviewer_bundle(author, provenance)
+    assert validate_premium_narrative(reviewer, provenance, birth(), as_of=as_of, horizon_days=45, prepared_handoff=handoff)["approved"]
     reviewer["paragraph_sources"] = [dict(mapping[0], timing_ids=["timing.activation.invented"])]
-    assert "invented_or_unapproved_timing_evidence" in validate_premium_narrative(reviewer, provenance)["verification_errors"]
+    assert "invented_or_unapproved_timing_evidence" in validate_premium_narrative(reviewer, provenance, birth(), as_of=as_of, horizon_days=45, prepared_handoff=handoff)["verification_errors"]
 
 
 def test_signature_score_has_no_rulership_count_bias_and_nested_intervals_remain_continuous():
@@ -575,7 +551,7 @@ def test_v411_client_appendix_is_curated_and_prepare_keeps_full_audit_sidecar():
     assert "## Estrutura e configurações" in client
     assert "- Registro semântico: 2.6.0" in client
     assert "- Metodologia de timing: 4.0.1" in client
-    assert "- Template do relatório: 4.1.1-reader-experience" in client
+    assert "- Template do relatório: 4.1.3-whole-person" in client
     assert "Profecção anual (técnica de Signo Inteiro)" in client
     positions = client.split("## Posições", 1)[1].split("## Ângulos", 1)[0]
     assert "Signo Inteiro" not in positions
@@ -588,11 +564,11 @@ def test_v411_client_appendix_is_curated_and_prepare_keeps_full_audit_sidecar():
     assert "## Chart signature" in handoff["audit_sidecar"]
 
 
-def test_v411_versioning_updates_editorial_versions_only():
+def test_v413_versioning_updates_reader_contract_only():
     policy = calculate_chart(birth()).policy
 
-    assert policy["methodology_version"] == "4.1.2"
-    assert policy["report_template_version"] == "4.1.1-reader-experience"
+    assert policy["methodology_version"] == "4.1.3"
+    assert policy["report_template_version"] == "4.1.3-whole-person"
     assert policy["semantic_registry_version"] == "2.6.0"
     assert policy["timing_version"] == "4.0.1"
     assert policy["schema_version"] == "4.1.1"

@@ -1,11 +1,11 @@
 """Single orchestration entrypoint with strict fact-to-language boundaries."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 import json
 import re
-from typing import Dict, Iterable, Optional
+from typing import Dict, Iterable, List, Optional
 
 from .consultation import answer_question, classify_question, render_consultation
 from .config import PREMIUM_HANDOFF_CONTRACT_VERSION
@@ -16,7 +16,7 @@ from .localization import localization_audit
 from .models import BirthData, Claim, LocalizationProfile, ReasonedSynthesis, to_primitive
 from .privacy import record_boundaries
 from .report import render_report, technical_appendix
-from .reasoning import build_chart_signature, build_narrative_plan, build_natal_timing_interactions, build_reasoning_packet, compose_reasoned_syntheses, humanization_instructions, humanization_verifier_instructions, llm_reasoning_instructions, validate_reasoned_syntheses
+from .reasoning import build_chart_signature, build_narrative_plan, build_natal_timing_interactions, build_reader_domain_manifest, build_reasoning_packet, compose_reasoned_syntheses, humanization_instructions, humanization_verifier_instructions, llm_reasoning_instructions, validate_reasoned_syntheses
 from .safe_view import build_safe_interpretive_view
 from .semantics import build_claims, verify_claims
 from .structure import chart_structure
@@ -52,17 +52,22 @@ def analyse_birth_chart(birth: BirthData, profile: Optional[LocalizationProfile]
     intervals = developmental_intervals(semantic_chart, timeline) if timeline else None
     reasoned_syntheses = compose_reasoned_syntheses(chart, themes, thematic_claims, natal_hierarchy, language)
     chart_signature = build_chart_signature(chart, natal_hierarchy, structure, reasoned_syntheses, language)
-    narrative_plan = build_narrative_plan(themes, reasoned_syntheses, language, chart, chart_signature)
     natal_timing_interactions = build_natal_timing_interactions(chart, natal_hierarchy, claims, themes, timing)
     if timing:
         timing["current_phase"]["natal_timing_interactions"] = natal_timing_interactions[:6]
     reasoning_packet = build_reasoning_packet(chart, natal_hierarchy, claims, timing, timeline, intervals, language, profile, packet_id)
+    reader_domain_manifest = build_reader_domain_manifest(
+        chart, claims, reasoned_syntheses, chart_signature,
+        reasoning_packet["facts"]["timing_evidence"], language,
+    )
+    reasoning_packet["facts"]["reader_domain_manifest"] = reader_domain_manifest
+    narrative_plan = build_narrative_plan(themes, reasoned_syntheses, language, chart, chart_signature)
     report = render_report(report_depth, chart, claims, themes, natal_hierarchy, timing, timeline, paradoxes, compensations, structure, profile, reasoned_syntheses, narrative_plan, intervals, chart_signature)
     return {
         "packet_id": packet_id, "chart": raw_chart.as_dict(), "safe_interpretive_view": to_primitive(chart), "hierarchy": natal_hierarchy, "current_hierarchy": current_hierarchy,
         "chart_structure": structure, "claims": to_primitive(claims), "themes": themes,
         "paradoxes": paradoxes, "compensation_hypotheses": compensations,
-        "reasoned_synthesis": reasoned_syntheses, "chart_signature": chart_signature, "narrative_plan": narrative_plan,
+        "reasoned_synthesis": reasoned_syntheses, "chart_signature": chart_signature, "narrative_plan": narrative_plan, "reader_domain_manifest": reader_domain_manifest,
         "reasoning_packet": reasoning_packet, "llm_reasoning_instructions": llm_reasoning_instructions(), "humanization_instructions": humanization_instructions(language),
         "humanization_verifier_instructions": humanization_verifier_instructions(language),
         "timing": timing, "timeline": timeline, "developmental_intervals": intervals,
@@ -87,12 +92,14 @@ def _premium_handoff_contract() -> Dict[str, object]:
         "version": PREMIUM_HANDOFF_CONTRACT_VERSION,
         "author_bundle_required_fields": [
             "packet_id", "premium_handoff_contract_version", "premium_handoff_contract", "premium_handoff_contract_sha256",
-            "reasoned_syntheses", "draft_report", "paragraph_sources", "synthesis_bundle_sha256", "draft_report_sha256",
+            "prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256",
+            "reasoned_syntheses", "draft_report", "paragraph_sources", "reader_sections", "synthesis_bundle_sha256", "draft_report_sha256",
         ],
         "reviewer_bundle_required_fields": [
             "packet_id", "premium_handoff_contract_version", "premium_handoff_contract", "premium_handoff_contract_sha256",
+            "prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256",
             "synthesis_bundle_sha256", "reviewed_draft_sha256", "verdict", "corrections_made", "remaining_warnings",
-            "final_report", "final_report_sha256", "paragraph_sources",
+            "final_report", "final_report_sha256", "paragraph_sources", "reader_sections",
         ],
         "paragraph_source_required_fields": list(_PARAGRAPH_SOURCE_FIELDS),
         "paragraph_source_rules": {
@@ -101,6 +108,15 @@ def _premium_handoff_contract() -> Dict[str, object]:
             "direct_claim_semantic_boundary": "atomic_placidus_house_ruler_route_only; ruler_context_or_other_composition_requires_approved_reasoned_synthesis",
         },
         "reasoned_synthesis_fields": list(ReasonedSynthesis.__dataclass_fields__),
+        "reader_section_rules": {
+            "shape": "opening_plus_exactly_16_canonical_domains_plus_integration",
+            "ownership": "one_physical_prose_hash_belongs_to_exactly_one_section",
+            "unavailable": "exact_deterministic_notice_and_no_prose_hashes",
+            "non_prose": "headings_tables_lists_metadata_and_separators_never_satisfy_coverage",
+        },
+        "timing_domain_rule": "row_timing_ids_equal_cited_synthesis_timing_ids_and_each_id_matches_a_satisfied_timing_natal_path",
+        "prepared_signature_rule": "pre_domain_chart_signature_and_its_deterministic_synthesis_basis_are_frozen",
+        "publication_authority_rule": "original_prepared_handoff_binds_packet_signature_synthesis_basis_manifest_and_materialized_timing_parameters",
     }
 
 
@@ -129,10 +145,16 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
     _require_premium_birth_time(birth)
     if report_depth != "deep":
         raise ValueError("Premium Complete preparation requires report_depth='deep'.")
-    core = analyse_birth_chart(birth, profile, "deep", include_timing, as_of, horizon_days)
+    effective_as_of = as_of
+    if include_timing and effective_as_of is None:
+        effective_as_of = datetime.now(timezone.utc)
+    core = analyse_birth_chart(birth, profile, "deep", include_timing, effective_as_of, horizon_days)
     handoff_chart = build_safe_interpretive_view(calculate_chart(birth))
     handoff_contract = _premium_handoff_contract()
     handoff_contract_hash = _canonical_hash(handoff_contract)
+    prepared_signature_hash = _canonical_hash(core["chart_signature"])
+    prepared_synthesis_hash = _canonical_hash(core["reasoned_synthesis"])
+    manifest_hash = _canonical_hash(core["reader_domain_manifest"])
     return {
         "stage": "reasoning_packet_ready",
         "premium_report_depth": "deep",
@@ -140,6 +162,16 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
         "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION,
         "premium_handoff_contract": handoff_contract,
         "premium_handoff_contract_sha256": handoff_contract_hash,
+        "preparation_parameters": {
+            "effective_as_of": effective_as_of.isoformat() if effective_as_of else None,
+            "horizon_days": horizon_days,
+            "include_timing": include_timing,
+        },
+        "prepared_chart_signature_sha256": prepared_signature_hash,
+        "prepared_signature_synthesis_sha256": prepared_synthesis_hash,
+        "prepared_signature_syntheses": core["reasoned_synthesis"],
+        "reader_domain_manifest": core["reader_domain_manifest"],
+        "reader_domain_manifest_sha256": manifest_hash,
         "premium_required_for_publication": True,
         "deterministic_fallback_notice": "The local fallback is useful for tests and debugging. Do not label it as the premium report without the two High review passes.",
         "workflow": [
@@ -156,8 +188,8 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
         "technical_appendix": technical_appendix(handoff_chart, core["hierarchy"], [], core["timing"], core["chart_structure"], profile),
         "audit_sidecar": render_report("technical", handoff_chart, [], [], core["hierarchy"], core["timing"], core["timeline"], [], [], core["chart_structure"], profile, [], core["narrative_plan"], core["developmental_intervals"], core["chart_signature"]),
         "reasoned_synthesis_schema": list(ReasonedSynthesis.__dataclass_fields__),
-        "author_bundle_contract": {"packet_id": core["packet_id"], "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": handoff_contract, "premium_handoff_contract_sha256": handoff_contract_hash, "reasoned_syntheses": "list[ReasonedSynthesis]", "draft_report": "string", "paragraph_sources": [{"paragraph_sha256": "sha256", "synthesis_ids": ["reasoned.id"], "claim_ids": ["claim.id"], "timing_ids": ["timing.activation.id"]}], "synthesis_bundle_sha256": "sha256", "draft_report_sha256": "sha256"},
-        "reviewer_bundle_contract": {"packet_id": core["packet_id"], "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": handoff_contract, "premium_handoff_contract_sha256": handoff_contract_hash, "synthesis_bundle_sha256": "sha256", "reviewed_draft_sha256": "sha256", "verdict": "approved|blocked", "corrections_made": ["string"], "remaining_warnings": ["string"], "final_report": "string", "final_report_sha256": "sha256", "paragraph_sources": "same mapping contract"},
+        "author_bundle_contract": {"packet_id": core["packet_id"], "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": handoff_contract, "premium_handoff_contract_sha256": handoff_contract_hash, "prepared_chart_signature_sha256": prepared_signature_hash, "prepared_signature_synthesis_sha256": prepared_synthesis_hash, "reader_domain_manifest_sha256": manifest_hash, "reasoned_syntheses": "list[ReasonedSynthesis]", "draft_report": "string", "paragraph_sources": [{"paragraph_sha256": "sha256", "synthesis_ids": ["reasoned.id"], "claim_ids": ["claim.id"], "timing_ids": ["timing.activation.id"]}], "reader_sections": "opening + canonical domains + integration", "synthesis_bundle_sha256": "sha256", "draft_report_sha256": "sha256"},
+        "reviewer_bundle_contract": {"packet_id": core["packet_id"], "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": handoff_contract, "premium_handoff_contract_sha256": handoff_contract_hash, "prepared_chart_signature_sha256": prepared_signature_hash, "prepared_signature_synthesis_sha256": prepared_synthesis_hash, "reader_domain_manifest_sha256": manifest_hash, "synthesis_bundle_sha256": "sha256", "reviewed_draft_sha256": "sha256", "verdict": "approved|blocked", "corrections_made": ["string"], "remaining_warnings": ["string"], "final_report": "string", "final_report_sha256": "sha256", "paragraph_sources": "same mapping contract", "reader_sections": "same ownership contract"},
         "sol_high_instruction": llm_reasoning_instructions(),
         "author_voice_instruction": core["humanization_instructions"],
         "narrative_judge_instruction": humanization_verifier_instructions(profile.preferred_language if profile else "pt-BR"),
@@ -173,9 +205,24 @@ def validate_premium_syntheses(birth: BirthData, synthesis_payload: Iterable[Dic
     timing_ids = [item["id"] for item in core["reasoning_packet"]["facts"]["timing_evidence"]]
     checked = validate_reasoned_syntheses(items, chart, [Claim(**claim) for claim in core["claims"]], timing_ids)
     approved = [to_primitive(item) for item in checked if item.status == "allowed"]
-    signature = build_chart_signature(chart, core["hierarchy"], core["chart_structure"], approved, profile.preferred_language if profile else "pt-BR")
-    plan = build_narrative_plan(core["themes"], approved, profile.preferred_language if profile else "pt-BR", chart, signature)
-    return {"stage": "provenance_syntheses_checked", "packet_id": core["packet_id"], "approved": len(approved) == len(checked), "reasoned_synthesis": [to_primitive(item) for item in checked], "synthesis_bundle_sha256": _canonical_hash(approved), "chart_signature": signature, "narrative_plan": plan, "timing_evidence_ids": timing_ids, "allowed_claims": [claim for claim in core["claims"] if claim.get("status") == "allowed"], "coverage": core["reasoning_packet"]["facts"]["coverage"], "next_step": "A Premium Reviewer may use only approved syntheses and typed timing IDs."}
+    return {
+        "stage": "provenance_syntheses_checked", "packet_id": core["packet_id"], "approved": len(approved) == len(checked),
+        "reasoned_synthesis": [to_primitive(item) for item in checked], "approved_reasoned_syntheses": approved,
+        "synthesis_bundle_sha256": _canonical_hash(approved),
+        # Selection is frozen before Author coverage synthesis.  Approved
+        # Author material remains usable for interpretation and provenance but
+        # never becomes a new structural vote.
+        "chart_signature": core["chart_signature"], "narrative_plan": core["narrative_plan"],
+        "prepared_chart_signature_sha256": _canonical_hash(core["chart_signature"]),
+        "prepared_signature_synthesis_sha256": _canonical_hash(core["reasoned_synthesis"]),
+        "prepared_signature_syntheses": core["reasoned_synthesis"],
+        "reader_domain_manifest": core["reader_domain_manifest"],
+        "reader_domain_manifest_sha256": _canonical_hash(core["reader_domain_manifest"]),
+        "timing_evidence_ids": timing_ids,
+        "allowed_claims": [claim for claim in core["claims"] if claim.get("status") == "allowed"],
+        "coverage": core["reasoning_packet"]["facts"]["coverage"],
+        "next_step": "A Premium Reviewer may use only approved syntheses and typed timing IDs; prepared centrality is frozen.",
+    }
 
 
 def _substantive_paragraphs(report: str) -> List[str]:
@@ -191,12 +238,117 @@ def _substantive_paragraphs(report: str) -> List[str]:
     return result
 
 
-def _validated_paragraph_sources(report: object, paragraph_sources: object, approved_ids: set[str], allowed_claims: Dict[str, Claim], timing_ids: set[str]) -> tuple[List[str], List[Dict[str, object]]]:
+def _parse_premium_narrative(report: object, manifest: object) -> Dict[str, object]:
+    """Parse one canonical physical block universe for handoff 1.2."""
+    if not isinstance(report, str) or not report.strip():
+        return {"errors": ["missing_final_report"], "prose": [], "sections": {}}
+    if not isinstance(manifest, dict) or not isinstance(manifest.get("domains"), list):
+        return {"errors": ["missing_reader_domain_manifest"], "prose": [], "sections": {}}
+    expected = [
+        ("opening", str(manifest.get("opening", {}).get("heading", ""))),
+        *[(str(item.get("id")), str(item.get("heading", ""))) for item in manifest["domains"]],
+        ("integration", str(manifest.get("integration", {}).get("heading", ""))),
+    ]
+    heading_to_key = {heading: key for key, heading in expected}
+    notice_to_domain = {
+        str(item["unavailable_notice"]["text"]): str(item["id"])
+        for item in manifest["domains"] if item.get("unavailable_notice")
+    }
+    sections = {key: {"heading": heading, "prose": [], "notices": []} for key, heading in expected}
+    blocks = [block.strip() for block in re.split(r"\n\s*\n", report) if block.strip()]
+    errors: List[str] = []
+    current: Optional[str] = None
+    seen_headings: List[str] = []
+    all_hashes: set[str] = set()
+    prose = []
+    title_count = 0
+    separator_count = 0
+    metadata_prefixes = ("*leitura simbólica", "*symbolic reading", "> **percurso", "> **path")
+    for block in blocks:
+        lines = block.splitlines()
+        if lines[0].startswith("## "):
+            if len(lines) != 1:
+                errors.append("premium_heading_must_be_isolated")
+                continue
+            heading = lines[0][3:].strip()
+            key = heading_to_key.get(heading)
+            if key is None:
+                errors.append("unknown_reader_section_heading")
+                current = None
+                continue
+            if key in seen_headings:
+                errors.append("duplicate_reader_section_heading")
+            seen_headings.append(key)
+            current = key
+            continue
+        if lines[0].startswith("#"):
+            # A document title is allowed only before the canonical narrative.
+            # Every other heading is physical content and cannot disappear from
+            # an unavailable section merely because it is not an H2 heading.
+            if lines[0].startswith("# ") and len(lines) == 1 and current is None and not seen_headings:
+                title_count += 1
+                if title_count > 1 or separator_count:
+                    errors.append("invalid_premium_document_preamble")
+            else:
+                errors.append("noncanonical_heading_inside_reader_section" if current is not None else "noncanonical_narrative_block")
+            continue
+        if block == "---":
+            if current is not None:
+                errors.append("nonprose_content_inside_reader_section")
+            elif seen_headings:
+                errors.append("noncanonical_narrative_block")
+            else:
+                separator_count += 1
+                if separator_count > 1:
+                    errors.append("invalid_premium_document_preamble")
+            continue
+        folded = block.casefold()
+        if folded.startswith(metadata_prefixes):
+            if current is not None:
+                errors.append("metadata_inside_reader_section")
+            continue
+        is_table = lines[0].lstrip().startswith("|")
+        is_list = bool(re.match(r"^\s*(?:[-*+] |\d+[.)] )", lines[0]))
+        if is_table or is_list:
+            if current is not None:
+                errors.append("nonprose_content_inside_reader_section")
+            continue
+        notice_domain = notice_to_domain.get(block)
+        if notice_domain is not None:
+            if current != notice_domain:
+                errors.append("unavailable_notice_in_wrong_section")
+            elif current is not None:
+                sections[current]["notices"].append({"text": block, "sha256": hashlib.sha256(block.encode("utf-8")).hexdigest()})
+            continue
+        if current is None:
+            errors.append("reader_prose_outside_canonical_section")
+            continue
+        paragraph_hash = _canonical_hash(block)
+        if paragraph_hash in all_hashes:
+            errors.append("duplicate_narrative_paragraph_hash")
+        all_hashes.add(paragraph_hash)
+        entry = {"text": block, "sha256": paragraph_hash, "section": current}
+        sections[current]["prose"].append(entry)
+        prose.append(entry)
+    expected_keys = [key for key, _heading in expected]
+    if seen_headings != expected_keys:
+        if set(seen_headings) != set(expected_keys):
+            errors.append("missing_reader_section_heading")
+        else:
+            errors.append("reader_section_heading_order_mismatch")
+    return {"errors": list(dict.fromkeys(errors)), "prose": prose, "sections": sections}
+
+
+def _validated_paragraph_sources(report: object, paragraph_sources: object, approved_ids: set[str], allowed_claims: Dict[str, Claim], timing_ids: set[str], parsed: Optional[Dict[str, object]] = None) -> tuple[List[str], List[Dict[str, object]]]:
     if not isinstance(report, str) or not report.strip():
         return ["missing_final_report"], []
     if not isinstance(paragraph_sources, list):
         return ["missing_paragraph_source_map"], []
-    expected_hashes = list(dict.fromkeys(_canonical_hash(paragraph) for paragraph in _substantive_paragraphs(report)))
+    expected_hashes = (
+        [str(item["sha256"]) for item in parsed.get("prose", [])]
+        if parsed is not None else
+        list(dict.fromkeys(_canonical_hash(paragraph) for paragraph in _substantive_paragraphs(report)))
+    )
     expected_hash_set = set(expected_hashes)
     by_hash: Dict[str, Dict[str, object]] = {}
     errors = []
@@ -277,12 +429,200 @@ def _validate_mandatory_coverage(report: object, paragraph_sources: object, appr
     return errors
 
 
-def paragraph_source_template(report: str) -> List[Dict[str, object]]:
+def paragraph_source_template(report: str, reader_domain_manifest: Optional[Dict[str, object]] = None) -> List[Dict[str, object]]:
     """Return the exact substantial-paragraph hashes an Author must source."""
+    if reader_domain_manifest is not None:
+        parsed = _parse_premium_narrative(report, reader_domain_manifest)
+        if parsed["errors"]:
+            raise ValueError("Invalid Premium narrative: " + ", ".join(parsed["errors"]))
+        hashes = [item["sha256"] for item in parsed["prose"]]
+    else:
+        hashes = list(dict.fromkeys(_canonical_hash(paragraph) for paragraph in _substantive_paragraphs(report)))
     return [
         {"paragraph_sha256": paragraph_hash, "synthesis_ids": [], "claim_ids": [], "timing_ids": []}
-        for paragraph_hash in dict.fromkeys(_canonical_hash(paragraph) for paragraph in _substantive_paragraphs(report))
+        for paragraph_hash in hashes
     ]
+
+
+def _validate_reader_sections(parsed: Dict[str, object], reader_sections: object, manifest: object) -> List[str]:
+    errors = list(parsed.get("errors", []))
+    if not isinstance(reader_sections, dict) or not isinstance(manifest, dict):
+        return list(dict.fromkeys([*errors, "missing_reader_sections_contract"]))
+    opening = reader_sections.get("opening")
+    domains = reader_sections.get("domains")
+    integration = reader_sections.get("integration")
+    if not isinstance(opening, dict) or not isinstance(domains, list) or not isinstance(integration, dict):
+        return list(dict.fromkeys([*errors, "invalid_reader_sections_contract"]))
+    expected_domains = [str(item["id"]) for item in manifest.get("domains", [])]
+    actual_domains = [str(item.get("domain_id")) for item in domains if isinstance(item, dict)]
+    if actual_domains != expected_domains:
+        if len(actual_domains) != len(set(actual_domains)):
+            errors.append("duplicate_reader_domain_section")
+        if set(actual_domains) - set(expected_domains):
+            errors.append("unknown_reader_domain_section")
+        if set(expected_domains) - set(actual_domains):
+            errors.append("missing_reader_domain_section")
+        if set(actual_domains) == set(expected_domains):
+            errors.append("reader_domain_section_order_mismatch")
+    section_map = parsed.get("sections", {})
+
+    def declared_hashes(value: object) -> Optional[List[str]]:
+        hashes = value.get("paragraph_sha256s") if isinstance(value, dict) else None
+        if not isinstance(hashes, list) or not all(isinstance(item, str) for item in hashes) or len(hashes) != len(set(hashes)):
+            return None
+        return hashes
+
+    opening_hashes = declared_hashes(opening)
+    integration_hashes = declared_hashes(integration)
+    if opening_hashes is None or integration_hashes is None:
+        errors.append("invalid_reader_section_hashes")
+    else:
+        physical_opening = [item["sha256"] for item in section_map.get("opening", {}).get("prose", [])]
+        physical_integration = [item["sha256"] for item in section_map.get("integration", {}).get("prose", [])]
+        if opening_hashes != physical_opening:
+            errors.append("reader_opening_ownership_mismatch")
+        if integration_hashes != physical_integration:
+            errors.append("reader_integration_ownership_mismatch")
+        if not physical_opening:
+            errors.append("empty_reader_opening")
+        if not physical_integration:
+            errors.append("empty_reader_integration")
+    all_owned: List[str] = [*(opening_hashes or []), *(integration_hashes or [])]
+    by_domain = {str(item.get("domain_id")): item for item in domains if isinstance(item, dict)}
+    for domain in manifest.get("domains", []):
+        domain_id = str(domain["id"])
+        hashes = declared_hashes(by_domain.get(domain_id))
+        if hashes is None:
+            errors.append(f"invalid_reader_domain_hashes:{domain_id}")
+            continue
+        physical = [item["sha256"] for item in section_map.get(domain_id, {}).get("prose", [])]
+        notices = section_map.get(domain_id, {}).get("notices", [])
+        if hashes != physical:
+            errors.append(f"reader_domain_ownership_mismatch:{domain_id}")
+        if domain.get("availability") == "available":
+            if not physical:
+                errors.append(f"empty_available_reader_domain:{domain_id}")
+            if notices:
+                errors.append(f"notice_in_available_reader_domain:{domain_id}")
+        else:
+            expected_notice = domain.get("unavailable_notice") or {}
+            if physical or hashes:
+                errors.append(f"prose_in_unavailable_reader_domain:{domain_id}")
+            if len(notices) != 1 or notices[0].get("text") != expected_notice.get("text") or notices[0].get("sha256") != expected_notice.get("sha256"):
+                errors.append(f"invalid_unavailable_reader_notice:{domain_id}")
+        all_owned.extend(hashes)
+    if len(all_owned) != len(set(all_owned)):
+        errors.append("reader_paragraph_owned_by_multiple_sections")
+    physical_all = [item["sha256"] for item in parsed.get("prose", [])]
+    if set(all_owned) != set(physical_all):
+        errors.append("reader_section_ownership_not_exhaustive")
+    return list(dict.fromkeys(errors))
+
+
+def _validate_reader_domain_coverage(
+    parsed: Dict[str, object], reader_sections: object, paragraph_sources: List[Dict[str, object]],
+    approved_syntheses: Iterable[Dict[str, object]], manifest: object,
+) -> List[str]:
+    if not isinstance(reader_sections, dict) or not isinstance(manifest, dict):
+        return ["missing_reader_domain_coverage_contract"]
+    approved = {str(item.get("id")): item for item in approved_syntheses if isinstance(item, dict) and item.get("status") == "allowed"}
+    by_hash = {str(item.get("paragraph_sha256")): item for item in paragraph_sources if isinstance(item, dict)}
+    domains = {str(item.get("domain_id")): item for item in reader_sections.get("domains", []) if isinstance(item, dict)}
+    errors: List[str] = []
+
+    def synthesis_matches_path(synthesis: Dict[str, object], path: Dict[str, object]) -> bool:
+        return (
+            set(map(str, path.get("source_claim_ids", []))).issubset(set(map(str, synthesis.get("source_claim_ids", []))))
+            and set(map(str, path.get("primary_factor_ids", []))).issubset(set(map(str, synthesis.get("primary_factors", []))))
+            and str(synthesis.get("reasoning_class")) == str(path.get("reasoning_class"))
+            and set(map(str, path.get("composition_operations", []))).issubset(set(map(str, synthesis.get("composition_operations", []))))
+        )
+
+    def relational_section_has_synthesis(section_key: str) -> bool:
+        hashes = [item["sha256"] for item in parsed.get("sections", {}).get(section_key, {}).get("prose", [])]
+        for paragraph_hash in hashes:
+            source = by_hash.get(paragraph_hash, {})
+            for synthesis_id in source.get("synthesis_ids", []):
+                synthesis = approved.get(str(synthesis_id))
+                if not synthesis:
+                    continue
+                if synthesis.get("reasoning_class") not in {"integrated_pattern", "theme_interaction"}:
+                    continue
+                if any(str(claim_id).startswith("claim.house_ruler.placidus.") for claim_id in synthesis.get("source_claim_ids", [])):
+                    continue
+                return True
+        return False
+
+    if not relational_section_has_synthesis("opening"):
+        errors.append("reader_opening_requires_relational_synthesis")
+    if not relational_section_has_synthesis("integration"):
+        errors.append("reader_integration_requires_relational_synthesis")
+
+    for domain in manifest.get("domains", []):
+        domain_id = str(domain["id"])
+        if domain.get("availability") != "available":
+            continue
+        hashes = domains.get(domain_id, {}).get("paragraph_sha256s", [])
+        covered = False
+        for paragraph_hash in hashes:
+            source = by_hash.get(str(paragraph_hash), {})
+            timing_refs = set(map(str, source.get("timing_ids", [])))
+            if domain_id == "active_life_chapter" and timing_refs:
+                cited_timing_syntheses = [approved.get(str(item)) for item in source.get("synthesis_ids", [])]
+                if not any(
+                    synthesis
+                    and synthesis.get("reasoning_class") == "natal_timing_interaction"
+                    and timing_refs.issubset(set(map(str, synthesis.get("primary_factors", []))))
+                    for synthesis in cited_timing_syntheses
+                ):
+                    errors.append("reader_timing_source_not_linked_to_cited_synthesis")
+            paragraph_covered = False
+            for synthesis_id in source.get("synthesis_ids", []):
+                synthesis = approved.get(str(synthesis_id))
+                if not synthesis:
+                    continue
+                matched_paths = [
+                    path for path in domain.get("legal_coverage_paths", [])
+                    if synthesis_matches_path(synthesis, path)
+                ]
+                if domain_id == "active_life_chapter":
+                    synthesis_factors = set(map(str, synthesis.get("primary_factors", [])))
+                    synthesis_timing = {factor for factor in synthesis_factors if factor.startswith("timing.")}
+                    matched_timing = {
+                        timing_id
+                        for path in matched_paths
+                        for timing_id in map(str, path.get("timing_ids", []))
+                    }
+                    if (
+                        synthesis.get("reasoning_class") == "natal_timing_interaction"
+                        and timing_refs
+                        and timing_refs == synthesis_timing
+                        and synthesis_timing == matched_timing
+                        and any(not factor.startswith("timing.") for factor in synthesis_factors)
+                    ):
+                        paragraph_covered = True
+                    if paragraph_covered:
+                        break
+                    continue
+                for path in matched_paths:
+                    paragraph_covered = True
+                    break
+                if paragraph_covered:
+                    break
+            # An atomic direct Claim may accompany substantive coverage only
+            # when that exact route belongs to this domain.  It remains
+            # ancillary: only a matching synthesis can set ``covered``.
+            direct_claim_ids = set(map(str, source.get("claim_ids", [])))
+            direct_route_authorized = bool(direct_claim_ids) and any(
+                direct_claim_ids.issubset(set(map(str, path.get("source_claim_ids", []))))
+                for path in domain.get("legal_coverage_paths", [])
+            )
+            if not paragraph_covered and not direct_route_authorized:
+                errors.append(f"reader_domain_paragraph_outside_legal_path:{domain_id}")
+            covered = covered or paragraph_covered
+        if not covered:
+            errors.append(f"missing_reader_domain_coverage:{domain_id}")
+    return list(dict.fromkeys(errors))
 
 
 def _handoff_contract_errors(bundle: Dict[str, object], bundle_kind: str) -> List[str]:
@@ -304,13 +644,96 @@ def _handoff_contract_errors(bundle: Dict[str, object], bundle_kind: str) -> Lis
     return errors
 
 
-def validate_premium_author_bundle(birth: BirthData, author_bundle: Dict[str, object], profile: Optional[LocalizationProfile] = None, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True) -> Dict[str, object]:
+def _verify_authoritative_prepared_handoff(
+    prepared_handoff: Optional[Dict[str, object]], authoritative: Optional[Dict[str, object]] = None,
+    *, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True,
+) -> tuple[Optional[datetime], int, bool, List[str]]:
+    """Parse and verify the single deterministic authority for Premium 1.2.
+
+    The first call supplies the materialized deterministic selectors for a
+    recomputation.  The second call receives that recomputation and verifies
+    the supplied handoff's complete prepared identity against it.  Both
+    Premium guards use this exact path; transport consistency is not authority.
+    """
+    handoff = prepared_handoff if isinstance(prepared_handoff, dict) else {}
+    parameters = handoff.get("preparation_parameters") if isinstance(handoff.get("preparation_parameters"), dict) else {}
+    prepared_as_of_raw = parameters.get("effective_as_of")
+    prepared_as_of: Optional[datetime] = None
+    errors: List[str] = []
+    if not handoff:
+        errors.append("missing_authoritative_prepared_handoff")
+    if set(parameters) != {"effective_as_of", "horizon_days", "include_timing"}:
+        errors.append("invalid_preparation_parameters")
+    if prepared_as_of_raw is not None:
+        try:
+            prepared_as_of = datetime.fromisoformat(str(prepared_as_of_raw).replace("Z", "+00:00"))
+            if prepared_as_of.tzinfo is None:
+                raise ValueError("effective_as_of must include a UTC offset")
+        except ValueError:
+            errors.append("invalid_prepared_effective_as_of")
+    prepared_horizon = parameters.get("horizon_days")
+    prepared_include_timing = parameters.get("include_timing")
+    if not isinstance(prepared_horizon, int) or isinstance(prepared_horizon, bool) or prepared_horizon <= 0:
+        errors.append("invalid_prepared_horizon_days")
+        prepared_horizon = horizon_days
+    if not isinstance(prepared_include_timing, bool):
+        errors.append("invalid_prepared_include_timing")
+        prepared_include_timing = include_timing
+    if prepared_include_timing and prepared_as_of is None:
+        errors.append("missing_prepared_effective_as_of")
+    if as_of is not None and prepared_as_of != as_of:
+        errors.append("publication_as_of_mismatch")
+    if horizon_days != prepared_horizon:
+        errors.append("publication_horizon_days_mismatch")
+    if include_timing != prepared_include_timing:
+        errors.append("publication_include_timing_mismatch")
+    if handoff.get("stage") != "reasoning_packet_ready":
+        errors.append("invalid_authoritative_prepared_handoff_stage")
+    if handoff.get("premium_report_depth") != "deep":
+        errors.append("invalid_authoritative_prepared_handoff_type")
+    if handoff.get("premium_handoff_contract_version") != PREMIUM_HANDOFF_CONTRACT_VERSION:
+        errors.append("authoritative_handoff_contract_version_mismatch")
+    if handoff.get("premium_handoff_contract") != _premium_handoff_contract():
+        errors.append("authoritative_handoff_contract_body_mismatch")
+    if handoff.get("premium_handoff_contract_sha256") != _canonical_hash(_premium_handoff_contract()):
+        errors.append("authoritative_handoff_contract_hash_mismatch")
+    if authoritative is not None:
+        if handoff.get("packet_id") != authoritative.get("packet_id"):
+            errors.append("authoritative_handoff_packet_id_mismatch")
+        if handoff.get("chart_signature") != authoritative.get("chart_signature"):
+            errors.append("authoritative_handoff_chart_signature_mismatch")
+        if handoff.get("prepared_chart_signature_sha256") != authoritative.get("prepared_chart_signature_sha256"):
+            errors.append("authoritative_handoff_chart_signature_hash_mismatch")
+        if handoff.get("prepared_signature_syntheses") != authoritative.get("prepared_signature_syntheses"):
+            errors.append("authoritative_handoff_signature_synthesis_basis_mismatch")
+        if handoff.get("prepared_signature_synthesis_sha256") != authoritative.get("prepared_signature_synthesis_sha256"):
+            errors.append("authoritative_handoff_signature_synthesis_hash_mismatch")
+        if handoff.get("reader_domain_manifest") != authoritative.get("reader_domain_manifest"):
+            errors.append("authoritative_handoff_reader_domain_manifest_mismatch")
+        if handoff.get("reader_domain_manifest_sha256") != authoritative.get("reader_domain_manifest_sha256"):
+            errors.append("authoritative_handoff_reader_domain_manifest_hash_mismatch")
+    return prepared_as_of, prepared_horizon, prepared_include_timing, list(dict.fromkeys(errors))
+
+
+def validate_premium_author_bundle(birth: BirthData, author_bundle: Dict[str, object], profile: Optional[LocalizationProfile] = None, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True, prepared_handoff: Optional[Dict[str, object]] = None) -> Dict[str, object]:
     """Deterministic Provenance Guard between the Author and Reviewer."""
     items = author_bundle.get("reasoned_syntheses", [])
-    checked = validate_premium_syntheses(birth, items if isinstance(items, list) else [], profile, as_of, horizon_days, include_timing)
-    errors = _handoff_contract_errors(author_bundle, "author")
+    prepared_as_of, prepared_horizon, prepared_include_timing, _ = _verify_authoritative_prepared_handoff(
+        prepared_handoff, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
+    )
+    checked = validate_premium_syntheses(
+        birth, items if isinstance(items, list) else [], profile,
+        prepared_as_of, prepared_horizon, prepared_include_timing,
+    )
+    _prepared_as_of, _prepared_horizon, _prepared_include_timing, errors = _verify_authoritative_prepared_handoff(
+        prepared_handoff, checked, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
+    )
+    errors.extend(_handoff_contract_errors(author_bundle, "author"))
     if author_bundle.get("packet_id") != checked["packet_id"]:
         errors.append("packet_id_mismatch")
+    for field in ("prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256"):
+        if author_bundle.get(field) != checked.get(field):
+            errors.append(f"{field}_mismatch")
     expected_synthesis_hash = _canonical_hash([item for item in checked["reasoned_synthesis"] if item["status"] == "allowed"])
     if author_bundle.get("synthesis_bundle_sha256") != expected_synthesis_hash:
         errors.append("synthesis_bundle_hash_mismatch")
@@ -319,26 +742,48 @@ def validate_premium_author_bundle(birth: BirthData, author_bundle: Dict[str, ob
         errors.append("draft_report_hash_mismatch")
     approved_ids = {item["id"] for item in checked["reasoned_synthesis"] if item["status"] == "allowed"}
     allowed_claims = {item["id"]: Claim(**item) for item in checked["allowed_claims"]}
-    source_errors, valid_sources = _validated_paragraph_sources(draft, author_bundle.get("paragraph_sources"), approved_ids, allowed_claims, set(checked["timing_evidence_ids"]))
+    parsed = _parse_premium_narrative(draft, checked["reader_domain_manifest"])
+    errors.extend(_validate_reader_sections(parsed, author_bundle.get("reader_sections"), checked["reader_domain_manifest"]))
+    source_errors, valid_sources = _validated_paragraph_sources(draft, author_bundle.get("paragraph_sources"), approved_ids, allowed_claims, set(checked["timing_evidence_ids"]), parsed)
     errors.extend(source_errors)
-    errors.extend(_validate_mandatory_coverage(draft, valid_sources, checked["approved_reasoned_syntheses"] if "approved_reasoned_syntheses" in checked else [item for item in checked["reasoned_synthesis"] if item["status"] == "allowed"], checked.get("coverage")))
+    approved_syntheses = checked["approved_reasoned_syntheses"]
+    errors.extend(_validate_mandatory_coverage(draft, valid_sources, approved_syntheses, checked.get("coverage")))
+    errors.extend(_validate_reader_domain_coverage(parsed, author_bundle.get("reader_sections"), valid_sources, approved_syntheses, checked["reader_domain_manifest"]))
     if isinstance(draft, str) and _contains_prohibited_extension(draft):
         errors.append("prohibited_extension_in_author_draft")
     if not birth.birth_time_known:
         errors.append("premium_birth_time_required")
-    return {"stage": "deterministic_provenance_guard", "approved": checked["approved"] and not errors, "verification_errors": list(dict.fromkeys(errors)), "packet_id": checked["packet_id"], "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": _premium_handoff_contract(), "premium_handoff_contract_sha256": _canonical_hash(_premium_handoff_contract()), "approved_reasoned_syntheses": [item for item in checked["reasoned_synthesis"] if item["status"] == "allowed"], "allowed_claims": checked["allowed_claims"], "synthesis_bundle_sha256": expected_synthesis_hash, "draft_report_sha256": _canonical_hash(draft), "timing_evidence_ids": checked["timing_evidence_ids"], "coverage": checked.get("coverage"), "chart_signature": checked["chart_signature"], "narrative_plan": checked["narrative_plan"]}
+    return {"stage": "deterministic_provenance_guard", "approved": checked["approved"] and not errors, "verification_errors": list(dict.fromkeys(errors)), "packet_id": checked["packet_id"], "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": _premium_handoff_contract(), "premium_handoff_contract_sha256": _canonical_hash(_premium_handoff_contract()), "prepared_chart_signature_sha256": checked["prepared_chart_signature_sha256"], "prepared_signature_synthesis_sha256": checked["prepared_signature_synthesis_sha256"], "prepared_signature_syntheses": checked["prepared_signature_syntheses"], "reader_domain_manifest": checked["reader_domain_manifest"], "reader_domain_manifest_sha256": checked["reader_domain_manifest_sha256"], "approved_reasoned_syntheses": approved_syntheses, "allowed_claims": checked["allowed_claims"], "synthesis_bundle_sha256": expected_synthesis_hash, "draft_report_sha256": _canonical_hash(draft), "timing_evidence_ids": checked["timing_evidence_ids"], "coverage": checked.get("coverage"), "chart_signature": checked["chart_signature"], "narrative_plan": checked["narrative_plan"]}
 
 
-def validate_premium_narrative(narrative_payload: Dict[str, object], provenance: Dict[str, object]) -> Dict[str, object]:
+def validate_premium_narrative(
+    narrative_payload: Dict[str, object],
+    provenance: Dict[str, object],
+    birth: BirthData,
+    profile: Optional[LocalizationProfile] = None,
+    as_of: Optional[datetime] = None,
+    horizon_days: int = 366,
+    include_timing: bool = True,
+    prepared_handoff: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
     """Check publication provenance after the separate human/High narrative judge.
 
     This is intentionally a structural and safety gate.  An attestation by a
     High Narrative Judge is required for semantic equivalence; token checks do
     not claim to prove it.
     """
+    prepared_as_of, prepared_horizon, prepared_include_timing, _ = _verify_authoritative_prepared_handoff(
+        prepared_handoff, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
+    )
+    authoritative = validate_premium_syntheses(
+        birth, [], profile, prepared_as_of, prepared_horizon, prepared_include_timing,
+    )
+    _prepared_as_of, _prepared_horizon, _prepared_include_timing, preparation_errors = _verify_authoritative_prepared_handoff(
+        prepared_handoff, authoritative, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
+    )
     approved_ids = {str(item.get("id")) for item in provenance.get("approved_reasoned_syntheses", [])}
     report = narrative_payload.get("final_report")
-    errors = [] if provenance.get("approved") else ["author_provenance_not_approved"]
+    errors = ([] if provenance.get("approved") else ["author_provenance_not_approved"]) + preparation_errors
     errors.extend(_handoff_contract_errors(narrative_payload, "reviewer"))
     if provenance.get("premium_handoff_contract_version") != PREMIUM_HANDOFF_CONTRACT_VERSION:
         errors.append("provenance_handoff_contract_version_mismatch")
@@ -348,6 +793,19 @@ def validate_premium_narrative(narrative_payload: Dict[str, object], provenance:
         errors.append("provenance_handoff_contract_body_mismatch")
     if narrative_payload.get("packet_id") != provenance.get("packet_id"):
         errors.append("packet_id_mismatch")
+    for field in ("prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256"):
+        if narrative_payload.get(field) != provenance.get(field):
+            errors.append(f"{field}_mismatch")
+        if provenance.get(field) != authoritative.get(field):
+            errors.append(f"provenance_{field}_mismatch")
+        if narrative_payload.get(field) != authoritative.get(field):
+            errors.append(f"authoritative_{field}_mismatch")
+    if provenance.get("packet_id") != authoritative.get("packet_id"):
+        errors.append("provenance_packet_id_mismatch")
+    if provenance.get("chart_signature") != authoritative.get("chart_signature") or _canonical_hash(provenance.get("chart_signature")) != authoritative.get("prepared_chart_signature_sha256"):
+        errors.append("provenance_chart_signature_mismatch")
+    if provenance.get("prepared_signature_syntheses") != authoritative.get("prepared_signature_syntheses") or _canonical_hash(provenance.get("prepared_signature_syntheses")) != authoritative.get("prepared_signature_synthesis_sha256"):
+        errors.append("provenance_signature_synthesis_basis_mismatch")
     if narrative_payload.get("synthesis_bundle_sha256") != provenance.get("synthesis_bundle_sha256"):
         errors.append("synthesis_bundle_hash_mismatch")
     if narrative_payload.get("reviewed_draft_sha256") != provenance.get("draft_report_sha256"):
@@ -357,9 +815,17 @@ def validate_premium_narrative(narrative_payload: Dict[str, object], provenance:
     if narrative_payload.get("final_report_sha256") != _canonical_hash(report):
         errors.append("final_report_hash_mismatch")
     allowed_claims = {str(item.get("id")): Claim(**item) for item in provenance.get("allowed_claims", []) if isinstance(item, dict) and item.get("status") == "allowed"}
-    source_errors, valid_sources = _validated_paragraph_sources(report, narrative_payload.get("paragraph_sources"), approved_ids, allowed_claims, set(provenance.get("timing_evidence_ids", [])))
+    manifest = provenance.get("reader_domain_manifest")
+    if _canonical_hash(manifest) != provenance.get("reader_domain_manifest_sha256"):
+        errors.append("provenance_reader_domain_manifest_hash_mismatch")
+    if manifest != authoritative.get("reader_domain_manifest"):
+        errors.append("provenance_reader_domain_manifest_mismatch")
+    parsed = _parse_premium_narrative(report, manifest)
+    errors.extend(_validate_reader_sections(parsed, narrative_payload.get("reader_sections"), manifest))
+    source_errors, valid_sources = _validated_paragraph_sources(report, narrative_payload.get("paragraph_sources"), approved_ids, allowed_claims, set(provenance.get("timing_evidence_ids", [])), parsed)
     errors.extend(source_errors)
     errors.extend(_validate_mandatory_coverage(report, valid_sources, provenance.get("approved_reasoned_syntheses", []), provenance.get("coverage")))
+    errors.extend(_validate_reader_domain_coverage(parsed, narrative_payload.get("reader_sections"), valid_sources, provenance.get("approved_reasoned_syntheses", []), manifest))
     if isinstance(report, str) and _contains_prohibited_extension(report):
         errors.append("prohibited_extension_in_final_narrative")
     return {
