@@ -12,9 +12,10 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 
 ## Ordem da leitura profunda
 
-1. **Abertura do mapa inteiro:** arquitetura organizadora, três ou quatro mecanismos principais quando sustentados, tensões/paradoxos e conexões estruturais. Não é inventário nem sumário antecipado.
-2. **Dezesseis domínios humanos canônicos:** identidade; segurança emocional; mente e comunicação; desejo e limites; amor e intimidade; criatividade e prazer; trabalho e visibilidade; dinheiro e recursos; corpo e rotina; casa e raízes; amizade e pertencimento; significado e horizonte; sombra e padrões; crescimento pela contradição; direção de desenvolvimento; capítulo de vida ativo. Todos aparecem uma vez, na ordem contratual. Baixa ênfase pede concisão substantiva, não omissão. Ausência de timing admitido produz o aviso determinístico, nunca timing inventado.
-3. **Integração final:** conecta mecanismos recorrentes entre áreas, recursos e tensões sem recontar o relatório nem virar worksheet.
+1. **Introdução fixa do leitor:** antes da abertura, o Premium traz o texto determinístico “Como entrar nesta leitura”. Ele acolhe a leitura sem interpretar o mapa, não recebe proveniência astrológica e não é uma das 18 seções.
+2. **Abertura do mapa inteiro:** arquitetura organizadora, três ou quatro mecanismos principais quando sustentados, tensões/paradoxos e conexões estruturais. Não é inventário nem sumário antecipado.
+3. **Dezesseis domínios humanos canônicos:** identidade; segurança emocional; mente e comunicação; desejo e limites; amor e intimidade; criatividade e prazer; trabalho e visibilidade; dinheiro e recursos; corpo e rotina; casa e raízes; amizade e pertencimento; significado e horizonte; sombra e padrões; crescimento pela contradição; direção de desenvolvimento; capítulo de vida ativo. Todos aparecem uma vez, na ordem contratual. Baixa ênfase pede concisão substantiva, não omissão. Ausência de timing admitido produz o aviso determinístico, nunca timing inventado.
+4. **Integração final:** começa pela síntese de ordem superior — o que organiza a pessoa como um todo — e só usa timing quando ele realmente aprofunda essa síntese. Não reconta o relatório nem vira worksheet.
 
 Cada mecanismo central é explicado plenamente uma vez. Em domínios posteriores, mostre a consequência nova naquele contexto. Evidência reutilizada não ganha peso, confiança ou proeminência. Regência Whole Sign só aparece dentro de técnica tradicional nomeada.
 
@@ -22,20 +23,20 @@ Cada mecanismo central é explicado plenamente uma vez. Em domínios posteriores
 
 - Prefira parágrafos com espaço suficiente para uma ideia psicológica completa. Parágrafos curtos são válidos quando substantivos; o contrato Premium não usa limiar de palavras para decidir cobertura.
 - Não transforme todo modo de expressão em bullet. Use prosa para relações e bullets para escolhas, janelas, passos ou mapeamentos.
-- Desenvolva plenamente apenas os 3–4 mecanismos que a assinatura congelada sustenta; os demais domínios continuam visíveis, com profundidade adaptativa e sem elevar fatores periféricos.
+- Desenvolva plenamente os 3–4 mecanismos que organizam a abertura, mas não use esse foco para apagar mecanismos distintos que uma seção tem autoridade para desenvolver. Nos domínios, profundidade adaptativa significa preservar toda tendência, tensão, contrapeso e consequência humana realmente diferente; não há quota de palavras ou parágrafos, e baixa ênfase não é uma regra de um parágrafo.
 - Use no máximo um exemplo por tema no corpo principal. Três exemplos totais normalmente bastam.
 - Evite mais de dois blocos emocionalmente pesados sem uma passagem por recurso, contexto ou agência.
-- Um heading deve responder a uma pergunta diferente. Se a seção só repete um tema anterior, fundir ou cortar.
+- Um heading deve responder a uma pergunta diferente. Se a seção só repete o mesmo significado anterior, fundir ou cortar; se reutiliza a mesma evidência para uma consequência humana diferente, desenvolvê-la.
 
 ## Linguagem humana antes da técnica
 
-Comece normalmente por uma capacidade, tensão ou escolha observável quando isso melhorar reconhecimento. Não imponha essa sequência: um aspecto, casa, configuração ou outra estrutura pode abrir a seção quando for mais claro ou natural, desde que seja traduzido imediatamente. Nomes de aspectos importantes podem permanecer visíveis quando ajudarem orientação e vierem acompanhados de linguagem comum.
+Procure uma cadência mais próxima de companhia do que de diagnóstico: experiência humana → astrologia que ilumina → nuance ou contradição → reflexão. Não imponha essa sequência; um aspecto, casa, configuração ou outra estrutura pode abrir a seção quando for mais claro ou natural, desde que seja traduzido imediatamente. Nomes de aspectos importantes podem permanecer visíveis quando ajudarem orientação e vierem acompanhados de linguagem comum. A voz é calorosa, receptiva, elegante e precisa; evita tanto espiritualês quanto a distância de um parecer técnico.
 
 Placidus fornece o contexto natal psicológico. Whole Sign só aparece no corpo principal quando uma técnica nomeada o exige, como a profecção anual. Nunca apresente os dois como narrativas natais concorrentes nem repita notas de robustez em cada planeta.
 
 Se o teste de sensibilidade torna a topologia Whole Sign condicional, não use casas, profecções ou regentes tópicos para dar cor ao exemplo. Explique a cautela uma vez, em linguagem simples; cenários alternativos pertencem à profundidade opcional ou ao apêndice.
 
-Timing segue a mesma regra: primeiro explique o campo humano e a negociação simbólica; depois forneça datas e técnica. Material tipado é candidato, não quota: omita uma janela segura quando ela não sustentar uma interpretação suficientemente específica. Aspectos, streams e convergência entre técnicas ficam em bloco recolhível ou no apêndice. Data é janela de observação, não promessa de acontecimento.
+Timing segue a mesma regra: primeiro explique o campo humano e a negociação simbólica; depois forneça datas e técnica. Material tipado é candidato, não quota: omita uma janela segura quando ela não sustentar uma interpretação suficientemente específica, mas preserve múltiplas interações legais quando cada uma acrescentar uma consequência diferente e uma convergência leitora real. Aspectos, streams e convergência entre técnicas ficam em bloco recolhível ou no apêndice. Data é janela de observação, não promessa de acontecimento.
 
 ## Especificidade sem biografia inventada
 
@@ -52,13 +53,13 @@ Luz e sombra são lentes, não campos obrigatórios repetidos mecanicamente. A s
 
 Localization só altera linguagem, unidades, instituições e exemplos. Um exemplo localizado deve continuar humano se o nome do país for removido. Evite listas caricaturais de instituições locais.
 
-Predominantemente dirija-se à pessoa em segunda pessoa natural, variando a construção quando a repetição soaria mecânica. A voz começa pelo significado humano, traduz imediatamente qualquer termo técnico e evita tom acadêmico, jurídico ou de QA interno. Interpretação vem antes de coaching.
+Predominantemente dirija-se à pessoa em segunda pessoa natural, variando a construção quando a repetição soaria mecânica. A voz começa pelo significado humano, traduz imediatamente qualquer termo técnico e evita tom acadêmico, jurídico ou de QA interno. Preserve cautela sem repetir fórmulas como “o recurso é”, “o risco é” ou “uma pergunta útil é”; interpretação vem antes de coaching.
 
 Gênero, idade, ceticismo e estilo de leitura podem orientar auditoria editorial, pronomes e acessibilidade, mas não entram no motor interpretativo nem alteram peso, tema ou ênfase relacional. A astrologia, não o gênero, deve produzir diferenças entre relatórios.
 
 ## Gramática visual
 
-- Na narrativa Premium canônica, headings são estrutura e cada uma das 18 seções contém prosa rastreável; tabelas, listas isoladas e metadata não contam como tratamento narrativo. Use tabelas para dados determinísticos no Apêndice Técnico do Cliente ou em outras superfícies não narrativas.
+- Na narrativa Premium canônica, a introdução fixa “Como entrar nesta leitura” fica, literalmente e uma única vez, depois de um título opcional e antes da abertura. Ela é produto, não interpretação: não entra em fontes por parágrafo nem em propriedade de seção. As 18 seções interpretativas continuam sendo a estrutura rastreável; tabelas, listas isoladas e metadata não contam como tratamento narrativo. Use tabelas para dados determinísticos no Apêndice Técnico do Cliente ou em outras superfícies não narrativas.
 - Use `↔` para uma polaridade quando isso melhora a navegação; o símbolo nunca substitui explicação.
 - Use `<details>` para base técnica do timing, ciclos completos, temas secundários, qualidade dos dados e política metodológica, nunca para esconder um dos 16 domínios obrigatórios.
 - Não use emoji em série, animação ou ornamentação que compita com a leitura.

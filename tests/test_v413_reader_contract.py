@@ -11,6 +11,8 @@ import astrology.cli as cli
 from astrology.config import PREMIUM_HANDOFF_CONTRACT_VERSION
 from astrology.models import BirthData, LocalizationProfile, ReasonedSynthesis
 from astrology.pipeline import (
+    PREMIUM_READER_INTRODUCTION,
+    PREMIUM_READER_INTRODUCTIONS,
     _canonical_hash,
     _parse_premium_narrative,
     analyse_birth_chart,
@@ -135,6 +137,150 @@ def test_v413_complete_author_and_reviewer_contract_passes():
     assert not parsed["errors"]
     assert len(parsed["sections"]) == 18
     assert len(paragraph_source_template(author["draft_report"], provenance["reader_domain_manifest"])) == len(author["paragraph_sources"])
+
+
+def test_v413_fixed_reader_introduction_is_required_and_outside_interpretive_provenance():
+    handoff = prepare_premium_handoff(birth(), include_timing=False)
+    author, _direct = build_author_bundle(birth(), include_timing=False)
+    provenance = validate_premium_author_bundle(birth(), author, include_timing=False, prepared_handoff=handoff)
+    assert provenance["approved"], provenance["verification_errors"]
+
+    parsed = _parse_premium_narrative(author["draft_report"], provenance["reader_domain_manifest"])
+    assert not parsed["errors"]
+    assert parsed["reader_introduction"]["text"] == PREMIUM_READER_INTRODUCTION
+    introduction_hash = _canonical_hash(PREMIUM_READER_INTRODUCTION)
+    assert introduction_hash not in {item["paragraph_sha256"] for item in author["paragraph_sources"]}
+    assert all(
+        introduction_hash not in section["paragraph_sha256s"]
+        for section in [author["reader_sections"]["opening"], *author["reader_sections"]["domains"], author["reader_sections"]["integration"]]
+    )
+    assert len(parsed["sections"]) == 18
+    assert sum(line.startswith("## ") for line in author["draft_report"].splitlines()) == 18
+
+    titled = deepcopy(author)
+    titled["draft_report"] = "# Leitura Premium Complete\n\n" + titled["draft_report"]
+    titled["draft_report_sha256"] = _canonical_hash(titled["draft_report"])
+    titled_result = validate_premium_author_bundle(birth(), titled, include_timing=False, prepared_handoff=handoff)
+    assert titled_result["approved"], titled_result["verification_errors"]
+
+    final = validate_premium_narrative(
+        reviewer_bundle(author, provenance), provenance, birth(), include_timing=False, prepared_handoff=handoff,
+    )
+    assert final["approved"], final["verification_errors"]
+
+
+@pytest.mark.parametrize(
+    ("language", "introduction_key", "heading"),
+    [("pt-BR", "pt", "### Como entrar nesta leitura"), ("en-US", "en", "### How to enter this reading")],
+)
+def test_v413_reader_introduction_is_selected_and_hashed_by_locale(language, introduction_key, heading):
+    profile = LocalizationProfile(preferred_language=language)
+    handoff = prepare_premium_handoff(birth(), profile, include_timing=False)
+    expected = PREMIUM_READER_INTRODUCTIONS[introduction_key]
+    assert handoff["reader_introduction"] == expected
+    assert handoff["reader_introduction"].startswith(heading)
+    assert handoff["reader_introduction_sha256"] == _canonical_hash(expected)
+    rule = handoff["premium_handoff_contract"]["reader_section_rules"]["fixed_reader_introduction"]
+    assert rule["sha256_by_language"][introduction_key] == _canonical_hash(expected)
+
+
+def test_v413_english_introduction_passes_author_and_publication_end_to_end():
+    profile = LocalizationProfile(preferred_language="en-US", current_country="US")
+    handoff = prepare_premium_handoff(birth(), profile, include_timing=False)
+    author, _direct = build_author_bundle(birth(), include_timing=False, profile=profile)
+    assert author["draft_report"].startswith(PREMIUM_READER_INTRODUCTIONS["en"])
+
+    provenance = validate_premium_author_bundle(
+        birth(), author, profile=profile, include_timing=False, prepared_handoff=handoff,
+    )
+    assert provenance["approved"], provenance["verification_errors"]
+    publication = validate_premium_narrative(
+        reviewer_bundle(author, provenance), provenance, birth(), profile=profile,
+        include_timing=False, prepared_handoff=handoff,
+    )
+    assert publication["approved"], publication["verification_errors"]
+
+
+def test_v413_cross_locale_introduction_and_handoff_substitution_fail_closed():
+    english_profile = LocalizationProfile(preferred_language="en-US", current_country="US")
+    english_handoff = prepare_premium_handoff(birth(), english_profile, include_timing=False)
+    portuguese_handoff = prepare_premium_handoff(birth(), include_timing=False)
+    author, _direct = build_author_bundle(birth(), include_timing=False, profile=english_profile)
+
+    substituted_report = deepcopy(author)
+    substituted_report["draft_report"] = substituted_report["draft_report"].replace(
+        PREMIUM_READER_INTRODUCTIONS["en"], PREMIUM_READER_INTRODUCTIONS["pt"], 1,
+    )
+    substituted_report["draft_report_sha256"] = _canonical_hash(substituted_report["draft_report"])
+    report_result = validate_premium_author_bundle(
+        birth(), substituted_report, profile=english_profile, include_timing=False,
+        prepared_handoff=english_handoff,
+    )
+    assert not report_result["approved"]
+    assert "invalid_premium_reader_introduction" in report_result["verification_errors"]
+
+    handoff_result = validate_premium_author_bundle(
+        birth(), author, profile=english_profile, include_timing=False,
+        prepared_handoff=portuguese_handoff,
+    )
+    assert not handoff_result["approved"]
+    assert "authoritative_handoff_reader_introduction_mismatch" in handoff_result["verification_errors"]
+
+
+def test_v413_self_consistent_reader_introduction_mutation_fails_authority():
+    profile = LocalizationProfile(preferred_language="en-US", current_country="US")
+    handoff = prepare_premium_handoff(birth(), profile, include_timing=False)
+    author, _direct = build_author_bundle(birth(), include_timing=False, profile=profile)
+    provenance = validate_premium_author_bundle(
+        birth(), author, profile=profile, include_timing=False, prepared_handoff=handoff,
+    )
+    assert provenance["approved"], provenance["verification_errors"]
+    reviewer = reviewer_bundle(author, provenance)
+    altered = deepcopy(handoff)
+    altered["reader_introduction"] += "\n\nForged product copy."
+    altered["reader_introduction_sha256"] = _canonical_hash(altered["reader_introduction"])
+
+    result = validate_premium_author_bundle(
+        birth(), author, profile=profile, include_timing=False, prepared_handoff=altered,
+    )
+    assert not result["approved"]
+    assert "invalid_authoritative_handoff_reader_introduction" in result["verification_errors"]
+    assert "authoritative_handoff_reader_introduction_mismatch" in result["verification_errors"]
+    publication = validate_premium_narrative(
+        reviewer, provenance, birth(), profile=profile, include_timing=False,
+        prepared_handoff=altered,
+    )
+    assert not publication["approved"]
+    assert "invalid_authoritative_handoff_reader_introduction" in publication["verification_errors"]
+    assert "authoritative_handoff_reader_introduction_mismatch" in publication["verification_errors"]
+
+
+def test_v413_fixed_reader_introduction_rejects_missing_altered_and_extra_preamble_content():
+    handoff = prepare_premium_handoff(birth(), include_timing=False)
+    author, _direct = build_author_bundle(birth(), include_timing=False)
+
+    missing = deepcopy(author)
+    missing["draft_report"] = missing["draft_report"].replace(PREMIUM_READER_INTRODUCTION + "\n\n", "", 1)
+    missing["draft_report_sha256"] = _canonical_hash(missing["draft_report"])
+    missing_result = validate_premium_author_bundle(birth(), missing, include_timing=False, prepared_handoff=handoff)
+    assert not missing_result["approved"]
+    assert "missing_premium_reader_introduction" in missing_result["verification_errors"]
+
+    altered = deepcopy(author)
+    altered["draft_report"] = altered["draft_report"].replace("Leia com abertura, mas também com liberdade.", "Leia sem liberdade.", 1)
+    altered["draft_report_sha256"] = _canonical_hash(altered["draft_report"])
+    altered_result = validate_premium_author_bundle(birth(), altered, include_timing=False, prepared_handoff=handoff)
+    assert not altered_result["approved"]
+    assert "invalid_premium_reader_introduction" in altered_result["verification_errors"]
+
+    extra = deepcopy(author)
+    extra["draft_report"] = extra["draft_report"].replace(
+        PREMIUM_READER_INTRODUCTION + "\n\n", PREMIUM_READER_INTRODUCTION + "\n\nProsa extra antes da abertura canônica.\n\n", 1,
+    )
+    extra["draft_report_sha256"] = _canonical_hash(extra["draft_report"])
+    extra_result = validate_premium_author_bundle(birth(), extra, include_timing=False, prepared_handoff=handoff)
+    assert not extra_result["approved"]
+    assert "reader_prose_outside_canonical_section" in extra_result["verification_errors"]
 
 
 def test_v413_heading_ownership_and_nonprose_escape_hatches_fail_closed():
@@ -331,6 +477,7 @@ def test_v413_publication_guard_rejects_mutated_authoritative_handoff_bodies_and
             value["reader_domain_manifest"]["rules"].update(forged=True),
             value.update(reader_domain_manifest_sha256=_canonical_hash(value["reader_domain_manifest"])),
         ),
+        "reader_introduction": lambda value: value.update(reader_introduction="forged product copy"),
         "packet": lambda value: value.update(packet_id="forged"),
         "effective_as_of": lambda value: value["preparation_parameters"].update(effective_as_of="2026-08-27T00:00:00+00:00"),
     }
@@ -636,6 +783,11 @@ def test_v413_handoff_12_hashes_and_contract_are_fail_closed():
     assert handoff["premium_handoff_contract_version"] == "1.2"
     for field in ("prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256"):
         assert handoff[field]
+    introduction_rule = handoff["premium_handoff_contract"]["reader_section_rules"]["fixed_reader_introduction"]
+    assert introduction_rule["sha256_by_language"]["pt"] == _canonical_hash(PREMIUM_READER_INTRODUCTION)
+    assert introduction_rule["sha256_by_language"]["en"] == _canonical_hash(PREMIUM_READER_INTRODUCTIONS["en"])
+    assert introduction_rule["selection"] == "reader_domain_manifest_locale"
+    assert introduction_rule["provenance"] == "fixed_product_copy_excluded_from_paragraph_sources_and_reader_section_ownership"
     author, _direct = build_author_bundle(birth(), include_timing=False)
     for field in ("prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256"):
         altered = dict(author, **{field: "bad"})
@@ -650,4 +802,28 @@ def test_v413_runtime_instructions_require_whole_person_scope_and_review():
     for text in ("whole-chart opening", "16 canonical headings", "authorized_scope", "low emphasis", "deterministic notice", "prepared ChartSignature"):
         assert text in author
     for text in ("all three layers", "superficial domain", "authorized_scope", "supporting factor", "Low emphasis", "deterministic unavailable notice"):
+        assert text in reviewer
+
+
+def test_v413_humanisation_instructions_preserve_distinct_authorised_depth():
+    author = humanization_instructions("en-US")
+    reviewer = humanization_verifier_instructions("en-US")
+    for text in (
+        "Humanisation changes expression; it does not reduce what the chart understands",
+        "never a one-paragraph default",
+        "legal house-5 route",
+        "legal house-6 route",
+        "complete nodal axis",
+        "several legal natal-timing interactions",
+    ):
+        assert text in author
+    for text in (
+        "distinct authorised mechanisms were developed before prose was compressed",
+        "generic self-help",
+        "Cut padding, not depth",
+        "entire nodal axis",
+        "gendered wording when none was supplied",
+        "consistently in the requested language",
+        "memorable synthesis rather than a summary",
+    ):
         assert text in reviewer

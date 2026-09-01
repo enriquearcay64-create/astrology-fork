@@ -4,7 +4,7 @@ from dataclasses import asdict
 from typing import Dict, Iterable
 
 from astrology.models import BirthData, ReasonedSynthesis
-from astrology.pipeline import _canonical_hash, _premium_handoff_contract, analyse_birth_chart, validate_premium_syntheses
+from astrology.pipeline import _canonical_hash, _premium_handoff_contract, _premium_reader_introduction, analyse_birth_chart, validate_premium_syntheses
 
 
 def contract_fields() -> Dict[str, object]:
@@ -39,8 +39,8 @@ def _synthesis_for_path(path: Dict[str, object], claims: Dict[str, Dict[str, obj
     )
 
 
-def build_author_bundle(birth: BirthData, include_timing: bool = False, add_direct_claim: bool = False, as_of=None, horizon_days: int = 366):
-    result = analyse_birth_chart(birth, include_timing=include_timing, as_of=as_of, horizon_days=horizon_days)
+def build_author_bundle(birth: BirthData, include_timing: bool = False, add_direct_claim: bool = False, as_of=None, horizon_days: int = 366, profile=None):
+    result = analyse_birth_chart(birth, profile, include_timing=include_timing, as_of=as_of, horizon_days=horizon_days)
     manifest = result["reader_domain_manifest"]
     claims = {item["id"]: item for item in result["claims"] if item["status"] == "allowed"}
     syntheses: Dict[str, ReasonedSynthesis] = {}
@@ -92,7 +92,7 @@ def build_author_bundle(birth: BirthData, include_timing: bool = False, add_dire
 
     heading_by_key = {"opening": manifest["opening"]["heading"], "integration": manifest["integration"]["heading"], **{item["id"]: item["heading"] for item in manifest["domains"]}}
     order = ["opening", *[item["id"] for item in manifest["domains"]], "integration"]
-    report_parts = []
+    report_parts = [_premium_reader_introduction(manifest.get("locale"))]
     sources = []
     ownership = {"opening": {"paragraph_sha256s": []}, "domains": [], "integration": {"paragraph_sha256s": []}}
     domain_ownership = {}
@@ -113,7 +113,7 @@ def build_author_bundle(birth: BirthData, include_timing: bool = False, add_dire
             report_parts.append(domain["unavailable_notice"]["text"])
     report = "\n\n".join(report_parts)
     synthesis_payload = [asdict(item) for item in syntheses.values()]
-    judged = validate_premium_syntheses(birth, synthesis_payload, include_timing=include_timing, as_of=as_of, horizon_days=horizon_days)
+    judged = validate_premium_syntheses(birth, synthesis_payload, profile, include_timing=include_timing, as_of=as_of, horizon_days=horizon_days)
     author = {
         **contract_fields(), "packet_id": judged["packet_id"],
         "prepared_chart_signature_sha256": judged["prepared_chart_signature_sha256"],

@@ -9,7 +9,11 @@ human-life coverage with chart-earned depth, expressed as one connected reading.
 
 ## Canonical reader architecture
 
-Premium Complete at `deep` depth contains exactly three layers:
+Premium Complete at `deep` depth has one fixed product preamble followed by exactly three interpretive layers:
+
+0. the locale-bound deterministic reader introduction (`Como entrar nesta leitura`
+   in Portuguese or `How to enter this reading` in English), reproduced verbatim
+   once after an optional document title and before the opening; and
 
 1. `Whole-Chart Opening`, explaining the organising architecture, leading
    mechanisms, material tensions, and connections that make the chart cohere;
@@ -49,8 +53,9 @@ or, only when unavailable, its exact deterministic limitation notice. A paragrap
 hash cannot satisfy two sections.
 
 Coverage is fixed; depth is earned by the chart. Low emphasis remains concise
-but substantive. No word count, paragraph quota, equal-depth rule, or literary
-score determines compliance.
+but substantive; it is never a default one-paragraph rule and cannot suppress a
+distinct authorised mechanism. No word count, paragraph quota, equal-depth rule,
+or literary score determines compliance.
 
 ## Legal reader-routing paths
 
@@ -101,15 +106,18 @@ manifest, and one materialized effective `as_of` with its timing parameters.
 Publication recomputation must match that handoff; a replacement set of mutually
 consistent CLI inputs, provenance, and reviewer data is not an equivalent lineage.
 
-## Narrative ownership and provenance
+## Reader introduction, narrative ownership and provenance
 
 One canonical Premium narrative parser defines the physical block universe for
-both section ownership and paragraph source-map validation. It recognises the
-exact opening, sixteen domain headings, and final integration in canonical order;
-hashes ordinary narrative paragraphs; and classifies deterministic notices
-separately. Headings, tables, list-only blocks, and metadata are not prose blocks.
-Any optional document title is singular and may be followed by at most one
-separator before the opening heading.
+both section ownership and paragraph source-map validation. A single optional H1
+document title may precede the fixed reader introduction. The introduction is
+deterministic product copy, not astrology: its exact text is required, it cannot
+be edited or extended, it receives no Claim or `ReasonedSynthesis` provenance,
+and it never satisfies opening, domain, or integration coverage. No separator or
+other prose may appear around it. The parser then recognises the exact opening,
+sixteen domain headings, and final integration in canonical order; hashes ordinary
+narrative paragraphs; and classifies deterministic notices separately. Headings,
+tables, list-only blocks, and metadata are not prose blocks.
 
 The Author and Reviewer declare section ownership using hashes from that same
 universe. Guards verify exact headings and order, physical locality, exhaustive
@@ -127,11 +135,16 @@ alone does not satisfy it.
 ## Author and Reviewer
 
 The Author speaks predominantly to the reader in varied, natural second person:
-warm, perceptive, grounded, psychologically sophisticated, non-mystical, and
-non-diagnostic. Human meaning normally leads when it improves recognition;
+warm, receptive, grounded, psychologically sophisticated, non-mystical, and
+non-diagnostic, without assuming grammatical gender. The preferred movement is human experience → astrology that
+illuminates it → nuance or contradiction → reflection, without becoming a fixed
+paragraph template. Human meaning normally leads when it improves recognition;
 important astrology remains visible and is immediately translated. Interpretation
-precedes coaching. Central structures are taught once; later domains add a new
-human consequence rather than re-teaching the astrology.
+precedes coaching. The opening teaches central structures once; later domains add
+every distinct, authorised human consequence rather than merely re-teaching the
+astrology or deleting it for brevity. The final integration begins with the map’s
+higher-order organisation, never with timeline bookkeeping, and develops rather
+than simply summarises when several mechanisms remain distinct.
 
 The fresh Reviewer protects both completeness and humanity. It expands an
 underused available domain only from authorised packet evidence, compresses

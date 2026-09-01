@@ -86,6 +86,61 @@ def _canonical_hash(value: object) -> str:
 _PARAGRAPH_SOURCE_FIELDS = ("paragraph_sha256", "synthesis_ids", "claim_ids", "timing_ids")
 
 
+# This is product copy, not an astrological interpretation. It deliberately
+# stays outside the physical prose universe that requires paragraph provenance.
+PREMIUM_READER_INTRODUCTIONS = {
+    "pt": """### Como entrar nesta leitura
+
+Antes de começar, talvez valha deixar uma coisa de lado: a ideia de que este relatório precisa dizer exatamente quem você é.
+
+Um mapa natal não é uma definição. Ele é mais parecido com um espelho — um jeito de observar algumas das forças, necessidades e contradições que podem existir dentro de você e perceber como elas se encontram na sua forma particular de viver.
+
+Ao longo destas páginas, algumas coisas talvez tragam uma sensação imediata de reconhecimento. Outras podem tocar um lugar que você ainda não tinha colocado em palavras. E algumas simplesmente podem não fazer sentido agora. Não há nada de errado nisso. Você não precisa se encaixar na leitura; é a leitura que precisa encontrar alguma verdade na sua experiência.
+
+Também é natural encontrar aparentes contradições. Podemos querer proximidade e liberdade, segurança e movimento, reconhecimento e silêncio. Essas partes não precisam se anular. Muitas vezes, conhecer-se melhor começa justamente quando deixamos de tentar escolher qual delas é a “verdadeira” e começamos a perceber como todas encontram espaço dentro da mesma pessoa.
+
+Por isso, tente não ler este relatório com a sensação de que precisa entender, concordar ou resolver tudo de uma vez. Dê um pouco de espaço às palavras. Perceba onde algo desperta curiosidade, onde existe identificação, onde surge resistência ou até onde você sente vontade de parar por um momento.
+
+À medida que avançar, talvez alguns temas comecem a aparecer de formas diferentes em áreas diferentes da sua vida. É aí que esta leitura ganha profundidade. Mais do que uma coleção de características, o objetivo é ajudar você a perceber os fios que conectam sua maneira de sentir, pensar, amar, escolher, criar, trabalhar e encontrar direção.
+
+E, acima de tudo, lembre-se de que nenhuma interpretação conhece sua história melhor do que você.
+
+A astrologia pode oferecer uma linguagem para enxergar algo por outro ângulo, mas você continua sendo a pessoa que sabe o que viveu, o que sente e o que faz sentido para a sua vida.
+
+Leia com abertura, mas também com liberdade.
+
+Fique com aquilo que ilumina alguma coisa em você. O restante pode simplesmente permanecer como uma pergunta.""",
+    "en": """### How to enter this reading
+
+Before you begin, it may be worth setting one idea aside: that this report needs to tell you exactly who you are.
+
+A natal chart is not a definition. It is more like a mirror — a way to observe some of the forces, needs, and contradictions that may exist within you and notice how they meet in your particular way of living.
+
+As you move through these pages, some things may bring an immediate sense of recognition. Others may touch something you had not yet put into words. And some may simply not make sense right now. There is nothing wrong with that. You do not need to fit the reading; the reading needs to find some truth in your experience.
+
+It is also natural to encounter apparent contradictions. We can want closeness and freedom, safety and movement, recognition and silence. These parts do not need to cancel one another out. Often, knowing ourselves better begins precisely when we stop trying to choose which one is the “real” part and start noticing how all of them can find space within the same person.
+
+So try not to read this report with the feeling that you need to understand, agree with, or resolve everything at once. Give the words a little room. Notice where something sparks curiosity, where there is recognition, where resistance appears, or even where you feel like pausing for a moment.
+
+As you continue, some themes may begin to appear in different forms across different areas of your life. That is where this reading gains depth. More than a collection of traits, its purpose is to help you notice the threads connecting how you feel, think, love, choose, create, work, and find direction.
+
+And above all, remember that no interpretation knows your story better than you do.
+
+Astrology can offer a language for seeing something from another angle, but you remain the person who knows what you have lived, what you feel, and what makes sense for your life.
+
+Read with openness, but also with freedom.
+
+Keep what sheds light on something within you. The rest can simply remain as a question.""",
+}
+# Backwards-compatible name for the established default locale.
+PREMIUM_READER_INTRODUCTION = PREMIUM_READER_INTRODUCTIONS["pt"]
+
+
+def _premium_reader_introduction(locale: object) -> str:
+    normalized_locale = str(locale or "pt-BR").casefold()
+    return PREMIUM_READER_INTRODUCTIONS["pt" if normalized_locale.startswith("pt") else "en"]
+
+
 def _premium_handoff_contract() -> Dict[str, object]:
     """One serialized source-map contract for both Premium guard stages."""
     return {
@@ -113,6 +168,15 @@ def _premium_handoff_contract() -> Dict[str, object]:
             "ownership": "one_physical_prose_hash_belongs_to_exactly_one_section",
             "unavailable": "exact_deterministic_notice_and_no_prose_hashes",
             "non_prose": "headings_tables_lists_metadata_and_separators_never_satisfy_coverage",
+            "fixed_reader_introduction": {
+                "sha256_by_language": {
+                    language: _canonical_hash(introduction)
+                    for language, introduction in PREMIUM_READER_INTRODUCTIONS.items()
+                },
+                "selection": "reader_domain_manifest_locale",
+                "location": "after_an_optional_single_document_title_and_before_the_canonical_opening",
+                "provenance": "fixed_product_copy_excluded_from_paragraph_sources_and_reader_section_ownership",
+            },
         },
         "timing_domain_rule": "row_timing_ids_equal_cited_synthesis_timing_ids_and_each_id_matches_a_satisfied_timing_natal_path",
         "prepared_signature_rule": "pre_domain_chart_signature_and_its_deterministic_synthesis_basis_are_frozen",
@@ -155,6 +219,7 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
     prepared_signature_hash = _canonical_hash(core["chart_signature"])
     prepared_synthesis_hash = _canonical_hash(core["reasoned_synthesis"])
     manifest_hash = _canonical_hash(core["reader_domain_manifest"])
+    reader_introduction = _premium_reader_introduction(core["reader_domain_manifest"].get("locale"))
     return {
         "stage": "reasoning_packet_ready",
         "premium_report_depth": "deep",
@@ -172,6 +237,8 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
         "prepared_signature_syntheses": core["reasoned_synthesis"],
         "reader_domain_manifest": core["reader_domain_manifest"],
         "reader_domain_manifest_sha256": manifest_hash,
+        "reader_introduction": reader_introduction,
+        "reader_introduction_sha256": _canonical_hash(reader_introduction),
         "premium_required_for_publication": True,
         "deterministic_fallback_notice": "The local fallback is useful for tests and debugging. Do not label it as the premium report without the two High review passes.",
         "workflow": [
@@ -205,6 +272,7 @@ def validate_premium_syntheses(birth: BirthData, synthesis_payload: Iterable[Dic
     timing_ids = [item["id"] for item in core["reasoning_packet"]["facts"]["timing_evidence"]]
     checked = validate_reasoned_syntheses(items, chart, [Claim(**claim) for claim in core["claims"]], timing_ids)
     approved = [to_primitive(item) for item in checked if item.status == "allowed"]
+    reader_introduction = _premium_reader_introduction(core["reader_domain_manifest"].get("locale"))
     return {
         "stage": "provenance_syntheses_checked", "packet_id": core["packet_id"], "approved": len(approved) == len(checked),
         "reasoned_synthesis": [to_primitive(item) for item in checked], "approved_reasoned_syntheses": approved,
@@ -218,6 +286,8 @@ def validate_premium_syntheses(birth: BirthData, synthesis_payload: Iterable[Dic
         "prepared_signature_syntheses": core["reasoned_synthesis"],
         "reader_domain_manifest": core["reader_domain_manifest"],
         "reader_domain_manifest_sha256": _canonical_hash(core["reader_domain_manifest"]),
+        "reader_introduction": reader_introduction,
+        "reader_introduction_sha256": _canonical_hash(reader_introduction),
         "timing_evidence_ids": timing_ids,
         "allowed_claims": [claim for claim in core["claims"] if claim.get("status") == "allowed"],
         "coverage": core["reasoning_packet"]["facts"]["coverage"],
@@ -257,12 +327,45 @@ def _parse_premium_narrative(report: object, manifest: object) -> Dict[str, obje
     sections = {key: {"heading": heading, "prose": [], "notices": []} for key, heading in expected}
     blocks = [block.strip() for block in re.split(r"\n\s*\n", report) if block.strip()]
     errors: List[str] = []
+    reader_introduction = _premium_reader_introduction(manifest.get("locale"))
+    introduction_blocks = tuple(
+        block.strip() for block in re.split(r"\n\s*\n", reader_introduction) if block.strip()
+    )
+    introduction_start = 0
+    if blocks and blocks[0].startswith("# ") and len(blocks[0].splitlines()) == 1:
+        introduction_start = 1
+    introduction_end = introduction_start + len(introduction_blocks)
+    if tuple(blocks[introduction_start:introduction_end]) == introduction_blocks:
+        blocks = blocks[introduction_end:]
+    else:
+        # The introduction may not be authored, edited, duplicated, or
+        # preceded by arbitrary prose. Retain the previous outside-reader
+        # signal so this narrow grammar cannot create a pre-opening escape hatch.
+        expected_intro_later = any(
+            tuple(blocks[index:index + len(introduction_blocks)]) == introduction_blocks
+            for index in range(introduction_start + 1, len(blocks))
+        )
+        known_introduction_headings = {
+            introduction.splitlines()[0] for introduction in PREMIUM_READER_INTRODUCTIONS.values()
+        }
+        starts_intro_heading = bool(
+            blocks[introduction_start:introduction_start + 1]
+            and blocks[introduction_start].splitlines()[0] in known_introduction_headings
+        )
+        if expected_intro_later:
+            errors.append("invalid_premium_document_preamble")
+        elif starts_intro_heading:
+            errors.append("invalid_premium_reader_introduction")
+        elif blocks[introduction_start:introduction_start + 1] and not blocks[introduction_start].startswith("## "):
+            errors.extend(["invalid_premium_document_preamble", "reader_prose_outside_canonical_section"])
+        else:
+            errors.append("missing_premium_reader_introduction")
+        # Continue parsing physical blocks to surface all structural failures.
+        blocks = blocks[introduction_start:]
     current: Optional[str] = None
     seen_headings: List[str] = []
     all_hashes: set[str] = set()
     prose = []
-    title_count = 0
-    separator_count = 0
     metadata_prefixes = ("*leitura simbólica", "*symbolic reading", "> **percurso", "> **path")
     for block in blocks:
         lines = block.splitlines()
@@ -282,25 +385,13 @@ def _parse_premium_narrative(report: object, manifest: object) -> Dict[str, obje
             current = key
             continue
         if lines[0].startswith("#"):
-            # A document title is allowed only before the canonical narrative.
-            # Every other heading is physical content and cannot disappear from
-            # an unavailable section merely because it is not an H2 heading.
-            if lines[0].startswith("# ") and len(lines) == 1 and current is None and not seen_headings:
-                title_count += 1
-                if title_count > 1 or separator_count:
-                    errors.append("invalid_premium_document_preamble")
-            else:
-                errors.append("noncanonical_heading_inside_reader_section" if current is not None else "noncanonical_narrative_block")
+            errors.append("noncanonical_heading_inside_reader_section" if current is not None else "noncanonical_narrative_block")
             continue
         if block == "---":
             if current is not None:
                 errors.append("nonprose_content_inside_reader_section")
-            elif seen_headings:
-                errors.append("noncanonical_narrative_block")
             else:
-                separator_count += 1
-                if separator_count > 1:
-                    errors.append("invalid_premium_document_preamble")
+                errors.append("noncanonical_narrative_block")
             continue
         folded = block.casefold()
         if folded.startswith(metadata_prefixes):
@@ -336,7 +427,12 @@ def _parse_premium_narrative(report: object, manifest: object) -> Dict[str, obje
             errors.append("missing_reader_section_heading")
         else:
             errors.append("reader_section_heading_order_mismatch")
-    return {"errors": list(dict.fromkeys(errors)), "prose": prose, "sections": sections}
+    return {
+        "errors": list(dict.fromkeys(errors)),
+        "reader_introduction": {"text": reader_introduction, "sha256": _canonical_hash(reader_introduction)},
+        "prose": prose,
+        "sections": sections,
+    }
 
 
 def _validated_paragraph_sources(report: object, paragraph_sources: object, approved_ids: set[str], allowed_claims: Dict[str, Claim], timing_ids: set[str], parsed: Optional[Dict[str, object]] = None) -> tuple[List[str], List[Dict[str, object]]]:
@@ -697,6 +793,12 @@ def _verify_authoritative_prepared_handoff(
         errors.append("authoritative_handoff_contract_body_mismatch")
     if handoff.get("premium_handoff_contract_sha256") != _canonical_hash(_premium_handoff_contract()):
         errors.append("authoritative_handoff_contract_hash_mismatch")
+    handoff_introduction = handoff.get("reader_introduction")
+    handoff_introduction_hash = handoff.get("reader_introduction_sha256")
+    if handoff_introduction not in PREMIUM_READER_INTRODUCTIONS.values():
+        errors.append("invalid_authoritative_handoff_reader_introduction")
+    if handoff_introduction_hash != _canonical_hash(handoff_introduction):
+        errors.append("authoritative_handoff_reader_introduction_body_hash_mismatch")
     if authoritative is not None:
         if handoff.get("packet_id") != authoritative.get("packet_id"):
             errors.append("authoritative_handoff_packet_id_mismatch")
@@ -712,6 +814,10 @@ def _verify_authoritative_prepared_handoff(
             errors.append("authoritative_handoff_reader_domain_manifest_mismatch")
         if handoff.get("reader_domain_manifest_sha256") != authoritative.get("reader_domain_manifest_sha256"):
             errors.append("authoritative_handoff_reader_domain_manifest_hash_mismatch")
+        if handoff_introduction != authoritative.get("reader_introduction"):
+            errors.append("authoritative_handoff_reader_introduction_mismatch")
+        if handoff_introduction_hash != authoritative.get("reader_introduction_sha256"):
+            errors.append("authoritative_handoff_reader_introduction_hash_mismatch")
     return prepared_as_of, prepared_horizon, prepared_include_timing, list(dict.fromkeys(errors))
 
 
