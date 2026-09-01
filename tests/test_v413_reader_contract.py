@@ -690,6 +690,14 @@ def test_v413_timing_domain_accepts_complete_set_of_multiple_satisfied_paths():
     judged = validate_premium_syntheses(birth(), altered["reasoned_syntheses"], include_timing=True, as_of=as_of, horizon_days=45)
     assert judged["approved"], judged["reasoned_synthesis"]
     altered["synthesis_bundle_sha256"] = judged["synthesis_bundle_sha256"]
+    selection_domain = next(item for item in altered["reader_selection_plan"]["domains"] if item["domain_id"] == "active_life_chapter")
+    for selection in selection_domain["paths"]:
+        selection.update({"decision": "omitted_no_distinct_reader_value", "synthesis_ids": [], "merged_with_path_id": None, "rationale": "Not selected for this focused multi-timing regression."})
+    first_selection = next(item for item in selection_domain["paths"] if item["path_id"] == first_path["id"])
+    second_selection = next(item for item in selection_domain["paths"] if item["path_id"] == second_path["id"])
+    first_selection.update({"decision": "represented", "synthesis_ids": [cited_id], "merged_with_path_id": None, "rationale": None})
+    second_selection.update({"decision": "merged_with_represented", "synthesis_ids": [], "merged_with_path_id": first_path["id"], "rationale": "The same approved timing synthesis now develops the convergent activation."})
+    altered["reader_selection_plan_sha256"] = _canonical_hash(altered["reader_selection_plan"])
 
     result = validate_premium_author_bundle(
         birth(), altered, include_timing=True, as_of=as_of, horizon_days=45, prepared_handoff=handoff,
@@ -825,5 +833,23 @@ def test_v413_humanisation_instructions_preserve_distinct_authorised_depth():
         "gendered wording when none was supplied",
         "consistently in the requested language",
         "memorable synthesis rather than a summary",
+    ):
+        assert text in reviewer
+
+
+def test_v413_humanisation_instructions_require_local_attribution_and_human_editorial_choices():
+    author = humanization_instructions("en-US")
+    reviewer = humanization_verifier_instructions("en-US")
+    for text in (
+        "visibly irregular",
+        "routing vocabulary",
+        "hypothetical micro-scenes",
+        "group timing by human field and convergence",
+    ):
+        assert text in author
+    for text in (
+        "reader_selection_plan",
+        "semantic attribution locality",
+        "every grammatical proposition",
     ):
         assert text in reviewer

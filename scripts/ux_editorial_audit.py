@@ -22,7 +22,7 @@ if str(SKILL_ROOT) not in sys.path:
     sys.path.insert(0, str(SKILL_ROOT))
 
 from astrology.models import BirthData, LocalizationProfile
-from astrology.pipeline import analyse_birth_chart
+from astrology.pipeline import _parse_premium_narrative, analyse_birth_chart
 from astrology.editorial_qa import barnum_risk, exact_reuse, llm_semantic_review_prompt, report_swap_risk, semantic_cross_report_similarity
 
 
@@ -446,13 +446,98 @@ def generate(output: Path, stage: str, as_of: datetime, horizon_days: int, fixtu
     (output / "individuality_metrics.json").write_text(json.dumps(individuality_metrics(reports), ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _premium_domain_metrics(report: str, manifest: Dict[str, object]) -> Dict[str, object]:
+    """Measure the exact publication parser universe; never regenerate a chart."""
+    parsed = _parse_premium_narrative(report, manifest)
+    if parsed.get("errors"):
+        raise ValueError("Invalid published Premium narrative: " + ", ".join(parsed["errors"]))
+    domains = []
+    available_counts = []
+    for domain in manifest.get("domains", []):
+        domain_id = str(domain["id"])
+        blocks = parsed["sections"][domain_id]["prose"]
+        count = sum(len(words(str(block["text"]))) for block in blocks)
+        paragraphs = len(blocks)
+        domains.append({"domain_id": domain_id, "available": domain.get("availability") == "available", "words": count, "paragraphs": paragraphs})
+        if domain.get("availability") == "available":
+            available_counts.append(count)
+    ordered = sorted(available_counts)
+    median = ordered[len(ordered) // 2] if ordered else 0
+    paragraph_frequency: Dict[int, int] = defaultdict(int)
+    for item in domains:
+        if item["available"]:
+            paragraph_frequency[int(item["paragraphs"])] += 1
+    same_paragraph_share = max(paragraph_frequency.values(), default=0) / len(available_counts) if available_counts else 0.0
+    active = next((item for item in domains if item["domain_id"] == "active_life_chapter"), {"words": 0})
+    prose_total = sum(item["words"] for item in domains)
+    return {
+        "canonical_domains": domains,
+        "available_domain_word_minimum": min(available_counts, default=0),
+        "available_domain_word_median": median,
+        "available_domain_word_maximum": max(available_counts, default=0),
+        "available_domain_largest_to_median_ratio": round(max(available_counts, default=0) / median, 3) if median else 0.0,
+        "maximum_same_paragraph_count_share": round(same_paragraph_share, 3),
+        "opening_words": sum(len(words(str(item["text"]))) for item in parsed["sections"]["opening"]["prose"]),
+        "integration_words": sum(len(words(str(item["text"]))) for item in parsed["sections"]["integration"]["prose"]),
+        "active_life_timing_share_of_domain_prose": round(int(active["words"]) / prose_total, 3) if prose_total else 0.0,
+    }
+
+
+def generate_premium_artifacts(output: Path, stage: str, run_dirs: List[Path]) -> None:
+    """Audit already-approved Premium runs without generating reading content."""
+    output.mkdir(parents=True, exist_ok=True)
+    reports: Dict[str, str] = {}
+    metrics: Dict[str, Dict[str, object]] = {}
+    for run_dir in run_dirs:
+        provenance_path = run_dir / "05-provenance-guard.json"
+        publication_path = run_dir / "08-publication-guard.json"
+        if not provenance_path.is_file() or not publication_path.is_file():
+            raise ValueError(f"Premium artifact run requires 05-provenance-guard.json and 08-publication-guard.json: {run_dir}")
+        provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+        publication = json.loads(publication_path.read_text(encoding="utf-8"))
+        if not provenance.get("approved") or not publication.get("approved"):
+            raise ValueError(f"Premium artifact run is not approved by both guards: {run_dir}")
+        report = publication.get("report")
+        manifest = provenance.get("reader_domain_manifest")
+        if not isinstance(report, str) or not isinstance(manifest, dict):
+            raise ValueError(f"Premium artifact run lacks final report or canonical manifest: {run_dir}")
+        run_id = run_dir.name
+        if run_id in reports:
+            raise ValueError(f"Duplicate Premium artifact run id: {run_id}")
+        reports[run_id] = report
+        metrics[run_id] = {**report_metrics(report), "premium_canonical": _premium_domain_metrics(report, manifest)}
+    output_manifest = {
+        "stage": stage,
+        "mode": "premium_artifacts",
+        "runs": [str(path) for path in run_dirs],
+        "guardrail": "Metrics read approved publication artifacts and their provenance manifests; this mode never regenerates charts or labels deterministic fallback output Premium.",
+    }
+    (output / "manifest.json").write_text(json.dumps(output_manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (output / "metrics.json").write_text(json.dumps(metrics, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (output / "cross_report_reuse.json").write_text(json.dumps({"premium": exact_reuse(reports)}, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (output / "individuality_metrics.json").write_text(json.dumps({
+        "premium": {
+            "exact_interpretive_sentence_reuse": exact_reuse(reports),
+            "semantic_cross_report_similarity": semantic_cross_report_similarity(reports),
+            "report_swap_pre_screen": report_swap_risk(reports),
+            "llm_semantic_review_prompt": llm_semantic_review_prompt(),
+        },
+    }, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--stage", required=True, choices=("before", "after"))
     parser.add_argument("--horizon-days", type=int, default=366)
     parser.add_argument("--fixtures", help="Comma-separated fixture ids; allows bounded CI/audit batches.")
+    parser.add_argument("--premium-artifacts", type=Path, nargs="+", help="Approved Premium run directories; incompatible with --fixtures.")
     args = parser.parse_args()
+    if args.premium_artifacts and args.fixtures:
+        parser.error("--premium-artifacts is incompatible with --fixtures")
+    if args.premium_artifacts:
+        generate_premium_artifacts(args.output, args.stage, args.premium_artifacts)
+        return
     fixture_ids = [item.strip() for item in args.fixtures.split(",") if item.strip()] if args.fixtures else None
     generate(args.output, args.stage, AS_OF, args.horizon_days, fixture_ids)
 

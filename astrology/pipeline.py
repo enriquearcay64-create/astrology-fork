@@ -915,7 +915,7 @@ def _verify_authoritative_prepared_handoff(
     prepared_handoff: Optional[Dict[str, object]], authoritative: Optional[Dict[str, object]] = None,
     *, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True,
 ) -> tuple[Optional[datetime], int, bool, List[str]]:
-    """Parse and verify the single deterministic authority for Premium 1.2.
+    """Parse and verify the single deterministic authority for Premium 1.3.
 
     The first call supplies the materialized deterministic selectors for a
     recomputation.  The second call receives that recomputation and verifies

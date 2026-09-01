@@ -54,6 +54,12 @@ O release só é aprovado quando quatro lentes passam: **Technical Truth** (cál
 - Audite primeiros cinco minutos, compreensão leiga, tamanho, ritmo, carga emocional, agência, jargão e cinco ideias que um leitor lembra no dia seguinte.
 - Teste Localization ligado/desligado no mesmo mapa. Só linguagem e exemplos podem mudar; temas, fatores, pesos e a interpretação psicológica têm de permanecer equivalentes.
 
+## Protocolo qualitativo Premium Complete
+
+Depois de produzir artefatos Premium aprovados pelos dois guards, registre para cada run `pass`, `concern` ou `fail`, com trecho e nota curta, para voz 4 e cuidado humano percebido; profundidade irregular ganha pela carta; consideração de mecanismos e caminhos distintos; continuidade entre domínios; completude e convergência do timing; localidade de atribuição semântica; vazamento de linguagem de QA/roteamento; neutralidade de gênero e consistência de locale; registro corporativo/executivo; e síntese whole-person memorável.
+
+As métricas de `ux_editorial_audit.py --premium-artifacts` são descritivas, não gates numéricos. Um `fail` de integridade, segurança, autoridade, linhagem, timing, idioma ou atribuição semântica bloqueia a liberação. Preocupações editoriais são lidas através da matriz de runs; não viram meta numérica nem justificam mudar código durante a fase de aceitação.
+
 ## Limite dos resultados automáticos
 
 Os testes internos provam consistência e diferenciação do software. Eles não provam a validade científica de correspondências astrológicas nem substituem piloto humano independente.

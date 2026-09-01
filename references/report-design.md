@@ -64,15 +64,11 @@ Gênero, idade, ceticismo e estilo de leitura podem orientar auditoria editorial
 - Use `<details>` para base técnica do timing, ciclos completos, temas secundários, qualidade dos dados e política metodológica, nunca para esconder um dos 16 domínios obrigatórios.
 - Não use emoji em série, animação ou ornamentação que compita com a leitura.
 
-## Alvos de extensão
+## Extensão e ritmo
 
-São faixas de QA para produtos compactos, não quotas de preenchimento. Premium Complete não tem mínimo rígido de palavras: cobertura obrigatória e importância interpretativa decidem a extensão.
+Os alvos compactos pertencem somente ao Executive Reading: 450–750 palavras, em torno de 2–4 minutos. Premium Complete não tem alvo de tempo de leitura, palavras, parágrafos ou exemplos. Sua extensão, inclusive a da fase atual e dos ciclos, é decidida por cobertura obrigatória, importância interpretativa e carga cognitiva. Profundidade irregular é desejável quando a carta a sustenta; semelhança de extensão entre seções é sinal de inspeção editorial, não de rejeição determinística.
 
-- Executive Reading: 450–750 palavras; cerca de 2–4 minutos.
-- Deep Reading / Premium Complete: extensão adaptativa; cerca de 6–10 minutos apenas quando a arquitetura do mapa sustenta esse fôlego.
-- Fase atual no corpo principal: 150–350 palavras.
-- Ciclos visíveis: 120–300 palavras; mapa completo recolhido.
-- Technical Appendix: extensão definida pelo conteúdo determinístico útil ao leitor e pela divulgação progressiva; não há quota de palavras. O apêndice voltado ao cliente permanece curado e conciso. A divulgação técnica longa, a política JSON e as listas completas pertencem ao `audit_sidecar`, não ao relatório comercial.
+O Apêndice Técnico do Cliente continua curado e conciso por divulgação progressiva; a divulgação técnica longa, política JSON e listas completas pertencem ao `audit_sidecar`, não ao relatório comercial.
 
 ## Consulta específica
 

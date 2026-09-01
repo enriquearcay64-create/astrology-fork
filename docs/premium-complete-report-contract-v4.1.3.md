@@ -181,6 +181,19 @@ repetition, rejects cookbook routing and chart-swappable claims, preserves real
 contradictions, enforces direct-Claim atomicity, and removes unsupported biography,
 certainty, timing, or coaching-led substitution.
 
+Premium has no reading-time, word-count, paragraph-count, or example quota.
+Depth may be visibly irregular where the chart earns it; similar section sizes
+are an editorial inspection signal, never deterministic rejection. The reader
+gets ordinary astrological language rather than routing vocabulary, selective
+cross-domain bridges, and short hypothetical micro-scenes only when they make an
+authorised mechanism recognizable without inventing biography. Semantic
+attribution is local: each grammatical proposition is authorized by the factor
+to which it is attributed, and a valid anchor later in the paragraph cannot
+rescue an earlier broad assertion. Timing is grouped by human field and genuine
+convergence rather than by technique lists. The Reviewer inspects every
+selection-plan omission and merge and requests regeneration when it hides a
+distinct human mechanism.
+
 ## Safety boundaries
 
 - Money concerns values, resources, security, risk, earning, and sharing as
