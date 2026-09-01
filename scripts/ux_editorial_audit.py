@@ -15,6 +15,7 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
+from statistics import median
 from typing import Dict, List, Tuple
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
@@ -461,8 +462,7 @@ def _premium_domain_metrics(report: str, manifest: Dict[str, object]) -> Dict[st
         domains.append({"domain_id": domain_id, "available": domain.get("availability") == "available", "words": count, "paragraphs": paragraphs})
         if domain.get("availability") == "available":
             available_counts.append(count)
-    ordered = sorted(available_counts)
-    median = ordered[len(ordered) // 2] if ordered else 0
+    domain_median = median(available_counts) if available_counts else 0
     paragraph_frequency: Dict[int, int] = defaultdict(int)
     for item in domains:
         if item["available"]:
@@ -473,9 +473,9 @@ def _premium_domain_metrics(report: str, manifest: Dict[str, object]) -> Dict[st
     return {
         "canonical_domains": domains,
         "available_domain_word_minimum": min(available_counts, default=0),
-        "available_domain_word_median": median,
+        "available_domain_word_median": domain_median,
         "available_domain_word_maximum": max(available_counts, default=0),
-        "available_domain_largest_to_median_ratio": round(max(available_counts, default=0) / median, 3) if median else 0.0,
+        "available_domain_largest_to_median_ratio": round(max(available_counts, default=0) / domain_median, 3) if domain_median else 0.0,
         "maximum_same_paragraph_count_share": round(same_paragraph_share, 3),
         "opening_words": sum(len(words(str(item["text"]))) for item in parsed["sections"]["opening"]["prose"]),
         "integration_words": sum(len(words(str(item["text"]))) for item in parsed["sections"]["integration"]["prose"]),

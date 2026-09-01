@@ -12,7 +12,7 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 
 ## Ordem da leitura profunda
 
-1. **Introdução fixa do leitor:** antes da abertura, o Premium traz o texto determinístico “Como entrar nesta leitura”. Ele acolhe a leitura sem interpretar o mapa, não recebe proveniência astrológica e não é uma das 18 seções.
+1. **Introdução fixa do leitor:** antes da abertura, o Premium reproduz exatamente o `reader_introduction` locale-bound materializado no handoff preparado. Ele acolhe a leitura sem interpretar o mapa, não recebe proveniência astrológica e não é uma das 18 seções.
 2. **Abertura do mapa inteiro:** arquitetura organizadora, três ou quatro mecanismos principais quando sustentados, tensões/paradoxos e conexões estruturais. Não é inventário nem sumário antecipado.
 3. **Dezesseis domínios humanos canônicos:** identidade; segurança emocional; mente e comunicação; desejo e limites; amor e intimidade; criatividade e prazer; trabalho e visibilidade; dinheiro e recursos; corpo e rotina; casa e raízes; amizade e pertencimento; significado e horizonte; sombra e padrões; crescimento pela contradição; direção de desenvolvimento; capítulo de vida ativo. Todos aparecem uma vez, na ordem contratual. Baixa ênfase pede concisão substantiva, não omissão. Ausência de timing admitido produz o aviso determinístico, nunca timing inventado.
 4. **Integração final:** começa pela síntese de ordem superior — o que organiza a pessoa como um todo — e só usa timing quando ele realmente aprofunda essa síntese. Não reconta o relatório nem vira worksheet.
@@ -24,7 +24,7 @@ Cada mecanismo central é explicado plenamente uma vez. Em domínios posteriores
 - Prefira parágrafos com espaço suficiente para uma ideia psicológica completa. Parágrafos curtos são válidos quando substantivos; o contrato Premium não usa limiar de palavras para decidir cobertura.
 - Não transforme todo modo de expressão em bullet. Use prosa para relações e bullets para escolhas, janelas, passos ou mapeamentos.
 - Desenvolva plenamente os 3–4 mecanismos que organizam a abertura, mas não use esse foco para apagar mecanismos distintos que uma seção tem autoridade para desenvolver. Nos domínios, profundidade adaptativa significa preservar toda tendência, tensão, contrapeso e consequência humana realmente diferente; não há quota de palavras ou parágrafos, e baixa ênfase não é uma regra de um parágrafo.
-- Use no máximo um exemplo por tema no corpo principal. Três exemplos totais normalmente bastam.
+- Premium não tem quota de exemplos. Use microcenas hipotéticas somente quando transformarem uma abstração autorizada em experiência reconhecível; não há quantidade-alvo, e elas nunca inventam biografia.
 - Evite mais de dois blocos emocionalmente pesados sem uma passagem por recurso, contexto ou agência.
 - Um heading deve responder a uma pergunta diferente. Se a seção só repete o mesmo significado anterior, fundir ou cortar; se reutiliza a mesma evidência para uma consequência humana diferente, desenvolvê-la.
 
@@ -59,7 +59,7 @@ Gênero, idade, ceticismo e estilo de leitura podem orientar auditoria editorial
 
 ## Gramática visual
 
-- Na narrativa Premium canônica, a introdução fixa “Como entrar nesta leitura” fica, literalmente e uma única vez, depois de um título opcional e antes da abertura. Ela é produto, não interpretação: não entra em fontes por parágrafo nem em propriedade de seção. As 18 seções interpretativas continuam sendo a estrutura rastreável; tabelas, listas isoladas e metadata não contam como tratamento narrativo. Use tabelas para dados determinísticos no Apêndice Técnico do Cliente ou em outras superfícies não narrativas.
+- Na narrativa Premium canônica, o `reader_introduction` locale-bound materializado no handoff preparado fica, literalmente e uma única vez, depois de um título opcional e antes da abertura. Ele é produto, não interpretação: não entra em fontes por parágrafo nem em propriedade de seção. As 18 seções interpretativas continuam sendo a estrutura rastreável; tabelas, listas isoladas e metadata não contam como tratamento narrativo. Use tabelas para dados determinísticos no Apêndice Técnico do Cliente ou em outras superfícies não narrativas.
 - Use `↔` para uma polaridade quando isso melhora a navegação; o símbolo nunca substitui explicação.
 - Use `<details>` para base técnica do timing, ciclos completos, temas secundários, qualidade dos dados e política metodológica, nunca para esconder um dos 16 domínios obrigatórios.
 - Não use emoji em série, animação ou ornamentação que compita com a leitura.

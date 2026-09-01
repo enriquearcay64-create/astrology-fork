@@ -7,6 +7,7 @@ import pytest
 
 from astrology.models import LocalizationProfile
 from astrology.pipeline import prepare_premium_handoff, validate_premium_author_bundle, validate_premium_narrative
+import scripts.ux_editorial_audit as ux_audit
 from scripts.ux_editorial_audit import generate, generate_premium_artifacts
 from tests.test_v413_reader_contract import birth
 from tests.v413_helpers import build_author_bundle, reviewer_bundle
@@ -51,3 +52,42 @@ def test_premium_artifact_audit_rejects_unapproved_or_incomplete_runs(tmp_path):
 def test_legacy_fixture_mode_remains_available(tmp_path):
     generate(tmp_path / "fixtures", "after", __import__("scripts.ux_editorial_audit", fromlist=["AS_OF"]).AS_OF, 366, ["A"])
     assert (tmp_path / "fixtures" / "A" / "deep.md").is_file()
+
+
+def test_premium_domain_metrics_uses_mathematical_median_for_even_domain_count(monkeypatch):
+    counts = [1, 3, 9, 11]
+    domains = [{"id": f"domain_{index}", "availability": "available"} for index in range(len(counts))]
+    sections = {
+        "opening": {"prose": []},
+        "integration": {"prose": []},
+        **{
+            domain["id"]: {"prose": [{"text": " ".join(["word"] * count)}]}
+            for domain, count in zip(domains, counts)
+        },
+    }
+    monkeypatch.setattr(ux_audit, "_parse_premium_narrative", lambda _report, _manifest: {"errors": [], "sections": sections})
+
+    metrics = ux_audit._premium_domain_metrics("approved report", {"domains": domains})
+
+    assert metrics["available_domain_word_median"] == 6.0
+    assert metrics["available_domain_largest_to_median_ratio"] == 1.833
+
+
+def test_premium_acceptance_documentation_has_no_hidden_quota_or_semantic_authority_leak():
+    skill_root = Path(__file__).resolve().parents[1]
+    skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+    report_design = (skill_root / "references" / "report-design.md").read_text(encoding="utf-8")
+    qa = (skill_root / "references" / "qa.md").read_text(encoding="utf-8")
+
+    assert "Use no máximo um exemplo" not in report_design
+    assert "Três exemplos totais" not in report_design
+    assert "Premium não tem quota de exemplos" in report_design
+    assert "não há quantidade-alvo" in report_design
+    assert "reader_introduction` locale-bound materializado no handoff preparado" in skill
+    assert "reader_introduction` locale-bound materializado no handoff preparado" in report_design
+    assert "`reasoning_packet` é sua única autoridade para significado astrológico" in skill
+    assert "Campos top-level do handoff servem somente a workflow, apresentação e proveniência" in skill
+    assert "nunca introduzem significado astrológico" in skill
+    assert "O alvo permanece aproximadamente `4`" in qa
+    assert "`3–5` é somente tolerância de aceitação" in qa
+    assert "nunca vira instrução numérica para o Author nem gate automático" in qa

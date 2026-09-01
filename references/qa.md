@@ -58,6 +58,8 @@ O release só é aprovado quando quatro lentes passam: **Technical Truth** (cál
 
 Depois de produzir artefatos Premium aprovados pelos dois guards, registre para cada run `pass`, `concern` ou `fail`, com trecho e nota curta, para voz 4 e cuidado humano percebido; profundidade irregular ganha pela carta; consideração de mecanismos e caminhos distintos; continuidade entre domínios; completude e convergência do timing; localidade de atribuição semântica; vazamento de linguagem de QA/roteamento; neutralidade de gênero e consistência de locale; registro corporativo/executivo; e síntese whole-person memorável.
 
+**Referência humana de Voice 4:** numa escala editorial de 1 a 10, `1` é muito místico, suave e emocionalmente saturado; `10` é técnico, diagnóstico, distante e executivo. O alvo permanece aproximadamente `4`: quente, receptivo, íntimo sem familiaridade presumida, fluido e psicologicamente legível, reflexivo em vez de diagnóstico, mas ainda preciso, inteligente e grounded. `3–5` é somente tolerância de aceitação, não uma faixa que o Author deva variar deliberadamente. Esta escala pertence apenas ao QA humano e nunca vira instrução numérica para o Author nem gate automático.
+
 As métricas de `ux_editorial_audit.py --premium-artifacts` são descritivas, não gates numéricos. Um `fail` de integridade, segurança, autoridade, linhagem, timing, idioma ou atribuição semântica bloqueia a liberação. Preocupações editoriais são lidas através da matriz de runs; não viram meta numérica nem justificam mudar código durante a fase de aceitação.
 
 ## Limite dos resultados automáticos
