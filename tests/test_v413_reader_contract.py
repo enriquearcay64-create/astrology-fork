@@ -779,8 +779,8 @@ def test_v413_preopening_preamble_rejects_duplicate_titles_and_separators(preamb
 
 def test_v413_handoff_12_hashes_and_contract_are_fail_closed():
     handoff = prepare_premium_handoff(birth(), include_timing=False)
-    assert PREMIUM_HANDOFF_CONTRACT_VERSION == "1.2"
-    assert handoff["premium_handoff_contract_version"] == "1.2"
+    assert PREMIUM_HANDOFF_CONTRACT_VERSION == "1.3"
+    assert handoff["premium_handoff_contract_version"] == "1.3"
     for field in ("prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256"):
         assert handoff[field]
     introduction_rule = handoff["premium_handoff_contract"]["reader_section_rules"]["fixed_reader_introduction"]
@@ -792,7 +792,7 @@ def test_v413_handoff_12_hashes_and_contract_are_fail_closed():
     for field in ("prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256"):
         altered = dict(author, **{field: "bad"})
         assert f"{field}_mismatch" in validate_premium_author_bundle(birth(), altered, include_timing=False)["verification_errors"]
-    legacy = dict(author, premium_handoff_contract_version="1.1")
+    legacy = dict(author, premium_handoff_contract_version="1.2")
     assert "premium_handoff_contract_version_mismatch" in validate_premium_author_bundle(birth(), legacy, include_timing=False)["verification_errors"]
 
 

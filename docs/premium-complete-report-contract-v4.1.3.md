@@ -127,6 +127,35 @@ approved domain path. Direct atomic house-ruler Claims never satisfy substantive
 domain coverage. The guards verify structure and non-literary ancestry; the
 Reviewer judges whether the prose meaningfully answers the human question.
 
+## Reader-selection completeness and regeneration
+
+Premium handoff contract `1.3` adds a canonical internal `reader_selection_plan`
+and its hash to the AuthorBundle, Provenance Guard output and ReviewerBundle.
+It lists every available domain in manifest order and every legal coverage path
+once, in manifest order. A path is either `represented` by a nonempty unique set
+of individually approved syntheses found in that domain's physical provenance,
+`merged_with_represented` into a direct same-domain represented target with a
+nonempty rationale, or `omitted_no_distinct_reader_value` with a nonempty
+rationale. Unavailable domains are absent. Unknown fields, missing, duplicate,
+reordered and invented identifiers fail closed.
+
+For a represented path and paths directly merged into it, the represented
+synthesis set is checked in union against each legal path. Every member remains
+individually valid and must contribute a required claim, factor, operation,
+reasoning class or timing ID; unrelated padding fails. The union is a
+provenance-only completeness check: it neither creates a synthetic synthesis nor
+changes ordinary paragraph-local legality, ChartSignature, structural scoring,
+or NarrativePlan. A timing cluster additionally has exact equality between its
+union of synthesis timing IDs and its union of represented/merged path timing
+IDs, while every individual timing paragraph keeps its existing exact row rule.
+
+The Reviewer echoes the exact plan and hash. Its verdict is `approved`,
+`regenerate_author`, or `blocked`. A regeneration request lists known unique
+domain/path IDs and reasons; Publication Guard authenticates the prepared
+handoff and plan before returning `author_regeneration_required` without a
+report. Normal workflow allows one fresh Author regeneration from the original
+handoff and one fresh Reviewer pass; a second regeneration request is blocked.
+
 Layer A and Layer C require an approved relational synthesis using existing
 integrated-pattern or theme-interaction composition authority. This is a
 relational contract, not a factor-count heuristic. A house-ruler routing synthesis
@@ -175,7 +204,7 @@ remains compact. The deterministic technical renderer, curated Client Technical
 Appendix, and internal audit sidecar are unchanged.
 
 V4.1.3 uses methodology and package version `4.1.3`, report template
-`4.1.3-whole-person`, and Premium handoff contract `1.2`. Semantic registry
+`4.1.3-whole-person`, and Premium handoff contract `1.3`. Semantic registry
 `2.6.0`, factual schema `4.1.1`, and timing methodology `4.0.1` remain unchanged
 because this release adds reader routing and ownership, not new astrology,
 factual payload fields, or timing calculations.

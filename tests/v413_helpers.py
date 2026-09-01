@@ -10,7 +10,7 @@ from astrology.pipeline import _canonical_hash, _premium_handoff_contract, _prem
 def contract_fields() -> Dict[str, object]:
     contract = _premium_handoff_contract()
     return {
-        "premium_handoff_contract_version": "1.2",
+        "premium_handoff_contract_version": contract["version"],
         "premium_handoff_contract": contract,
         "premium_handoff_contract_sha256": _canonical_hash(contract),
         "corrections_made": [],
@@ -114,12 +114,32 @@ def build_author_bundle(birth: BirthData, include_timing: bool = False, add_dire
     report = "\n\n".join(report_parts)
     synthesis_payload = [asdict(item) for item in syntheses.values()]
     judged = validate_premium_syntheses(birth, synthesis_payload, profile, include_timing=include_timing, as_of=as_of, horizon_days=horizon_days)
+    selection_plan = {
+        "version": "1.0",
+        "domains": [
+            {
+                "domain_id": domain["id"],
+                "paths": [
+                    {
+                        "path_id": path["id"],
+                        "decision": "represented" if index == 0 else "omitted_no_distinct_reader_value",
+                        "synthesis_ids": [domain_source[domain["id"]]] if index == 0 else [],
+                        "merged_with_path_id": None,
+                        "rationale": None if index == 0 else "This legal path adds no distinct reader value beyond the represented domain mechanism.",
+                    }
+                    for index, path in enumerate(domain["legal_coverage_paths"])
+                ],
+            }
+            for domain in manifest["domains"] if domain["availability"] == "available"
+        ],
+    }
     author = {
         **contract_fields(), "packet_id": judged["packet_id"],
         "prepared_chart_signature_sha256": judged["prepared_chart_signature_sha256"],
         "prepared_signature_synthesis_sha256": judged["prepared_signature_synthesis_sha256"],
         "reader_domain_manifest_sha256": judged["reader_domain_manifest_sha256"],
         "reasoned_syntheses": synthesis_payload, "draft_report": report, "paragraph_sources": sources, "reader_sections": ownership,
+        "reader_selection_plan": selection_plan, "reader_selection_plan_sha256": _canonical_hash(selection_plan),
         "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(report),
     }
     return author, direct
@@ -134,4 +154,6 @@ def reviewer_bundle(author: Dict[str, object], provenance: Dict[str, object]) ->
         "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"], "reviewed_draft_sha256": provenance["draft_report_sha256"],
         "verdict": "approved", "final_report": author["draft_report"], "final_report_sha256": _canonical_hash(author["draft_report"]),
         "paragraph_sources": author["paragraph_sources"], "reader_sections": author["reader_sections"],
+        "reader_selection_plan": provenance["reader_selection_plan"], "reader_selection_plan_sha256": provenance["reader_selection_plan_sha256"],
+        "regeneration_request": None,
     }
