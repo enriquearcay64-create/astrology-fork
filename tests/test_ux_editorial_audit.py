@@ -10,15 +10,15 @@ from astrology.pipeline import prepare_premium_handoff, validate_premium_author_
 import scripts.ux_editorial_audit as ux_audit
 from scripts.ux_editorial_audit import generate, generate_premium_artifacts
 from tests.test_v413_reader_contract import birth
-from tests.v413_helpers import build_author_bundle, reviewer_bundle
+from tests.v414_helpers import build_author_bundle_v14, reviewer_bundle_v14
 
 
 def _approved_run(run_dir: Path, profile=None) -> None:
     handoff = prepare_premium_handoff(birth(), profile, include_timing=False)
-    author, _ = build_author_bundle(birth(), include_timing=False, profile=profile)
+    author, _ = build_author_bundle_v14(birth(), include_timing=False, profile=profile)
     provenance = validate_premium_author_bundle(birth(), author, profile, include_timing=False, prepared_handoff=handoff)
     assert provenance["approved"], provenance["verification_errors"]
-    publication = validate_premium_narrative(reviewer_bundle(author, provenance), provenance, birth(), profile, include_timing=False, prepared_handoff=handoff)
+    publication = validate_premium_narrative(reviewer_bundle_v14(author, provenance), provenance, birth(), profile, include_timing=False, prepared_handoff=handoff)
     assert publication["approved"], publication["verification_errors"]
     run_dir.mkdir()
     (run_dir / "05-provenance-guard.json").write_text(json.dumps(provenance), encoding="utf-8")

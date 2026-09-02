@@ -1,9 +1,17 @@
-"""Versioned conservative policy defaults.  Change only with a methodology version bump."""
+"""Versioned conservative policy defaults and release metadata.
+
+Methodology constants change only with a methodology version bump; package,
+template, and handoff-contract metadata may advance independently.
+"""
 from __future__ import annotations
 
+PACKAGE_VERSION = "4.1.4"
+PRODUCT_VERSION = PACKAGE_VERSION
+REPORT_TEMPLATE_VERSION = "4.1.4-whole-person"
 METHODOLOGY_VERSION = "4.1.3"
 SCHEMA_VERSION = "4.1.1"
-PREMIUM_HANDOFF_CONTRACT_VERSION = "1.3"
+PREMIUM_HANDOFF_CONTRACT_VERSION = "1.4"
+LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION = "1.3"
 EPHEMERIS_START_YEAR = 1800
 EPHEMERIS_END_YEAR = 2399
 

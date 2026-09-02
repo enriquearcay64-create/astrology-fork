@@ -7,18 +7,18 @@ from astrology.hierarchy import calculate_hierarchy
 from astrology.models import BirthData, Claim, ReasonedSynthesis
 from astrology.pipeline import (
     _canonical_hash,
-    _premium_handoff_contract,
+    _premium_handoff_contract_v13 as _premium_handoff_contract,
     analyse_birth_chart,
     paragraph_source_template,
-    prepare_premium_handoff,
-    validate_premium_author_bundle,
-    validate_premium_narrative,
+    prepare_premium_handoff as _prepare_premium_handoff,
+    validate_premium_author_bundle as _validate_premium_author_bundle,
+    validate_premium_narrative as _validate_premium_narrative,
     validate_premium_syntheses,
 )
 from astrology.reasoning import build_chart_signature, humanization_instructions, humanization_verifier_instructions, validate_reasoned_syntheses
 from astrology.safe_view import build_safe_interpretive_view
 from astrology.semantics import build_claims, verify_claims
-from tests.v413_helpers import build_author_bundle, contract_fields, reviewer_bundle
+from tests.v413_helpers import build_author_bundle, contract_fields, prepare_legacy_premium_handoff_for_replay, reviewer_bundle
 
 
 def birth(**changes) -> BirthData:
@@ -34,6 +34,36 @@ def birth(**changes) -> BirthData:
 
 def _contract_fields() -> dict[str, object]:
     return contract_fields()
+
+
+# These V4.1.2/V4.1.3 regression fixtures are replayed through frozen 1.3.
+def prepare_premium_handoff(birth_data, profile=None, report_depth="deep", **kwargs):
+    if report_depth != "deep":
+        return _prepare_premium_handoff(birth_data, profile, report_depth=report_depth, **kwargs)
+    kwargs.setdefault("include_timing", True)
+    return prepare_legacy_premium_handoff_for_replay(birth_data, profile=profile, **kwargs)
+
+
+def validate_premium_author_bundle(*args, **kwargs):
+    if kwargs.get("prepared_handoff") is None:
+        birth_data = args[0] if args else kwargs["birth"]
+        profile = args[2] if len(args) > 2 else kwargs.get("profile")
+        kwargs["prepared_handoff"] = prepare_legacy_premium_handoff_for_replay(
+            birth_data, profile=profile, include_timing=kwargs.get("include_timing", True),
+            as_of=kwargs.get("as_of"), horizon_days=kwargs.get("horizon_days", 366),
+        )
+    return _validate_premium_author_bundle(*args, **kwargs)
+
+
+def validate_premium_narrative(*args, **kwargs):
+    if kwargs.get("prepared_handoff") is None:
+        birth_data = args[2] if len(args) > 2 else kwargs["birth"]
+        profile = args[3] if len(args) > 3 else kwargs.get("profile")
+        kwargs["prepared_handoff"] = prepare_legacy_premium_handoff_for_replay(
+            birth_data, profile=profile, include_timing=kwargs.get("include_timing", True),
+            as_of=kwargs.get("as_of"), horizon_days=kwargs.get("horizon_days", 366),
+        )
+    return _validate_premium_narrative(*args, **kwargs)
 
 
 def _claims_and_view(item: BirthData | None = None):

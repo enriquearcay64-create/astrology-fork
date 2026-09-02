@@ -7,14 +7,14 @@ import pytest
 
 from astrology.engine import calculate_chart
 from astrology.models import Aspect, BirthData, Claim, Factor, ReasonedSynthesis
-from astrology.pipeline import _canonical_hash, _premium_handoff_contract, analyse_birth_chart, paragraph_source_template, prepare_premium_handoff, validate_premium_author_bundle, validate_premium_narrative, validate_premium_syntheses
+from astrology.pipeline import _canonical_hash, _premium_handoff_contract, analyse_birth_chart, paragraph_source_template, prepare_premium_handoff as _prepare_premium_handoff, validate_premium_author_bundle as _validate_premium_author_bundle, validate_premium_narrative as _validate_premium_narrative, validate_premium_syntheses
 from astrology.reasoning import ASPECT_OPERATIONS, _promoted_configurations, build_chart_signature, build_narrative_plan, humanization_instructions, humanization_verifier_instructions, validate_reasoned_syntheses
 from astrology.report import technical_appendix
 from astrology.safe_view import build_safe_interpretive_view
 from astrology.semantics import _claim_from_aspect, build_claims, verify_claims
 from astrology.structure import detect_configurations
 from astrology.timing import ORB_BOUNDARY_TOLERANCE_DEGREES, _cycle_occurrences, _deviation, _jd_for_datetime, _longitude, annual_profection, developmental_intervals
-from tests.v413_helpers import build_author_bundle, contract_fields, reviewer_bundle
+from tests.v413_helpers import build_author_bundle, contract_fields, prepare_legacy_premium_handoff_for_replay, reviewer_bundle
 
 
 def birth() -> BirthData:
@@ -23,6 +23,38 @@ def birth() -> BirthData:
 
 def _contract_fields():
     return contract_fields()
+
+
+# V4/V4.1 regressions retain the frozen Premium 1.3 fixture behavior.  The
+# production preparation default is 1.4; these local adapters keep the old
+# suite explicit without weakening the production dispatcher.
+def prepare_premium_handoff(birth_data, profile=None, report_depth="deep", **kwargs):
+    if report_depth != "deep":
+        return _prepare_premium_handoff(birth_data, profile, report_depth=report_depth, **kwargs)
+    kwargs.setdefault("include_timing", True)
+    return prepare_legacy_premium_handoff_for_replay(birth_data, profile=profile, **kwargs)
+
+
+def validate_premium_author_bundle(*args, **kwargs):
+    if kwargs.get("prepared_handoff") is None:
+        birth_data = args[0] if args else kwargs["birth"]
+        profile = args[2] if len(args) > 2 else kwargs.get("profile")
+        kwargs["prepared_handoff"] = prepare_legacy_premium_handoff_for_replay(
+            birth_data, profile=profile, include_timing=kwargs.get("include_timing", True),
+            as_of=kwargs.get("as_of"), horizon_days=kwargs.get("horizon_days", 366),
+        )
+    return _validate_premium_author_bundle(*args, **kwargs)
+
+
+def validate_premium_narrative(*args, **kwargs):
+    if kwargs.get("prepared_handoff") is None:
+        birth_data = args[2] if len(args) > 2 else kwargs["birth"]
+        profile = args[3] if len(args) > 3 else kwargs.get("profile")
+        kwargs["prepared_handoff"] = prepare_legacy_premium_handoff_for_replay(
+            birth_data, profile=profile, include_timing=kwargs.get("include_timing", True),
+            as_of=kwargs.get("as_of"), horizon_days=kwargs.get("horizon_days", 366),
+        )
+    return _validate_premium_narrative(*args, **kwargs)
 
 
 def _coverage_bundle(result):
@@ -551,7 +583,7 @@ def test_v411_client_appendix_is_curated_and_prepare_keeps_full_audit_sidecar():
     assert "## Estrutura e configurações" in client
     assert "- Registro semântico: 2.6.0" in client
     assert "- Metodologia de timing: 4.0.1" in client
-    assert "- Template do relatório: 4.1.3-whole-person" in client
+    assert "- Template do relatório: 4.1.4-whole-person" in client
     assert "Profecção anual (técnica de Signo Inteiro)" in client
     positions = client.split("## Posições", 1)[1].split("## Ângulos", 1)[0]
     assert "Signo Inteiro" not in positions
@@ -568,7 +600,7 @@ def test_v413_versioning_updates_reader_contract_only():
     policy = calculate_chart(birth()).policy
 
     assert policy["methodology_version"] == "4.1.3"
-    assert policy["report_template_version"] == "4.1.3-whole-person"
+    assert policy["report_template_version"] == "4.1.4-whole-person"
     assert policy["semantic_registry_version"] == "2.6.0"
     assert policy["timing_version"] == "4.0.1"
     assert policy["schema_version"] == "4.1.1"

@@ -19,6 +19,16 @@ O relatório deve ajudar uma pessoa leiga a reconhecer padrões, contexto e poss
 
 Cada mecanismo central é explicado plenamente uma vez. Em domínios posteriores, mostre a consequência nova naquele contexto. Evidência reutilizada não ganha peso, confiança ou proeminência. Regência Whole Sign só aparece dentro de técnica tradicional nomeada.
 
+## Blocos narrativos e plano prospectivo — Premium 1.4
+
+Antes de escrever a leitura, o Author inspeciona o manifest inteiro, decide prospectivamente cada legal path no `ReaderSelectionPlan` e constrói as syntheses aprovadas necessárias. O plano não é uma justificativa retrospectiva. A ordem das paths serve somente para serialização. Em Premium Complete, uma path com mecanismo humano distinto não pode ser apagada por ser secundária à `ChartSignature`.
+
+O parser line-aware fechado reconhece paragraphs, list items ordered/unordered, H3 `subheading`, H2 canônico e avisos determinísticos. Um paragraph ou list item é coverage-eligible e recebe source row individual; H3 recebe source row de synthesis aprovada, é coverage-ineligible e precisa ser seguido por um bloco filho paragraph/list item antes do próximo H3/H2. H3 não mantém path represented ou merged fisicamente viva e não resgata bloco ilegal. Bullets anexados a um parágrafo são separados em itens independentes.
+
+Não use nested lists, tables, blockquotes, HTML blocks, code fences, separators, metadata ou H4+. H2, introdução fixa e unavailable notice são estrutura determinística fora da provenance astrológica autoral. O hash de cada bloco vem do payload canônico único, preservando Markdown inline e texto. Alterações editoriais de layout exigem atualização conjunta de hash, ownership e source row.
+
+Profundidade é adaptativa: domínio simples pode ser breve quando há pouco significado distinto; domínio rico pode expandir quantos blocos forem necessários. Comprima repetição e overhead antes de significado autorizado. H3, bullets, microcenas e synthesis paragraphs são opções, não template; não repita automaticamente `strengths / challenges / advice`. Não inclua no corpo números de parágrafos, mecanismos, bullets, subseções, exemplos, palavras, minutos ou páginas. O comprimento isolado não é gate.
+
 ## Ritmo e carga cognitiva
 
 - Prefira parágrafos com espaço suficiente para uma ideia psicológica completa. Parágrafos curtos são válidos quando substantivos; o contrato Premium não usa limiar de palavras para decidir cobertura.
@@ -59,7 +69,7 @@ Gênero, idade, ceticismo e estilo de leitura podem orientar auditoria editorial
 
 ## Gramática visual
 
-- Na narrativa Premium canônica, o `reader_introduction` locale-bound materializado no handoff preparado fica, literalmente e uma única vez, depois de um título opcional e antes da abertura. Ele é produto, não interpretação: não entra em fontes por parágrafo nem em propriedade de seção. As 18 seções interpretativas continuam sendo a estrutura rastreável; tabelas, listas isoladas e metadata não contam como tratamento narrativo. Use tabelas para dados determinísticos no Apêndice Técnico do Cliente ou em outras superfícies não narrativas.
+- Na narrativa Premium canônica, o `reader_introduction` locale-bound materializado no handoff preparado fica, literalmente e uma única vez, depois de um título opcional e antes da abertura. Ele é produto, não interpretação: não entra em fontes por bloco nem em propriedade de seção. As 18 seções interpretativas continuam sendo a estrutura rastreável; H3 é orientação sourced mas não coverage; tabelas, blockquotes, metadata e avisos não contam como tratamento narrativo. Use tabelas para dados determinísticos no Apêndice Técnico do Cliente ou em outras superfícies não narrativas.
 - Use `↔` para uma polaridade quando isso melhora a navegação; o símbolo nunca substitui explicação.
 - Use `<details>` para base técnica do timing, ciclos completos, temas secundários, qualidade dos dados e política metodológica, nunca para esconder um dos 16 domínios obrigatórios.
 - Não use emoji em série, animação ou ornamentação que compita com a leitura.
@@ -76,4 +86,4 @@ A consulta deve apresentar resposta direta, bases priorizadas, contrapesos recol
 
 ## Caminho premium
 
-O pedido natural de leitura premium não mostra estágios internos ao leitor. O Codex prepara fatos seguros, um Author cria síntese e rascunho, o `Deterministic Provenance Guard` confirma a cadeia factual, um Reviewer/Editor independente melhora diretamente o texto e o `Publication Guard` confirma hashes, fontes por parágrafo e limites publicáveis. O reviewer, e não um gate por palavras-chave, julga fluidez, especificidade e deriva de significado.
+O pedido natural de leitura premium não mostra estágios internos ao leitor. O Codex prepara fatos seguros, um Author cria o plano prospectivo, syntheses e rascunho em narrative blocks, o `Deterministic Provenance Guard` confirma a cadeia factual, um Reviewer/Editor independente melhora diretamente o texto e o `Publication Guard` confirma hashes, ownership, fontes por bloco e limites publicáveis. O reviewer, e não um gate por palavras-chave, julga fluidez, especificidade, materialidade de merges/omissões e deriva de significado; a Publication Guard revalida o mesmo plan contra o relatório final usando somente paragraphs/list items.

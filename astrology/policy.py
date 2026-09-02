@@ -6,7 +6,7 @@ from typing import Dict
 from .config import (
     ANGLE_CLAIM_MAX_UNCERTAINTY_MINUTES, ANGLE_ORB, APPLYING_SAMPLE_MINUTES, ASPECTS,
     CAZIMI_ORB, COMBUST_ORB, DEFAULT_ORBS, DETRIMENTS, EXALTATIONS, FALLS,
-    EPHEMERIS_END_YEAR, EPHEMERIS_START_YEAR, METHODOLOGY_VERSION,
+    EPHEMERIS_END_YEAR, EPHEMERIS_START_YEAR, METHODOLOGY_VERSION, REPORT_TEMPLATE_VERSION,
     HOUSE_CLAIM_MAX_UNCERTAINTY_MINUTES, LUMINARY_ORB_BONUS, PREMIUM_HANDOFF_CONTRACT_VERSION, SCHEMA_VERSION,
     SEMANTIC_SUPPORT_THRESHOLDS, SIGN_RULERS, STATIONARY_SPEED_BY_BODY,
     UNDER_BEAMS_ORB, UNKNOWN_TIME_STABLE_BODY_SPAN, SENSITIVITY_STRESS_TEST_MINUTES,
@@ -20,7 +20,7 @@ def policy_manifest() -> Dict[str, object]:
         "schema_version": SCHEMA_VERSION,
         "semantic_registry_version": "2.6.0",
         "timing_version": "4.0.1",
-        "report_template_version": "4.1.3-whole-person",
+        "report_template_version": REPORT_TEMPLATE_VERSION,
         "zodiac": "tropical",
         "reference_frame": "geocentric",
         "ephemeris_range": [EPHEMERIS_START_YEAR, EPHEMERIS_END_YEAR],

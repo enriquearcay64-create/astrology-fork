@@ -22,8 +22,9 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 if str(SKILL_ROOT) not in sys.path:
     sys.path.insert(0, str(SKILL_ROOT))
 
+from astrology.config import LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION, PREMIUM_HANDOFF_CONTRACT_VERSION
 from astrology.models import BirthData, LocalizationProfile
-from astrology.pipeline import _parse_premium_narrative, analyse_birth_chart
+from astrology.pipeline import _parse_premium_narrative, _parse_premium_narrative_v13, analyse_birth_chart
 from astrology.editorial_qa import barnum_risk, exact_reuse, llm_semantic_review_prompt, report_swap_risk, semantic_cross_report_similarity
 
 
@@ -231,7 +232,7 @@ def _prose_paragraphs(text: str) -> List[str]:
                 skip_block = True
                 continue
             stripped = line.strip()
-            if not stripped or stripped.startswith(("#", "- ", "* ", "|", "<details", "</details", "<summary")):
+            if not stripped or stripped.startswith(("#", "- ", "* ", "|", "<details", "</details", "<summary")) or re.match(r"\d+[.)]\s+", stripped):
                 skip_block = True
                 continue
             cleaned.append(_strip_markdown(stripped))
@@ -294,7 +295,12 @@ def report_metrics(text: str) -> Dict[str, object]:
     word_count = len(words(text))
     section_sizes = _section_sizes(text)
     paragraph_sizes = [len(words(item)) for item in _prose_paragraphs(text)]
-    bullet_sizes = [len(words(line)) for line in text.splitlines() if line.lstrip().startswith(("- ", "* "))]
+    bullet_sizes = [
+        len(words(re.sub(r"^\s*(?:[-+*]|\d+[.)])\s+", "", line)))
+        for line in text.splitlines()
+        if re.match(r"^\s*(?:[-+*]|\d+[.)])\s+", line)
+    ]
+    subheading_texts = [match.group(1).strip() for match in re.finditer(r"(?m)^###\s+(.+?)\s*$", text)]
     details_words = _details_word_count(text)
     lowered = text.casefold()
     jargon = {label: len(re.findall(pattern, lowered, flags=re.I)) for label, pattern in JARGON.items()}
@@ -307,6 +313,8 @@ def report_metrics(text: str) -> Dict[str, object]:
         "estimated_reading_minutes_at_220_wpm": round(word_count / WORDS_PER_MINUTE, 1),
         "h2_sections": len(section_sizes),
         "all_headings": len(re.findall(r"(?m)^#{1,6}\s+", text)),
+        "subheadings": len(subheading_texts),
+        "subheading_words": sum(len(words(item)) for item in subheading_texts),
         "average_h2_section_words": round(sum(size for _, size in section_sizes) / len(section_sizes), 1) if section_sizes else 0,
         "largest_h2_sections": sorted(({"section": name, "words": size} for name, size in section_sizes), key=lambda item: -item["words"])[:5],
         "prose_paragraphs": len(paragraph_sizes),
@@ -447,19 +455,53 @@ def generate(output: Path, stage: str, as_of: datetime, horizon_days: int, fixtu
     (output / "individuality_metrics.json").write_text(json.dumps(individuality_metrics(reports), ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _premium_domain_metrics(report: str, manifest: Dict[str, object]) -> Dict[str, object]:
+def _premium_domain_metrics(
+    report: str, manifest: Dict[str, object],
+    premium_contract_version: str = PREMIUM_HANDOFF_CONTRACT_VERSION,
+) -> Dict[str, object]:
     """Measure the exact publication parser universe; never regenerate a chart."""
-    parsed = _parse_premium_narrative(report, manifest)
+    if premium_contract_version == LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION:
+        parsed = _parse_premium_narrative_v13(report, manifest)
+    elif premium_contract_version == PREMIUM_HANDOFF_CONTRACT_VERSION:
+        parsed = _parse_premium_narrative(report, manifest)
+    else:
+        raise ValueError(f"Unsupported Premium contract version for audit: {premium_contract_version}")
     if parsed.get("errors"):
         raise ValueError("Invalid published Premium narrative: " + ", ".join(parsed["errors"]))
     domains = []
     available_counts = []
+    layout_signatures: Dict[str, int] = defaultdict(int)
     for domain in manifest.get("domains", []):
         domain_id = str(domain["id"])
         blocks = parsed["sections"][domain_id]["prose"]
+        subheadings = parsed["sections"][domain_id].get("subheadings", [])
         count = sum(len(words(str(block["text"]))) for block in blocks)
-        paragraphs = len(blocks)
-        domains.append({"domain_id": domain_id, "available": domain.get("availability") == "available", "words": count, "paragraphs": paragraphs})
+        paragraphs = sum(block.get("kind", "paragraph") == "paragraph" for block in blocks)
+        list_items = sum(block.get("kind") == "list_item" for block in blocks)
+        h3_count = len(subheadings)
+        if premium_contract_version == PREMIUM_HANDOFF_CONTRACT_VERSION:
+            # ``authored`` is already the physical order, so merge the H3
+            # marker back in rather than sorting by kind.
+            sequence = [
+                "P" if block.get("kind", "paragraph") == "paragraph" else "L" if block.get("kind") == "list_item" else "H3"
+                for block in parsed["sections"][domain_id].get("authored", blocks)
+            ]
+        else:
+            sequence = ["P"] * paragraphs
+        signature = "-".join(sequence) if sequence else "EMPTY"
+        if domain.get("availability") == "available":
+            layout_signatures[signature] += 1
+        domains.append({
+            "domain_id": domain_id,
+            "available": domain.get("availability") == "available",
+            "words": count,
+            "paragraphs": paragraphs,
+            "list_items": list_items,
+            "coverage_eligible_blocks": paragraphs + list_items,
+            "subheadings": h3_count,
+            "subheading_words": sum(len(words(str(block["text"]))) for block in subheadings),
+            "layout_signature": signature,
+        })
         if domain.get("availability") == "available":
             available_counts.append(count)
     domain_median = median(available_counts) if available_counts else 0
@@ -468,15 +510,21 @@ def _premium_domain_metrics(report: str, manifest: Dict[str, object]) -> Dict[st
         if item["available"]:
             paragraph_frequency[int(item["paragraphs"])] += 1
     same_paragraph_share = max(paragraph_frequency.values(), default=0) / len(available_counts) if available_counts else 0.0
+    same_layout_share = max(layout_signatures.values(), default=0) / len(available_counts) if available_counts else 0.0
     active = next((item for item in domains if item["domain_id"] == "active_life_chapter"), {"words": 0})
     prose_total = sum(item["words"] for item in domains)
+    h3_total = sum(int(item["subheadings"]) for item in domains)
     return {
+        "premium_contract_version": premium_contract_version,
         "canonical_domains": domains,
         "available_domain_word_minimum": min(available_counts, default=0),
         "available_domain_word_median": domain_median,
         "available_domain_word_maximum": max(available_counts, default=0),
         "available_domain_largest_to_median_ratio": round(max(available_counts, default=0) / domain_median, 3) if domain_median else 0.0,
         "maximum_same_paragraph_count_share": round(same_paragraph_share, 3),
+        "layout_signature_frequency": dict(sorted(layout_signatures.items())),
+        "maximum_same_layout_signature_share": round(same_layout_share, 3),
+        "domains_with_subheadings": h3_total,
         "opening_words": sum(len(words(str(item["text"]))) for item in parsed["sections"]["opening"]["prose"]),
         "integration_words": sum(len(words(str(item["text"]))) for item in parsed["sections"]["integration"]["prose"]),
         "active_life_timing_share_of_domain_prose": round(int(active["words"]) / prose_total, 3) if prose_total else 0.0,
@@ -501,11 +549,20 @@ def generate_premium_artifacts(output: Path, stage: str, run_dirs: List[Path]) -
         manifest = provenance.get("reader_domain_manifest")
         if not isinstance(report, str) or not isinstance(manifest, dict):
             raise ValueError(f"Premium artifact run lacks final report or canonical manifest: {run_dir}")
+        premium_contract_version = provenance.get("premium_handoff_contract_version")
+        if premium_contract_version not in {LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION, PREMIUM_HANDOFF_CONTRACT_VERSION}:
+            raise ValueError(f"Premium artifact run lacks a supported handoff contract version: {run_dir}")
+        publication_version = publication.get("premium_handoff_contract_version")
+        if publication_version is not None and publication_version != premium_contract_version:
+            raise ValueError(f"Premium artifact run has mixed contract versions: {run_dir}")
         run_id = run_dir.name
         if run_id in reports:
             raise ValueError(f"Duplicate Premium artifact run id: {run_id}")
         reports[run_id] = report
-        metrics[run_id] = {**report_metrics(report), "premium_canonical": _premium_domain_metrics(report, manifest)}
+        metrics[run_id] = {
+            **report_metrics(report),
+            "premium_canonical": _premium_domain_metrics(report, manifest, str(premium_contract_version)),
+        }
     output_manifest = {
         "stage": stage,
         "mode": "premium_artifacts",

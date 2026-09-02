@@ -1,14 +1,23 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from datetime import datetime
 from typing import Dict, Iterable
 
 from astrology.models import BirthData, ReasonedSynthesis
-from astrology.pipeline import _canonical_hash, _premium_handoff_contract, _premium_reader_introduction, analyse_birth_chart, validate_premium_syntheses
+from astrology.pipeline import (
+    LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
+    _canonical_hash,
+    _premium_handoff_contract_v13,
+    _premium_reader_introduction,
+    analyse_birth_chart,
+    prepare_premium_handoff,
+    validate_premium_syntheses,
+)
 
 
 def contract_fields() -> Dict[str, object]:
-    contract = _premium_handoff_contract()
+    contract = _premium_handoff_contract_v13()
     return {
         "premium_handoff_contract_version": contract["version"],
         "premium_handoff_contract": contract,
@@ -40,7 +49,10 @@ def _synthesis_for_path(path: Dict[str, object], claims: Dict[str, Dict[str, obj
 
 
 def build_author_bundle(birth: BirthData, include_timing: bool = False, add_direct_claim: bool = False, as_of=None, horizon_days: int = 366, profile=None):
-    result = analyse_birth_chart(birth, profile, include_timing=include_timing, as_of=as_of, horizon_days=horizon_days)
+    result = analyse_birth_chart(
+        birth, profile, include_timing=include_timing, as_of=as_of, horizon_days=horizon_days,
+        premium_contract_version=LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
+    )
     manifest = result["reader_domain_manifest"]
     claims = {item["id"]: item for item in result["claims"] if item["status"] == "allowed"}
     syntheses: Dict[str, ReasonedSynthesis] = {}
@@ -113,7 +125,10 @@ def build_author_bundle(birth: BirthData, include_timing: bool = False, add_dire
             report_parts.append(domain["unavailable_notice"]["text"])
     report = "\n\n".join(report_parts)
     synthesis_payload = [asdict(item) for item in syntheses.values()]
-    judged = validate_premium_syntheses(birth, synthesis_payload, profile, include_timing=include_timing, as_of=as_of, horizon_days=horizon_days)
+    judged = validate_premium_syntheses(
+        birth, synthesis_payload, profile, include_timing=include_timing, as_of=as_of,
+        horizon_days=horizon_days, premium_contract_version=LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
+    )
     selection_plan = {
         "version": "1.0",
         "domains": [
@@ -143,6 +158,44 @@ def build_author_bundle(birth: BirthData, include_timing: bool = False, add_dire
         "synthesis_bundle_sha256": judged["synthesis_bundle_sha256"], "draft_report_sha256": _canonical_hash(report),
     }
     return author, direct
+
+
+def prepare_legacy_premium_handoff_for_replay(
+    birth: BirthData, profile=None, include_timing: bool = False, as_of=None, horizon_days: int = 366,
+) -> Dict[str, object]:
+    """Test fixture for the frozen 1.3 replay path; production is 1.4-only."""
+    current = prepare_premium_handoff(
+        birth, profile, include_timing=include_timing, as_of=as_of, horizon_days=horizon_days,
+    )
+    parameters = current["preparation_parameters"]
+    effective_as_of = parameters["effective_as_of"]
+    parsed_as_of = datetime.fromisoformat(str(effective_as_of).replace("Z", "+00:00")) if effective_as_of else None
+    legacy = analyse_birth_chart(
+        birth, profile, "deep", include_timing, parsed_as_of, horizon_days,
+        premium_contract_version=LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
+    )
+    contract = _premium_handoff_contract_v13()
+    current.update({
+        "packet_id": legacy["packet_id"],
+        "premium_handoff_contract_version": LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
+        "premium_handoff_contract": contract,
+        "premium_handoff_contract_sha256": _canonical_hash(contract),
+        "prepared_chart_signature_sha256": _canonical_hash(legacy["chart_signature"]),
+        "prepared_signature_synthesis_sha256": _canonical_hash(legacy["reasoned_synthesis"]),
+        "prepared_signature_syntheses": legacy["reasoned_synthesis"],
+        "reader_domain_manifest": legacy["reader_domain_manifest"],
+        "reader_domain_manifest_sha256": _canonical_hash(legacy["reader_domain_manifest"]),
+        "reader_introduction": _premium_reader_introduction(legacy["reader_domain_manifest"].get("locale")),
+    })
+    for bundle_kind in ("author", "reviewer"):
+        required = contract[f"{bundle_kind}_bundle_required_fields"]
+        descriptive = current.get(f"{bundle_kind}_bundle_contract", {})
+        current[f"{bundle_kind}_bundle_contract"] = {
+            field: descriptive.get(field, "frozen-1.3-replay")
+            for field in required
+        }
+    current["reader_introduction_sha256"] = _canonical_hash(current["reader_introduction"])
+    return current
 
 
 def reviewer_bundle(author: Dict[str, object], provenance: Dict[str, object]) -> Dict[str, object]:

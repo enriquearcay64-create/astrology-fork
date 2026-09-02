@@ -8,26 +8,76 @@ import sys
 import pytest
 
 import astrology.cli as cli
-from astrology.config import PREMIUM_HANDOFF_CONTRACT_VERSION
+from astrology.config import LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION
 from astrology.models import BirthData, LocalizationProfile, ReasonedSynthesis
 from astrology.pipeline import (
     PREMIUM_READER_INTRODUCTION,
     PREMIUM_READER_INTRODUCTIONS,
     _canonical_hash,
-    _parse_premium_narrative,
-    analyse_birth_chart,
+    _parse_premium_narrative_v13 as _frozen_parse_premium_narrative,
+    analyse_birth_chart as _analyse_birth_chart,
     paragraph_source_template,
-    prepare_premium_handoff,
-    validate_premium_author_bundle,
-    validate_premium_narrative,
-    validate_premium_syntheses,
+    prepare_premium_handoff as _prepare_premium_handoff,
+    validate_premium_author_bundle as _validate_premium_author_bundle,
+    validate_premium_narrative as _validate_premium_narrative,
+    validate_premium_syntheses as _validate_premium_syntheses,
 )
 from astrology.reasoning import READER_DOMAIN_DEFINITIONS, humanization_instructions, humanization_verifier_instructions
-from tests.v413_helpers import build_author_bundle, reviewer_bundle
+from tests.v413_helpers import build_author_bundle, prepare_legacy_premium_handoff_for_replay, reviewer_bundle
 
 
 def birth() -> BirthData:
     return BirthData("1990-07-12T14:30:00", "America/Sao_Paulo", -23.5505, -46.6333)
+
+
+# This module is the frozen V4.1.3 regression suite.  The production default
+# is now 1.4, so its fixtures explicitly enter the replay adapter here.
+def analyse_birth_chart(*args, **kwargs):
+    kwargs.setdefault("premium_contract_version", LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION)
+    return _analyse_birth_chart(*args, **kwargs)
+
+
+def prepare_premium_handoff(birth_data, profile=None, report_depth="deep", **kwargs):
+    if report_depth != "deep":
+        return _prepare_premium_handoff(birth_data, profile, report_depth=report_depth, **kwargs)
+    kwargs.setdefault("include_timing", True)
+    return prepare_legacy_premium_handoff_for_replay(birth_data, profile=profile, **kwargs)
+
+
+def validate_premium_author_bundle(*args, **kwargs):
+    if kwargs.get("prepared_handoff") is None:
+        birth_data = args[0] if args else kwargs["birth"]
+        profile = args[2] if len(args) > 2 else kwargs.get("profile")
+        kwargs["prepared_handoff"] = prepare_legacy_premium_handoff_for_replay(
+            birth_data,
+            profile=profile,
+            include_timing=kwargs.get("include_timing", True),
+            as_of=kwargs.get("as_of"),
+            horizon_days=kwargs.get("horizon_days", 366),
+        )
+    return _validate_premium_author_bundle(*args, **kwargs)
+
+
+def validate_premium_narrative(*args, **kwargs):
+    if kwargs.get("prepared_handoff") is None:
+        birth_data = args[2] if len(args) > 2 else kwargs["birth"]
+        profile = args[3] if len(args) > 3 else kwargs.get("profile")
+        kwargs["prepared_handoff"] = prepare_legacy_premium_handoff_for_replay(
+            birth_data,
+            profile=profile,
+            include_timing=kwargs.get("include_timing", True),
+            as_of=kwargs.get("as_of"),
+            horizon_days=kwargs.get("horizon_days", 366),
+        )
+    return _validate_premium_narrative(*args, **kwargs)
+
+
+def validate_premium_syntheses(*args, **kwargs):
+    kwargs.setdefault("premium_contract_version", LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION)
+    return _validate_premium_syntheses(*args, **kwargs)
+
+
+_parse_premium_narrative = _frozen_parse_premium_narrative
 
 
 def _source_for_section(author, section_key: str):
@@ -787,7 +837,7 @@ def test_v413_preopening_preamble_rejects_duplicate_titles_and_separators(preamb
 
 def test_v413_handoff_12_hashes_and_contract_are_fail_closed():
     handoff = prepare_premium_handoff(birth(), include_timing=False)
-    assert PREMIUM_HANDOFF_CONTRACT_VERSION == "1.3"
+    assert LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION == "1.3"
     assert handoff["premium_handoff_contract_version"] == "1.3"
     for field in ("prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256"):
         assert handoff[field]

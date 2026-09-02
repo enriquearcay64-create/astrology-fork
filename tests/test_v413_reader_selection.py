@@ -4,20 +4,24 @@ from copy import deepcopy
 from dataclasses import asdict
 from datetime import datetime, timezone
 
-from astrology.pipeline import _canonical_hash, analyse_birth_chart, prepare_premium_handoff, validate_premium_author_bundle, validate_premium_narrative, validate_premium_syntheses
+from astrology.config import LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION
+from astrology.pipeline import _canonical_hash, analyse_birth_chart, validate_premium_author_bundle, validate_premium_narrative, validate_premium_syntheses
 from tests.test_v413_reader_contract import _source_for_section, birth
-from tests.v413_helpers import _synthesis_for_path, build_author_bundle, reviewer_bundle
+from tests.v413_helpers import _synthesis_for_path, build_author_bundle, prepare_legacy_premium_handoff_for_replay, reviewer_bundle
 
 
 def _handoff_and_author(*, include_timing=False, as_of=None):
     horizon = 45 if include_timing else 366
-    handoff = prepare_premium_handoff(birth(), include_timing=include_timing, as_of=as_of, horizon_days=horizon)
+    handoff = prepare_legacy_premium_handoff_for_replay(birth(), include_timing=include_timing, as_of=as_of, horizon_days=horizon)
     author, _ = build_author_bundle(birth(), include_timing=include_timing, as_of=as_of, horizon_days=horizon)
     return handoff, author, horizon
 
 
 def _refresh_author_hashes(author, *, include_timing=False, as_of=None, horizon_days=366):
-    judged = validate_premium_syntheses(birth(), author["reasoned_syntheses"], include_timing=include_timing, as_of=as_of, horizon_days=horizon_days)
+    judged = validate_premium_syntheses(
+        birth(), author["reasoned_syntheses"], include_timing=include_timing, as_of=as_of,
+        horizon_days=horizon_days, premium_contract_version=LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
+    )
     author["synthesis_bundle_sha256"] = judged["synthesis_bundle_sha256"]
     author["reader_selection_plan_sha256"] = _canonical_hash(author["reader_selection_plan"])
 

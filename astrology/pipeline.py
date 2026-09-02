@@ -8,7 +8,10 @@ import re
 from typing import Dict, Iterable, List, Optional
 
 from .consultation import answer_question, classify_question, render_consultation
-from .config import PREMIUM_HANDOFF_CONTRACT_VERSION
+from .config import (
+    LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
+    PREMIUM_HANDOFF_CONTRACT_VERSION,
+)
 from .engine import calculate_chart
 from .hierarchy import calculate_hierarchy
 from .interpretation import build_compensation_hypotheses, build_paradoxes
@@ -24,10 +27,23 @@ from .synthesis import synthesize_themes
 from .timing import cross_technique_timing, developmental_intervals, life_timeline, upcoming_eclipses
 
 
-def analyse_birth_chart(birth: BirthData, profile: Optional[LocalizationProfile] = None, report_depth: str = "executive", include_timing: bool = True, as_of: Optional[datetime] = None, horizon_days: int = 366, question_topics: Iterable[int] = ()) -> Dict[str, object]:
+def analyse_birth_chart(
+    birth: BirthData,
+    profile: Optional[LocalizationProfile] = None,
+    report_depth: str = "executive",
+    include_timing: bool = True,
+    as_of: Optional[datetime] = None,
+    horizon_days: int = 366,
+    question_topics: Iterable[int] = (),
+    *,
+    premium_contract_version: str = PREMIUM_HANDOFF_CONTRACT_VERSION,
+) -> Dict[str, object]:
     language = profile.preferred_language if profile else "pt-BR"
     raw_chart = calculate_chart(birth)
-    packet_id = _packet_id(birth, profile, raw_chart.policy, as_of, horizon_days, include_timing)
+    packet_id = _packet_id(
+        birth, profile, raw_chart.policy, as_of, horizon_days, include_timing,
+        premium_contract_version=premium_contract_version,
+    )
     chart = build_safe_interpretive_view(raw_chart)
     semantic_chart = chart.semantic_chart()
     structure = chart_structure(semantic_chart)
@@ -64,7 +80,8 @@ def analyse_birth_chart(birth: BirthData, profile: Optional[LocalizationProfile]
     narrative_plan = build_narrative_plan(themes, reasoned_syntheses, language, chart, chart_signature)
     report = render_report(report_depth, chart, claims, themes, natal_hierarchy, timing, timeline, paradoxes, compensations, structure, profile, reasoned_syntheses, narrative_plan, intervals, chart_signature)
     return {
-        "packet_id": packet_id, "chart": raw_chart.as_dict(), "safe_interpretive_view": to_primitive(chart), "hierarchy": natal_hierarchy, "current_hierarchy": current_hierarchy,
+        "packet_id": packet_id, "premium_handoff_contract_version": premium_contract_version,
+        "chart": raw_chart.as_dict(), "safe_interpretive_view": to_primitive(chart), "hierarchy": natal_hierarchy, "current_hierarchy": current_hierarchy,
         "chart_structure": structure, "claims": to_primitive(claims), "themes": themes,
         "paradoxes": paradoxes, "compensation_hypotheses": compensations,
         "reasoned_synthesis": reasoned_syntheses, "chart_signature": chart_signature, "narrative_plan": narrative_plan, "reader_domain_manifest": reader_domain_manifest,
@@ -84,6 +101,13 @@ def _canonical_hash(value: object) -> str:
 
 
 _PARAGRAPH_SOURCE_FIELDS = ("paragraph_sha256", "synthesis_ids", "claim_ids", "timing_ids")
+_NARRATIVE_BLOCK_SOURCE_FIELDS = ("narrative_block_sha256", "synthesis_ids", "claim_ids", "timing_ids")
+_LEGACY_PREMIUM_FIELDS = frozenset({
+    "paragraph_sources", "paragraph_sha256", "paragraph_sha256s",
+})
+_NARRATIVE_PREMIUM_FIELDS = frozenset({
+    "narrative_block_sources", "narrative_block_sha256", "narrative_block_sha256s",
+})
 
 
 # This is product copy, not an astrological interpretation. It deliberately
@@ -141,10 +165,10 @@ def _premium_reader_introduction(locale: object) -> str:
     return PREMIUM_READER_INTRODUCTIONS["pt" if normalized_locale.startswith("pt") else "en"]
 
 
-def _premium_handoff_contract() -> Dict[str, object]:
-    """One serialized source-map contract for both Premium guard stages."""
+def _premium_handoff_contract_v13() -> Dict[str, object]:
+    """Frozen V4.1.3 contract body used only for legacy replay."""
     return {
-        "version": PREMIUM_HANDOFF_CONTRACT_VERSION,
+        "version": LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
         "author_bundle_required_fields": [
             "packet_id", "premium_handoff_contract_version", "premium_handoff_contract", "premium_handoff_contract_sha256",
             "prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256",
@@ -186,13 +210,92 @@ def _premium_handoff_contract() -> Dict[str, object]:
     }
 
 
-def _packet_id(birth: BirthData, profile: Optional[LocalizationProfile], policy: Dict[str, object], as_of: Optional[datetime], horizon_days: int, include_timing: bool) -> str:
+def _premium_handoff_contract() -> Dict[str, object]:
+    """The current serialized Premium 1.4 source-map contract."""
+    return {
+        "version": PREMIUM_HANDOFF_CONTRACT_VERSION,
+        "author_bundle_required_fields": [
+            "packet_id", "premium_handoff_contract_version", "premium_handoff_contract", "premium_handoff_contract_sha256",
+            "prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256",
+            "reasoned_syntheses", "draft_report", "narrative_block_sources", "reader_sections", "reader_selection_plan", "reader_selection_plan_sha256",
+            "synthesis_bundle_sha256", "draft_report_sha256",
+        ],
+        "reviewer_bundle_required_fields": [
+            "packet_id", "premium_handoff_contract_version", "premium_handoff_contract", "premium_handoff_contract_sha256",
+            "prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256",
+            "synthesis_bundle_sha256", "reviewed_draft_sha256", "verdict", "corrections_made", "remaining_warnings",
+            "final_report", "final_report_sha256", "narrative_block_sources", "reader_sections", "reader_selection_plan", "reader_selection_plan_sha256", "regeneration_request",
+        ],
+        "author_bundle_exact_shape": True,
+        "reviewer_bundle_exact_shape": True,
+        "source_row_required_fields": list(_NARRATIVE_BLOCK_SOURCE_FIELDS),
+        "paragraph_source_fields": "legacy_replay_only",
+        "narrative_block_source_rules": {
+            "paragraph": "one source row; direct Claim or synthesis mode; coverage-eligible",
+            "list_item": "one source row; ordered or unordered; direct Claim or synthesis mode; coverage-eligible",
+            "subheading": "one approved synthesis-only source row; timing IDs must belong to cited syntheses; coverage-ineligible",
+        },
+        "reader_block_parser": {
+            "recognised": ["paragraph", "list_item", "subheading", "canonical_h2", "unavailable_notice"],
+            "list_styles": ["ordered", "unordered"],
+            "forbidden": ["nested_list", "table", "blockquote", "html_block", "code_fence", "separator", "metadata", "h4_plus"],
+            "attached_bullets": "split into independent list_item blocks",
+        },
+        "reasoned_synthesis_fields": list(ReasonedSynthesis.__dataclass_fields__),
+        "reader_section_rules": {
+            "shape": "opening_plus_exactly_16_canonical_domains_plus_integration",
+            "ownership": "every authored paragraph, list item and subheading hash belongs to exactly one section in physical order",
+            "opening_and_integration_fields": ["narrative_block_sha256s"],
+            "domain_fields": ["domain_id", "narrative_block_sha256s"],
+            "unavailable": "exact_deterministic_notice and no authored blocks or source rows",
+            "non_prose": "headings, unavailable notices, tables, metadata and separators never satisfy coverage",
+            "fixed_reader_introduction": {
+                "sha256_by_language": {
+                    language: _canonical_hash(introduction)
+                    for language, introduction in PREMIUM_READER_INTRODUCTIONS.items()
+                },
+                "selection": "reader_domain_manifest_locale",
+                "location": "after_an_optional_single_document_title_and_before_the_canonical_opening",
+                "provenance": "fixed_product_copy_excluded_from_narrative_block_sources_and_reader_section_ownership",
+            },
+        },
+        "timing_domain_rule": "paragraph_and_list_item timing_ids equal the cited timing synthesis IDs and each ID matches a satisfied timing_natal path; subheading timing IDs belong to cited syntheses",
+        "reader_selection_rule": "every_available_legal_path_is_accounted_once_by_represented_merged_with_represented_or_omitted_no_distinct_reader_value; only paragraph and list_item provenance participates",
+        "reader_selection_plan_version": "1.0",
+        "prepared_signature_rule": "pre_domain_chart_signature_and_its_deterministic_synthesis_basis_are_frozen",
+        "publication_authority_rule": "original_prepared_handoff_binds_packet_signature_synthesis_basis_manifest_and_materialized_timing_parameters",
+    }
+
+
+def _premium_handoff_contract_for_version(version: str) -> Dict[str, object]:
+    if version == PREMIUM_HANDOFF_CONTRACT_VERSION:
+        return _premium_handoff_contract()
+    if version == LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION:
+        return _premium_handoff_contract_v13()
+    raise ValueError(f"unsupported Premium handoff contract version: {version}")
+
+
+def _packet_id(
+    birth: BirthData,
+    profile: Optional[LocalizationProfile],
+    policy: Dict[str, object],
+    as_of: Optional[datetime],
+    horizon_days: int,
+    include_timing: bool,
+    *,
+    premium_contract_version: str = PREMIUM_HANDOFF_CONTRACT_VERSION,
+) -> str:
     """Identity for one methodologically meaningful premium calculation."""
+    if premium_contract_version not in {
+        PREMIUM_HANDOFF_CONTRACT_VERSION,
+        LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
+    }:
+        raise ValueError(f"unsupported Premium handoff contract version: {premium_contract_version}")
     return _canonical_hash({
         "birth": to_primitive(birth), "localization_profile": to_primitive(profile) if profile else None,
         "versions": {
             **{key: policy.get(key) for key in ("methodology_version", "schema_version", "semantic_registry_version", "timing_version")},
-            "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION,
+            "premium_handoff_contract_version": premium_contract_version,
         },
         "as_of": as_of.isoformat() if as_of else None, "horizon_days": horizon_days, "include_timing": include_timing,
     })
@@ -257,17 +360,29 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
         "technical_appendix": technical_appendix(handoff_chart, core["hierarchy"], [], core["timing"], core["chart_structure"], profile),
         "audit_sidecar": render_report("technical", handoff_chart, [], [], core["hierarchy"], core["timing"], core["timeline"], [], [], core["chart_structure"], profile, [], core["narrative_plan"], core["developmental_intervals"], core["chart_signature"]),
         "reasoned_synthesis_schema": list(ReasonedSynthesis.__dataclass_fields__),
-        "author_bundle_contract": {"packet_id": core["packet_id"], "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": handoff_contract, "premium_handoff_contract_sha256": handoff_contract_hash, "prepared_chart_signature_sha256": prepared_signature_hash, "prepared_signature_synthesis_sha256": prepared_synthesis_hash, "reader_domain_manifest_sha256": manifest_hash, "reasoned_syntheses": "list[ReasonedSynthesis]", "draft_report": "string", "paragraph_sources": [{"paragraph_sha256": "sha256", "synthesis_ids": ["reasoned.id"], "claim_ids": ["claim.id"], "timing_ids": ["timing.activation.id"]}], "reader_sections": "opening + canonical domains + integration", "reader_selection_plan": "canonical ReaderSelectionPlan", "reader_selection_plan_sha256": "sha256", "synthesis_bundle_sha256": "sha256", "draft_report_sha256": "sha256"},
-        "reviewer_bundle_contract": {"packet_id": core["packet_id"], "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": handoff_contract, "premium_handoff_contract_sha256": handoff_contract_hash, "prepared_chart_signature_sha256": prepared_signature_hash, "prepared_signature_synthesis_sha256": prepared_synthesis_hash, "reader_domain_manifest_sha256": manifest_hash, "synthesis_bundle_sha256": "sha256", "reviewed_draft_sha256": "sha256", "verdict": "approved|regenerate_author|blocked", "corrections_made": ["string"], "remaining_warnings": ["string"], "final_report": "string", "final_report_sha256": "sha256", "paragraph_sources": "same mapping contract", "reader_sections": "same ownership contract", "reader_selection_plan": "same validated canonical ReaderSelectionPlan", "reader_selection_plan_sha256": "sha256", "regeneration_request": "null or canonical regeneration request"},
+        "author_bundle_contract": {"packet_id": core["packet_id"], "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": handoff_contract, "premium_handoff_contract_sha256": handoff_contract_hash, "prepared_chart_signature_sha256": prepared_signature_hash, "prepared_signature_synthesis_sha256": prepared_synthesis_hash, "reader_domain_manifest_sha256": manifest_hash, "reasoned_syntheses": "list[ReasonedSynthesis]", "draft_report": "string", "narrative_block_sources": [{"narrative_block_sha256": "sha256", "synthesis_ids": ["reasoned.id"], "claim_ids": ["claim.id"], "timing_ids": ["timing.activation.id"]}], "reader_sections": "opening + canonical domains + integration", "reader_selection_plan": "canonical ReaderSelectionPlan", "reader_selection_plan_sha256": "sha256", "synthesis_bundle_sha256": "sha256", "draft_report_sha256": "sha256"},
+        "reviewer_bundle_contract": {"packet_id": core["packet_id"], "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": handoff_contract, "premium_handoff_contract_sha256": handoff_contract_hash, "prepared_chart_signature_sha256": prepared_signature_hash, "prepared_signature_synthesis_sha256": prepared_synthesis_hash, "reader_domain_manifest_sha256": manifest_hash, "synthesis_bundle_sha256": "sha256", "reviewed_draft_sha256": "sha256", "verdict": "approved|regenerate_author|blocked", "corrections_made": ["string"], "remaining_warnings": ["string"], "final_report": "string", "final_report_sha256": "sha256", "narrative_block_sources": "same mapping contract", "reader_sections": "same ownership contract", "reader_selection_plan": "same validated canonical ReaderSelectionPlan", "reader_selection_plan_sha256": "sha256", "regeneration_request": "null or canonical regeneration request"},
         "sol_high_instruction": llm_reasoning_instructions(),
         "author_voice_instruction": core["humanization_instructions"],
         "narrative_judge_instruction": humanization_verifier_instructions(profile.preferred_language if profile else "pt-BR"),
     }
 
 
-def validate_premium_syntheses(birth: BirthData, synthesis_payload: Iterable[Dict[str, object]], profile: Optional[LocalizationProfile] = None, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True) -> Dict[str, object]:
+def validate_premium_syntheses(
+    birth: BirthData,
+    synthesis_payload: Iterable[Dict[str, object]],
+    profile: Optional[LocalizationProfile] = None,
+    as_of: Optional[datetime] = None,
+    horizon_days: int = 366,
+    include_timing: bool = True,
+    *,
+    premium_contract_version: str = PREMIUM_HANDOFF_CONTRACT_VERSION,
+) -> Dict[str, object]:
     """Deterministically gate manually authored High syntheses; no API call."""
-    core = analyse_birth_chart(birth, profile, "deep", include_timing, as_of, horizon_days)
+    core = analyse_birth_chart(
+        birth, profile, "deep", include_timing, as_of, horizon_days,
+        premium_contract_version=premium_contract_version,
+    )
     allowed_fields = set(ReasonedSynthesis.__dataclass_fields__)
     items = [ReasonedSynthesis(**{key: value for key, value in item.items() if key in allowed_fields}) for item in synthesis_payload]
     chart = build_safe_interpretive_view(calculate_chart(birth))
@@ -276,7 +391,9 @@ def validate_premium_syntheses(birth: BirthData, synthesis_payload: Iterable[Dic
     approved = [to_primitive(item) for item in checked if item.status == "allowed"]
     reader_introduction = _premium_reader_introduction(core["reader_domain_manifest"].get("locale"))
     return {
-        "stage": "provenance_syntheses_checked", "packet_id": core["packet_id"], "approved": len(approved) == len(checked),
+        "stage": "provenance_syntheses_checked", "packet_id": core["packet_id"],
+        "premium_handoff_contract_version": premium_contract_version,
+        "approved": len(approved) == len(checked),
         "reasoned_synthesis": [to_primitive(item) for item in checked], "approved_reasoned_syntheses": approved,
         "synthesis_bundle_sha256": _canonical_hash(approved),
         # Selection is frozen before Author coverage synthesis.  Approved
@@ -290,6 +407,8 @@ def validate_premium_syntheses(birth: BirthData, synthesis_payload: Iterable[Dic
         "reader_domain_manifest_sha256": _canonical_hash(core["reader_domain_manifest"]),
         "reader_introduction": reader_introduction,
         "reader_introduction_sha256": _canonical_hash(reader_introduction),
+        "premium_handoff_contract": _premium_handoff_contract_for_version(premium_contract_version),
+        "premium_handoff_contract_sha256": _canonical_hash(_premium_handoff_contract_for_version(premium_contract_version)),
         "timing_evidence_ids": timing_ids,
         "allowed_claims": [claim for claim in core["claims"] if claim.get("status") == "allowed"],
         "coverage": core["reasoning_packet"]["facts"]["coverage"],
@@ -310,8 +429,8 @@ def _substantive_paragraphs(report: str) -> List[str]:
     return result
 
 
-def _parse_premium_narrative(report: object, manifest: object) -> Dict[str, object]:
-    """Parse one canonical physical block universe for handoff 1.2."""
+def _parse_premium_narrative_v13(report: object, manifest: object) -> Dict[str, object]:
+    """Frozen V4.1.3 paragraph parser used only for legacy replay."""
     if not isinstance(report, str) or not report.strip():
         return {"errors": ["missing_final_report"], "prose": [], "sections": {}}
     if not isinstance(manifest, dict) or not isinstance(manifest.get("domains"), list):
@@ -437,7 +556,478 @@ def _parse_premium_narrative(report: object, manifest: object) -> Dict[str, obje
     }
 
 
-def _validated_paragraph_sources(report: object, paragraph_sources: object, approved_ids: set[str], allowed_claims: Dict[str, Claim], timing_ids: set[str], parsed: Optional[Dict[str, object]] = None) -> tuple[List[str], List[Dict[str, object]]]:
+def _normalize_narrative_block_content(content: str) -> str:
+    """Normalize only transport whitespace and Markdown continuation indent."""
+    if not isinstance(content, str):
+        raise TypeError("narrative block content must be a string")
+    text = content.replace("\r\n", "\n").replace("\r", "\n")
+    lines = [line.rstrip(" \t") for line in text.split("\n")]
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    while lines and not lines[-1].strip():
+        lines.pop()
+    if not lines:
+        return ""
+    lines[0] = lines[0].lstrip(" \t")
+    lines[-1] = lines[-1].rstrip(" \t")
+    for index in range(1, len(lines)):
+        # Indentation on continuation lines is Markdown syntax.  Inline
+        # Markdown and all non-leading text remain byte-for-byte meaningful.
+        lines[index] = re.sub(r"^[ \t]+", "", lines[index])
+    return "\n".join(lines).strip()
+
+
+def canonical_narrative_block_payload(kind: str, content: str, list_style: Optional[str] = None) -> Dict[str, object]:
+    """Return the one canonical payload used to identify a 1.4 narrative block."""
+    if kind not in {"paragraph", "list_item", "subheading"}:
+        raise ValueError(f"unsupported narrative block kind: {kind}")
+    normalized = _normalize_narrative_block_content(content)
+    if not normalized:
+        raise ValueError("narrative block content cannot be empty")
+    if kind == "list_item":
+        if list_style not in {"ordered", "unordered"}:
+            raise ValueError("list_item requires list_style ordered or unordered")
+        return {"kind": "list_item", "list_style": list_style, "content": normalized}
+    if list_style is not None:
+        raise ValueError(f"{kind} cannot include list_style")
+    return {"kind": kind, "content": normalized}
+
+
+def _narrative_block_entry(kind: str, content: str, section: str, list_style: Optional[str] = None) -> Dict[str, object]:
+    payload = canonical_narrative_block_payload(kind, content, list_style)
+    block_hash = _canonical_hash(payload)
+    return {
+        "kind": kind,
+        **({"list_style": list_style} if kind == "list_item" else {}),
+        "content": payload["content"],
+        # ``text`` and ``sha256`` are parser conveniences only.  Contract 1.4
+        # source rows and ownership use the explicit narrative names below.
+        "text": payload["content"],
+        "narrative_block_sha256": block_hash,
+        "sha256": block_hash,
+        "section": section,
+    }
+
+
+def _narrative_nonblank_blocks(lines: List[str]) -> List[Dict[str, object]]:
+    blocks: List[Dict[str, object]] = []
+    current: List[str] = []
+    start = 0
+    for index, line in enumerate(lines):
+        if not line.strip():
+            if current:
+                blocks.append({"lines": current, "start": start, "end": index})
+                current = []
+            continue
+        if not current:
+            start = index
+        current.append(line.rstrip(" \t"))
+    if current:
+        blocks.append({"lines": current, "start": start, "end": len(lines)})
+    return blocks
+
+
+def _narrative_heading_kind(line: str) -> Optional[str]:
+    stripped = line.strip()
+    if re.match(r"^#{4,}(?:\s|$)", stripped):
+        return "h4_plus"
+    if re.match(r"^###(?:\s|$)", stripped):
+        return "h3"
+    if re.match(r"^##(?:\s|$)", stripped):
+        return "h2"
+    if re.match(r"^#(?:\s|$)", stripped):
+        return "h1"
+    return None
+
+
+def _narrative_list_marker(line: str) -> Optional[tuple[str, str, str]]:
+    match = re.match(r"^(\s*)([-+*]|\d+[.)])(?:\s+)(.*)$", line)
+    if not match:
+        return None
+    indent, marker, content = match.groups()
+    style = "ordered" if marker[0].isdigit() else "unordered"
+    return indent, style, content
+
+
+def _narrative_forbidden_kind(line: str) -> Optional[str]:
+    stripped = line.strip()
+    folded = stripped.casefold()
+    if re.match(r"^(?:```+|~~~+)", stripped):
+        return "code_fence"
+    if stripped in {"---", "***", "___"}:
+        return "separator"
+    if stripped.startswith(">"):
+        return "blockquote"
+    if stripped.startswith("|") or re.match(r"^\|?\s*:?-{3,}:?\s*(?:\||$)", stripped):
+        return "table"
+    if folded.startswith(("<!--", "<details", "</details", "<summary", "*leitura simbólica", "*symbolic reading", "yaml:", "metadata:")):
+        return "metadata" if not folded.startswith("<") else "html_block"
+    if stripped.startswith("<") and re.match(r"^</?[A-Za-z][^>]*>|^<!--", stripped):
+        return "html_block"
+    return None
+
+
+def _parse_premium_narrative(report: object, manifest: object) -> Dict[str, object]:
+    """Parse the closed, line-aware Premium 1.4 narrative block universe."""
+    if not isinstance(report, str) or not report.strip():
+        return {"errors": ["missing_final_report"], "prose": [], "authored": [], "subheadings": [], "sections": {}}
+    if not isinstance(manifest, dict) or not isinstance(manifest.get("domains"), list):
+        return {"errors": ["missing_reader_domain_manifest"], "prose": [], "authored": [], "subheadings": [], "sections": {}}
+
+    expected = [
+        ("opening", str(manifest.get("opening", {}).get("heading", ""))),
+        *[(str(item.get("id")), str(item.get("heading", ""))) for item in manifest["domains"]],
+        ("integration", str(manifest.get("integration", {}).get("heading", ""))),
+    ]
+    heading_to_key = {heading: key for key, heading in expected}
+    domain_by_id = {str(item.get("id")): item for item in manifest["domains"] if isinstance(item, dict)}
+    notice_to_domain = {
+        str(item["unavailable_notice"]["text"]): str(item["id"])
+        for item in manifest["domains"]
+        if isinstance(item, dict) and item.get("unavailable_notice")
+    }
+    sections: Dict[str, Dict[str, object]] = {
+        key: {"heading": heading, "authored": [], "prose": [], "subheadings": [], "notices": []}
+        for key, heading in expected
+    }
+    errors: List[str] = []
+    all_hashes: set[str] = set()
+    authored: List[Dict[str, object]] = []
+    eligible: List[Dict[str, object]] = []
+    subheadings: List[Dict[str, object]] = []
+
+    def add_error(value: str) -> None:
+        errors.append(value)
+
+    normalized_report = report.replace("\r\n", "\n").replace("\r", "\n")
+    lines = [line.rstrip(" \t") for line in normalized_report.split("\n")]
+    blocks = _narrative_nonblank_blocks(lines)
+    reader_introduction = _premium_reader_introduction(manifest.get("locale"))
+    introduction_blocks = _narrative_nonblank_blocks(
+        [line.rstrip(" \t") for line in reader_introduction.replace("\r\n", "\n").replace("\r", "\n").split("\n")]
+    )
+
+    def block_text(block: Dict[str, object]) -> str:
+        return _normalize_narrative_block_content("\n".join(block["lines"]))
+
+    intro_texts = [block_text(block) for block in introduction_blocks]
+    intro_start = 0
+    title_end = 0
+    if blocks and _narrative_heading_kind(str(blocks[0]["lines"][0])) == "h1" and len(blocks[0]["lines"]) == 1:
+        intro_start = 1
+        title_end = int(blocks[0]["end"])
+    candidate = [block_text(block) for block in blocks[intro_start:intro_start + len(intro_texts)]]
+    if candidate == intro_texts and len(candidate) == len(intro_texts):
+        intro_end = int(blocks[intro_start + len(intro_texts) - 1]["end"]) if intro_texts else title_end
+        main_lines = lines[intro_end:]
+    else:
+        expected_intro_later = any(
+            [block_text(block) for block in blocks[index:index + len(intro_texts)]] == intro_texts
+            for index in range(intro_start + 1, len(blocks))
+        )
+        known_headings = {introduction.splitlines()[0] for introduction in PREMIUM_READER_INTRODUCTIONS.values()}
+        starts_intro_heading = bool(
+            blocks[intro_start:intro_start + 1]
+            and str(blocks[intro_start]["lines"][0]) in known_headings
+        )
+        if expected_intro_later:
+            add_error("invalid_premium_document_preamble")
+        elif starts_intro_heading:
+            add_error("invalid_premium_reader_introduction")
+        elif blocks[intro_start:intro_start + 1] and not str(blocks[intro_start]["lines"][0]).startswith("## "):
+            errors.extend(["invalid_premium_document_preamble", "reader_prose_outside_canonical_section"])
+        else:
+            add_error("missing_premium_reader_introduction")
+        main_lines = lines[title_end:]
+
+    current: Optional[str] = None
+    seen_headings: List[str] = []
+    pending_subheading: Optional[Dict[str, object]] = None
+
+    def finish_pending() -> None:
+        nonlocal pending_subheading
+        if pending_subheading is not None:
+            add_error("subheading_requires_child_narrative_block")
+            pending_subheading = None
+
+    def report_forbidden(kind: str) -> None:
+        add_error(f"prohibited_narrative_{kind}")
+        if current is not None:
+            add_error("nonprose_content_inside_reader_section")
+        else:
+            add_error("noncanonical_narrative_block")
+
+    def add_authored(kind: str, content: str, list_style: Optional[str] = None) -> None:
+        nonlocal pending_subheading
+        if current is None:
+            add_error("reader_prose_outside_canonical_section")
+            return
+        try:
+            entry = _narrative_block_entry(kind, content, current, list_style)
+        except (TypeError, ValueError):
+            add_error("empty_narrative_block")
+            return
+        block_hash = str(entry["narrative_block_sha256"])
+        if block_hash in all_hashes:
+            add_error("duplicate_narrative_block_hash")
+        all_hashes.add(block_hash)
+        sections[current]["authored"].append(entry)
+        authored.append(entry)
+        if kind in {"paragraph", "list_item"}:
+            sections[current]["prose"].append(entry)
+            eligible.append(entry)
+            if pending_subheading is not None:
+                pending_subheading = None
+        else:
+            sections[current]["subheadings"].append(entry)
+            subheadings.append(entry)
+            pending_subheading = entry
+
+    def add_paragraph_or_notice(content: str) -> None:
+        normalized = _normalize_narrative_block_content(content)
+        if not normalized:
+            return
+        notice_domain = notice_to_domain.get(normalized)
+        if notice_domain is not None:
+            notice_hash = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+            if current != notice_domain:
+                add_error("unavailable_notice_in_wrong_section")
+            elif current is not None:
+                sections[current]["notices"].append({"text": normalized, "sha256": notice_hash})
+            return
+        add_authored("paragraph", normalized)
+
+    def is_heading_at(index: int) -> bool:
+        return _narrative_heading_kind(main_lines[index]) is not None
+
+    def is_top_level_list(line: str) -> bool:
+        marker = _narrative_list_marker(line)
+        return bool(marker and not marker[0])
+
+    index = 0
+    while index < len(main_lines):
+        line = main_lines[index]
+        if not line.strip():
+            index += 1
+            continue
+
+        heading_kind = _narrative_heading_kind(line)
+        if heading_kind is not None:
+            finish_pending()
+            isolated = (
+                (index == 0 or not main_lines[index - 1].strip())
+                and (index + 1 >= len(main_lines) or not main_lines[index + 1].strip())
+            )
+            if not isolated:
+                add_error("premium_heading_must_be_isolated")
+            if heading_kind == "h2":
+                heading = line.strip()[3:].strip()
+                key = heading_to_key.get(heading)
+                if key is None:
+                    add_error("unknown_reader_section_heading")
+                    current = None
+                else:
+                    if key in seen_headings:
+                        add_error("duplicate_reader_section_heading")
+                    seen_headings.append(key)
+                    current = key
+            elif heading_kind == "h3":
+                match = re.match(r"^###(?:\s+(.*))?$", line.strip())
+                content = (match.group(1) if match else "") or ""
+                if not content.strip():
+                    add_error("empty_subheading")
+                if current is None:
+                    add_error("subheading_outside_canonical_section")
+                elif current in {"opening", "integration"}:
+                    add_error("subheading_not_allowed_in_layer")
+                elif domain_by_id.get(current, {}).get("availability") != "available":
+                    add_error(f"subheading_in_unavailable_reader_domain:{current}")
+                add_authored("subheading", content or "_")
+            elif heading_kind == "h4_plus":
+                report_forbidden("h4_plus")
+            else:
+                add_error("noncanonical_heading_inside_reader_section" if current is not None else "noncanonical_narrative_block")
+            index += 1
+            continue
+
+        forbidden = _narrative_forbidden_kind(line)
+        if forbidden is not None:
+            report_forbidden(forbidden)
+            if forbidden == "code_fence":
+                fence = re.match(r"^\s*(`{3,}|~{3,})", line)
+                fence_token = fence.group(1)[0] if fence else "`"
+                index += 1
+                while index < len(main_lines):
+                    if re.match(rf"^\s*{re.escape(fence_token)}{{3,}}", main_lines[index]):
+                        index += 1
+                        break
+                    index += 1
+            else:
+                index += 1
+            continue
+
+        marker = _narrative_list_marker(line)
+        if marker and not marker[0]:
+            _indent, style, content = marker
+            if not content.strip():
+                add_error("empty_list_item")
+            item_lines = [content]
+            index += 1
+            while index < len(main_lines) and main_lines[index].strip():
+                if is_heading_at(index) or is_top_level_list(main_lines[index]):
+                    break
+                continuation_marker = _narrative_list_marker(main_lines[index])
+                if continuation_marker and continuation_marker[0]:
+                    report_forbidden("nested_list")
+                    index += 1
+                    continue
+                continuation_forbidden = _narrative_forbidden_kind(main_lines[index])
+                if continuation_forbidden is not None:
+                    report_forbidden(continuation_forbidden)
+                    index += 1
+                    continue
+                item_lines.append(main_lines[index])
+                index += 1
+            add_authored("list_item", "\n".join(item_lines), style)
+            continue
+
+        paragraph_lines: List[str] = []
+        while index < len(main_lines) and main_lines[index].strip():
+            if is_heading_at(index) or is_top_level_list(main_lines[index]):
+                break
+            continuation_marker = _narrative_list_marker(main_lines[index])
+            if continuation_marker and continuation_marker[0]:
+                report_forbidden("nested_list")
+                index += 1
+                continue
+            continuation_forbidden = _narrative_forbidden_kind(main_lines[index])
+            if continuation_forbidden is not None:
+                break
+            paragraph_lines.append(main_lines[index])
+            index += 1
+        if paragraph_lines:
+            add_paragraph_or_notice("\n".join(paragraph_lines))
+        elif index < len(main_lines):
+            # The next loop iteration reports the forbidden/structural line.
+            continue
+
+    finish_pending()
+    expected_keys = [key for key, _heading in expected]
+    if seen_headings != expected_keys:
+        if set(seen_headings) != set(expected_keys):
+            add_error("missing_reader_section_heading")
+        else:
+            add_error("reader_section_heading_order_mismatch")
+    return {
+        "errors": list(dict.fromkeys(errors)),
+        "reader_introduction": {"text": reader_introduction, "sha256": _canonical_hash(reader_introduction)},
+        "prose": eligible,
+        "eligible": eligible,
+        "authored": authored,
+        "subheadings": subheadings,
+        "sections": sections,
+    }
+
+
+def _validated_narrative_block_sources(
+    report: object,
+    narrative_block_sources: object,
+    approved_ids: set[str],
+    allowed_claims: Dict[str, Claim],
+    timing_ids: set[str],
+    parsed: Optional[Dict[str, object]] = None,
+) -> tuple[List[str], List[Dict[str, object]]]:
+    if not isinstance(report, str) or not report.strip():
+        return ["missing_final_report"], []
+    if not isinstance(narrative_block_sources, list):
+        return ["missing_narrative_block_source_map"], []
+    expected_entries = list(parsed.get("authored", [])) if isinstance(parsed, dict) else []
+    expected_hashes = [str(item.get("narrative_block_sha256")) for item in expected_entries if isinstance(item, dict)]
+    errors: List[str] = []
+    by_hash: Dict[str, Dict[str, object]] = {}
+    for source in narrative_block_sources:
+        if not isinstance(source, dict):
+            errors.append("invalid_narrative_block_source_map")
+            continue
+        missing = set(_NARRATIVE_BLOCK_SOURCE_FIELDS) - set(source)
+        unknown = set(source) - set(_NARRATIVE_BLOCK_SOURCE_FIELDS)
+        if missing:
+            errors.append("premium_handoff_narrative_block_source_missing_field")
+        if unknown:
+            errors.append("premium_handoff_narrative_block_source_unknown_field")
+        if missing or unknown:
+            if _PARAGRAPH_SOURCE_FIELDS[0] in source:
+                errors.append("legacy_paragraph_source_field_present")
+            continue
+        block_hash = source.get("narrative_block_sha256")
+        if not isinstance(block_hash, str):
+            errors.append("invalid_narrative_block_source_hash")
+            continue
+        if block_hash in by_hash:
+            errors.append("duplicate_narrative_block_source_map")
+            if by_hash[block_hash] != source:
+                errors.append("conflicting_duplicate_narrative_block_source_map")
+            continue
+        by_hash[block_hash] = source
+    expected_hash_set = set(expected_hashes)
+    source_hashes = set(by_hash)
+    if len(expected_hashes) != len(expected_hash_set):
+        errors.append("duplicate_narrative_block_hash")
+    if expected_hash_set - source_hashes:
+        errors.append("narrative_block_without_source_map")
+    if source_hashes - expected_hash_set:
+        errors.append("orphan_narrative_block_source_map")
+    if list(by_hash) != expected_hashes:
+        errors.append("narrative_block_source_order_mismatch")
+
+    approved = {str(item) for item in approved_ids}
+    entry_by_hash = {str(item.get("narrative_block_sha256")): item for item in expected_entries if isinstance(item, dict)}
+    for block_hash in expected_hash_set.intersection(source_hashes):
+        source = by_hash[block_hash]
+        synthesis_values = source.get("synthesis_ids")
+        claim_values = source.get("claim_ids")
+        timing_values = source.get("timing_ids")
+        if not all(isinstance(item, list) and all(isinstance(value, str) for value in item) for item in (synthesis_values, claim_values, timing_values)):
+            errors.append("invalid_narrative_block_source_references")
+            continue
+        synthesis_ids, claim_ids, timing_refs = set(synthesis_values), set(claim_values), set(timing_values)
+        if len(synthesis_ids) != len(synthesis_values) or len(claim_ids) != len(claim_values) or len(timing_refs) != len(timing_values):
+            errors.append("duplicated_narrative_block_source_reference")
+        kind = str(entry_by_hash.get(block_hash, {}).get("kind"))
+        if kind == "subheading":
+            if not synthesis_ids or claim_ids:
+                errors.append("subheading_requires_synthesis_source")
+        elif synthesis_ids:
+            if claim_ids or not synthesis_ids.issubset(approved):
+                errors.append("untraceable_narrative_block_source")
+        elif claim_ids:
+            if (
+                len(claim_values) != 1
+                or timing_refs
+                or any(claim_id not in allowed_claims or not allowed_claims[claim_id].direct_paragraph_renderable for claim_id in claim_ids)
+            ):
+                errors.append("invalid_direct_claim_narrative_block_source")
+        else:
+            errors.append("untraceable_narrative_block_source")
+        if not timing_refs.issubset(timing_ids):
+            errors.append("invented_or_unapproved_timing_evidence")
+    if errors:
+        return list(dict.fromkeys(errors)), []
+    return errors, [by_hash[item] for item in expected_hashes]
+
+
+def narrative_block_source_template(report: str, reader_domain_manifest: Dict[str, object]) -> List[Dict[str, object]]:
+    """Return one empty 1.4 source row for every authored narrative block."""
+    parsed = _parse_premium_narrative(report, reader_domain_manifest)
+    if parsed["errors"]:
+        raise ValueError("Invalid Premium narrative: " + ", ".join(parsed["errors"]))
+    return [
+        {"narrative_block_sha256": str(item["narrative_block_sha256"]), "synthesis_ids": [], "claim_ids": [], "timing_ids": []}
+        for item in parsed.get("authored", [])
+    ]
+
+
+def _validated_paragraph_sources_v13(report: object, paragraph_sources: object, approved_ids: set[str], allowed_claims: Dict[str, Claim], timing_ids: set[str], parsed: Optional[Dict[str, object]] = None) -> tuple[List[str], List[Dict[str, object]]]:
     if not isinstance(report, str) or not report.strip():
         return ["missing_final_report"], []
     if not isinstance(paragraph_sources, list):
@@ -497,10 +1087,10 @@ def _validated_paragraph_sources(report: object, paragraph_sources: object, appr
 
 
 def _validate_paragraph_sources(report: object, paragraph_sources: object, approved_ids: set[str], allowed_claims: Dict[str, Claim], timing_ids: set[str]) -> List[str]:
-    return _validated_paragraph_sources(report, paragraph_sources, approved_ids, allowed_claims, timing_ids)[0]
+    return _validated_paragraph_sources_v13(report, paragraph_sources, approved_ids, allowed_claims, timing_ids)[0]
 
 
-def _validate_mandatory_coverage(report: object, paragraph_sources: object, approved_syntheses: Iterable[Dict[str, object]], coverage: object) -> List[str]:
+def _validate_mandatory_coverage_v13(report: object, paragraph_sources: object, approved_syntheses: Iterable[Dict[str, object]], coverage: object) -> List[str]:
     """Verify Premium Complete targets through existing paragraph provenance.
 
     This intentionally adds no parallel coverage framework: the existing
@@ -527,10 +1117,38 @@ def _validate_mandatory_coverage(report: object, paragraph_sources: object, appr
     return errors
 
 
+def _validate_mandatory_coverage_v14(
+    report: object, narrative_block_sources: object,
+    approved_syntheses: Iterable[Dict[str, object]], coverage: object,
+    eligible_hashes: Optional[set[str]] = None,
+) -> List[str]:
+    """Verify mandatory targets through coverage-eligible 1.4 blocks only."""
+    if not isinstance(narrative_block_sources, list) or not isinstance(coverage, dict):
+        return ["missing_mandatory_coverage_map"]
+    approved = {str(item.get("id")): item for item in approved_syntheses if isinstance(item, dict)}
+    sourced_ids = {
+        str(synthesis_id)
+        for source in narrative_block_sources
+        if isinstance(source, dict)
+        and (eligible_hashes is None or str(source.get("narrative_block_sha256")) in eligible_hashes)
+        for synthesis_id in source.get("synthesis_ids", [])
+    }
+    sourced_factors = {
+        str(factor)
+        for synthesis_id in sourced_ids
+        for factor in approved.get(synthesis_id, {}).get("primary_factors", [])
+    }
+    errors = []
+    for target, factors in coverage.get("required_evidence", {}).items():
+        if not set(map(str, factors)).intersection(sourced_factors):
+            errors.append(f"missing_mandatory_coverage:{target}")
+    return errors
+
+
 def paragraph_source_template(report: str, reader_domain_manifest: Optional[Dict[str, object]] = None) -> List[Dict[str, object]]:
-    """Return the exact substantial-paragraph hashes an Author must source."""
+    """Return the frozen V4.1.3 paragraph source template for replay/debug."""
     if reader_domain_manifest is not None:
-        parsed = _parse_premium_narrative(report, reader_domain_manifest)
+        parsed = _parse_premium_narrative_v13(report, reader_domain_manifest)
         if parsed["errors"]:
             raise ValueError("Invalid Premium narrative: " + ", ".join(parsed["errors"]))
         hashes = [item["sha256"] for item in parsed["prose"]]
@@ -542,7 +1160,7 @@ def paragraph_source_template(report: str, reader_domain_manifest: Optional[Dict
     ]
 
 
-def _validate_reader_sections(parsed: Dict[str, object], reader_sections: object, manifest: object) -> List[str]:
+def _validate_reader_sections_v13(parsed: Dict[str, object], reader_sections: object, manifest: object) -> List[str]:
     errors = list(parsed.get("errors", []))
     if not isinstance(reader_sections, dict) or not isinstance(manifest, dict):
         return list(dict.fromkeys([*errors, "missing_reader_sections_contract"]))
@@ -627,7 +1245,7 @@ def _synthesis_matches_reader_path(synthesis: Dict[str, object], path: Dict[str,
     )
 
 
-def _selection_synthesis_set_matches_path(
+def _selection_synthesis_set_matches_path_v13(
     syntheses: Iterable[Dict[str, object]], path: Dict[str, object],
 ) -> tuple[bool, set[str]]:
     """Check a provenance-only synthesis union without creating a synthesis.
@@ -661,7 +1279,7 @@ def _selection_synthesis_set_matches_path(
     return matches, contributors
 
 
-def _validate_reader_selection_plan(
+def _validate_reader_selection_plan_v13(
     plan: object,
     plan_hash: object,
     parsed: Dict[str, object],
@@ -775,7 +1393,7 @@ def _validate_reader_selection_plan(
             members = [approved[item] for item in synthesis_ids if item in approved]
             contributing: set[str] = set()
             for cluster_path_id in cluster_ids:
-                matched, contributors = _selection_synthesis_set_matches_path(members, path_by_id[cluster_path_id])
+                matched, contributors = _selection_synthesis_set_matches_path_v13(members, path_by_id[cluster_path_id])
                 if not matched:
                     errors.append(f"reader_selection_insufficient_set_ancestry:{cluster_path_id}")
                 contributing.update(contributors)
@@ -794,7 +1412,7 @@ def _validate_reader_selection_plan(
     return list(dict.fromkeys(errors)), plan, _canonical_hash(plan)
 
 
-def _validate_reader_domain_coverage(
+def _validate_reader_domain_coverage_v13(
     parsed: Dict[str, object], reader_sections: object, paragraph_sources: List[Dict[str, object]],
     approved_syntheses: Iterable[Dict[str, object]], manifest: object,
 ) -> List[str]:
@@ -892,14 +1510,491 @@ def _validate_reader_domain_coverage(
     return list(dict.fromkeys(errors))
 
 
-def _handoff_contract_errors(bundle: Dict[str, object], bundle_kind: str) -> List[str]:
-    contract = _premium_handoff_contract()
+def _validate_reader_sections(
+    parsed: Dict[str, object], reader_sections: object, manifest: object,
+) -> List[str]:
+    """Validate the exact 1.4 ownership shape against physical blocks.
+
+    ``authored`` includes H3 subheadings while ``prose``/``eligible`` is
+    deliberately limited to paragraphs and list items.  The distinction is
+    important: a sourced H3 can orient a reader, but it can never keep a
+    domain or a selection path alive by itself.
+    """
+    errors = list(parsed.get("errors", []))
+    if not isinstance(reader_sections, dict) or not isinstance(manifest, dict):
+        return list(dict.fromkeys([*errors, "missing_reader_sections_contract"]))
+    expected_top = {"opening", "domains", "integration"}
+    if set(reader_sections) != expected_top:
+        errors.append("invalid_reader_sections_exact_shape")
+    opening = reader_sections.get("opening")
+    domains = reader_sections.get("domains")
+    integration = reader_sections.get("integration")
+    if not isinstance(opening, dict) or not isinstance(domains, list) or not isinstance(integration, dict):
+        return list(dict.fromkeys([*errors, "invalid_reader_sections_contract"]))
+    if set(opening) != {"narrative_block_sha256s"} or set(integration) != {"narrative_block_sha256s"}:
+        errors.append("invalid_reader_layer_exact_shape")
+    for item in domains:
+        if not isinstance(item, dict) or set(item) != {"domain_id", "narrative_block_sha256s"}:
+            errors.append("invalid_reader_domain_exact_shape")
+
+    expected_domains = [str(item["id"]) for item in manifest.get("domains", []) if isinstance(item, dict)]
+    actual_domains = [str(item.get("domain_id")) for item in domains if isinstance(item, dict)]
+    if actual_domains != expected_domains:
+        if len(actual_domains) != len(set(actual_domains)):
+            errors.append("duplicate_reader_domain_section")
+        if set(actual_domains) - set(expected_domains):
+            errors.append("unknown_reader_domain_section")
+        if set(expected_domains) - set(actual_domains):
+            errors.append("missing_reader_domain_section")
+        if set(actual_domains) == set(expected_domains):
+            errors.append("reader_domain_section_order_mismatch")
+
+    section_map = parsed.get("sections", {})
+
+    def authored_hashes(section_key: str) -> List[str]:
+        section = section_map.get(section_key, {}) if isinstance(section_map, dict) else {}
+        return [str(item.get("narrative_block_sha256")) for item in section.get("authored", []) if isinstance(item, dict)]
+
+    def eligible_hashes(section_key: str) -> List[str]:
+        section = section_map.get(section_key, {}) if isinstance(section_map, dict) else {}
+        return [str(item.get("narrative_block_sha256")) for item in section.get("prose", []) if isinstance(item, dict)]
+
+    def declared_hashes(value: object) -> Optional[List[str]]:
+        hashes = value.get("narrative_block_sha256s") if isinstance(value, dict) else None
+        if not isinstance(hashes, list) or not all(isinstance(item, str) for item in hashes):
+            return None
+        if len(hashes) != len(set(hashes)):
+            return None
+        return hashes
+
+    opening_hashes = declared_hashes(opening)
+    integration_hashes = declared_hashes(integration)
+    if opening_hashes is None or integration_hashes is None:
+        errors.append("invalid_reader_section_hashes")
+    else:
+        physical_opening = authored_hashes("opening")
+        physical_integration = authored_hashes("integration")
+        if opening_hashes != physical_opening:
+            errors.append("reader_opening_ownership_mismatch")
+        if integration_hashes != physical_integration:
+            errors.append("reader_integration_ownership_mismatch")
+        if not eligible_hashes("opening"):
+            errors.append("empty_reader_opening")
+        if not eligible_hashes("integration"):
+            errors.append("empty_reader_integration")
+
+    all_owned: List[str] = [*(opening_hashes or [])]
+    by_domain: Dict[str, Dict[str, object]] = {}
+    for item in domains:
+        if isinstance(item, dict):
+            domain_id = str(item.get("domain_id"))
+            if domain_id in by_domain:
+                errors.append("duplicate_reader_domain_section")
+            by_domain[domain_id] = item
+    for domain in manifest.get("domains", []):
+        if not isinstance(domain, dict):
+            continue
+        domain_id = str(domain["id"])
+        section = by_domain.get(domain_id)
+        hashes = declared_hashes(section)
+        if hashes is None:
+            errors.append(f"invalid_reader_domain_hashes:{domain_id}")
+            continue
+        physical = authored_hashes(domain_id)
+        notices = section_map.get(domain_id, {}).get("notices", []) if isinstance(section_map, dict) else []
+        if hashes != physical:
+            errors.append(f"reader_domain_ownership_mismatch:{domain_id}")
+        if domain.get("availability") == "available":
+            if not eligible_hashes(domain_id):
+                errors.append(f"empty_available_reader_domain:{domain_id}")
+            if notices:
+                errors.append(f"notice_in_available_reader_domain:{domain_id}")
+        else:
+            expected_notice = domain.get("unavailable_notice") or {}
+            if physical or hashes:
+                errors.append(f"prose_in_unavailable_reader_domain:{domain_id}")
+            if len(notices) != 1 or notices[0].get("text") != expected_notice.get("text") or notices[0].get("sha256") != expected_notice.get("sha256"):
+                errors.append(f"invalid_unavailable_reader_notice:{domain_id}")
+        all_owned.extend(hashes)
+
+    all_owned.extend(integration_hashes or [])
+
+    if len(all_owned) != len(set(all_owned)):
+        errors.append("reader_narrative_block_owned_by_multiple_sections")
+    physical_all = [str(item.get("narrative_block_sha256")) for item in parsed.get("authored", []) if isinstance(item, dict)]
+    if set(all_owned) != set(physical_all):
+        errors.append("reader_section_ownership_not_exhaustive")
+    if all_owned != physical_all:
+        errors.append("reader_section_ownership_order_mismatch")
+    return list(dict.fromkeys(errors))
+
+
+def _selection_synthesis_set_matches_path(
+    syntheses: Iterable[Dict[str, object]], path: Dict[str, object],
+) -> tuple[bool, set[str]]:
+    """Check each synthesis independently for one legal path.
+
+    A cluster may use different approved syntheses for different paths, but a
+    path is never manufactured by taking claims, factors, operations, or a
+    reasoning class from separate synthesis records.
+    """
+    matched = {
+        str(item.get("id"))
+        for item in syntheses
+        if isinstance(item, dict)
+        and item.get("status") == "allowed"
+        and _synthesis_matches_reader_path(item, path)
+    }
+    return bool(matched), matched
+
+
+def _validate_reader_selection_plan(
+    plan: object,
+    plan_hash: object,
+    parsed: Dict[str, object],
+    narrative_block_sources: Iterable[Dict[str, object]],
+    approved_syntheses: Iterable[Dict[str, object]],
+    manifest: object,
+) -> tuple[List[str], Optional[Dict[str, object]], Optional[str]]:
+    """Validate the prospective 1.4 selection plan after physical provenance."""
+    errors: List[str] = []
+    if not isinstance(plan, dict):
+        return ["missing_reader_selection_plan"], None, None
+    if _canonical_hash(plan) != plan_hash:
+        errors.append("reader_selection_plan_hash_mismatch")
+    if set(plan) != {"version", "domains"} or plan.get("version") != "1.0" or not isinstance(plan.get("domains"), list):
+        return [*errors, "invalid_reader_selection_plan"], None, None
+    if not isinstance(manifest, dict):
+        return [*errors, "missing_reader_domain_manifest"], None, None
+    available = [item for item in manifest.get("domains", []) if isinstance(item, dict) and item.get("availability") == "available"]
+    if len(plan["domains"]) != len(available):
+        errors.append("reader_selection_domain_mismatch")
+    actual_domain_ids = [item.get("domain_id") for item in plan["domains"] if isinstance(item, dict)]
+    expected_domain_ids = [item.get("id") for item in available]
+    if actual_domain_ids != expected_domain_ids:
+        if len(actual_domain_ids) != len(set(actual_domain_ids)):
+            errors.append("duplicate_reader_selection_domain")
+        errors.append("reader_selection_domain_mismatch")
+
+    approved = {str(item.get("id")): item for item in approved_syntheses if isinstance(item, dict) and item.get("status") == "allowed"}
+    source_by_hash = {
+        str(item.get("narrative_block_sha256")): item
+        for item in narrative_block_sources if isinstance(item, dict)
+    }
+    domain_sources: Dict[str, set[str]] = {}
+    for domain in available:
+        domain_id = str(domain["id"])
+        hashes = [
+            str(item.get("narrative_block_sha256"))
+            for item in parsed.get("sections", {}).get(domain_id, {}).get("prose", [])
+            if isinstance(item, dict)
+        ]
+        domain_sources[domain_id] = {
+            str(synthesis_id)
+            for block_hash in hashes
+            for synthesis_id in source_by_hash.get(block_hash, {}).get("synthesis_ids", [])
+        }
+
+    plan_by_domain = {str(item.get("domain_id")): item for item in plan["domains"] if isinstance(item, dict)}
+    for domain in available:
+        domain_id = str(domain["id"])
+        entry = plan_by_domain.get(domain_id)
+        if not isinstance(entry, dict) or set(entry) != {"domain_id", "paths"} or not isinstance(entry.get("paths"), list):
+            errors.append(f"invalid_reader_selection_domain:{domain_id}")
+            continue
+        paths = domain.get("legal_coverage_paths", [])
+        expected_path_ids = [str(path.get("id")) for path in paths]
+        actual_path_ids = [item.get("path_id") for item in entry["paths"] if isinstance(item, dict)]
+        if actual_path_ids != expected_path_ids:
+            if len(actual_path_ids) != len(set(actual_path_ids)):
+                errors.append(f"duplicate_reader_selection_path:{domain_id}")
+            errors.append(f"reader_selection_path_mismatch:{domain_id}")
+        entry_by_path = {str(item.get("path_id")): item for item in entry["paths"] if isinstance(item, dict)}
+        path_by_id = {str(path.get("id")): path for path in paths}
+        for path_id in expected_path_ids:
+            decision = entry_by_path.get(path_id)
+            required = {"path_id", "decision", "synthesis_ids", "merged_with_path_id", "rationale"}
+            if not isinstance(decision, dict) or set(decision) != required:
+                errors.append(f"invalid_reader_selection_path:{path_id}")
+                continue
+            kind = decision.get("decision")
+            synthesis_ids = decision.get("synthesis_ids")
+            merge_target = decision.get("merged_with_path_id")
+            rationale = decision.get("rationale")
+            if kind not in {"represented", "merged_with_represented", "omitted_no_distinct_reader_value"}:
+                errors.append(f"invalid_reader_selection_decision:{path_id}")
+                continue
+            if not isinstance(synthesis_ids, list) or not all(isinstance(item, str) for item in synthesis_ids) or len(synthesis_ids) != len(set(synthesis_ids)):
+                errors.append(f"invalid_reader_selection_synthesis_ids:{path_id}")
+                continue
+            if kind == "represented":
+                if not synthesis_ids or merge_target is not None or rationale is not None:
+                    errors.append(f"invalid_reader_selection_represented:{path_id}")
+                for synthesis_id in synthesis_ids:
+                    if synthesis_id not in approved:
+                        errors.append(f"reader_selection_unapproved_synthesis:{path_id}")
+                    elif synthesis_id not in domain_sources[domain_id]:
+                        errors.append(f"reader_selection_synthesis_missing_domain_provenance:{path_id}")
+            elif kind == "merged_with_represented":
+                if synthesis_ids or not isinstance(merge_target, str) or not merge_target or not isinstance(rationale, str) or not rationale.strip():
+                    errors.append(f"invalid_reader_selection_merge:{path_id}")
+            else:
+                if synthesis_ids or merge_target is not None or not isinstance(rationale, str) or not rationale.strip():
+                    errors.append(f"invalid_reader_selection_omission:{path_id}")
+
+        for path_id in expected_path_ids:
+            decision = entry_by_path.get(path_id, {})
+            if not isinstance(decision, dict) or decision.get("decision") != "merged_with_represented":
+                continue
+            target_id = decision.get("merged_with_path_id")
+            target = entry_by_path.get(str(target_id))
+            if not isinstance(target, dict) or str(target_id) not in path_by_id or target.get("decision") != "represented":
+                errors.append(f"invalid_reader_selection_merge_target:{path_id}")
+
+        for target_id, target in entry_by_path.items():
+            if not isinstance(target, dict) or target.get("decision") != "represented" or target_id not in path_by_id:
+                continue
+            cluster_ids = [target_id, *[
+                path_id for path_id, item in entry_by_path.items()
+                if isinstance(item, dict)
+                and item.get("decision") == "merged_with_represented"
+                and item.get("merged_with_path_id") == target_id
+            ]]
+            synthesis_ids = target.get("synthesis_ids", [])
+            members = [approved[item] for item in synthesis_ids if item in approved]
+            contributing: set[str] = set()
+            for cluster_path_id in cluster_ids:
+                matched, contributors = _selection_synthesis_set_matches_path(members, path_by_id[cluster_path_id])
+                if not matched:
+                    errors.append(f"reader_selection_insufficient_set_ancestry:{cluster_path_id}")
+                contributing.update(contributors)
+            if set(synthesis_ids) - contributing:
+                errors.append(f"reader_selection_noncontributing_synthesis_padding:{target_id}")
+            if domain_id == "active_life_chapter" or any(
+                str(timing_id) for cluster_path_id in cluster_ids
+                for timing_id in path_by_id[cluster_path_id].get("timing_ids", [])
+            ) or any(
+                str(factor).startswith("timing.")
+                for member in members for factor in member.get("primary_factors", [])
+            ):
+                synthesis_timing = {
+                    str(factor)
+                    for member in members
+                    for factor in member.get("primary_factors", [])
+                    if str(factor).startswith("timing.")
+                }
+                path_timing = {
+                    str(timing_id)
+                    for cluster_path_id in cluster_ids
+                    for timing_id in path_by_id[cluster_path_id].get("timing_ids", [])
+                }
+                if synthesis_timing != path_timing:
+                    errors.append(f"reader_selection_timing_cluster_mismatch:{target_id}")
+    return list(dict.fromkeys(errors)), plan, _canonical_hash(plan)
+
+
+def _validate_reader_domain_coverage(
+    parsed: Dict[str, object], reader_sections: object, narrative_block_sources: List[Dict[str, object]],
+    approved_syntheses: Iterable[Dict[str, object]], manifest: object,
+) -> List[str]:
+    """Validate 1.4 domain coverage using paragraphs and list items only."""
+    if not isinstance(reader_sections, dict) or not isinstance(manifest, dict):
+        return ["missing_reader_domain_coverage_contract"]
+    approved = {str(item.get("id")): item for item in approved_syntheses if isinstance(item, dict) and item.get("status") == "allowed"}
+    by_hash = {str(item.get("narrative_block_sha256")): item for item in narrative_block_sources if isinstance(item, dict)}
+    domains = {str(item.get("domain_id")): item for item in reader_sections.get("domains", []) if isinstance(item, dict)}
+    errors: List[str] = []
+
+    def relational_section_has_synthesis(section_key: str) -> bool:
+        hashes = [
+            str(item.get("narrative_block_sha256"))
+            for item in parsed.get("sections", {}).get(section_key, {}).get("prose", [])
+            if isinstance(item, dict)
+        ]
+        for block_hash in hashes:
+            source = by_hash.get(block_hash, {})
+            for synthesis_id in source.get("synthesis_ids", []):
+                synthesis = approved.get(str(synthesis_id))
+                if not synthesis:
+                    continue
+                if synthesis.get("reasoning_class") not in {"integrated_pattern", "theme_interaction"}:
+                    continue
+                if any(str(claim_id).startswith("claim.house_ruler.placidus.") for claim_id in synthesis.get("source_claim_ids", [])):
+                    continue
+                return True
+        return False
+
+    if not relational_section_has_synthesis("opening"):
+        errors.append("reader_opening_requires_relational_synthesis")
+    if not relational_section_has_synthesis("integration"):
+        errors.append("reader_integration_requires_relational_synthesis")
+
+    for domain in manifest.get("domains", []):
+        if not isinstance(domain, dict):
+            continue
+        domain_id = str(domain["id"])
+        if domain.get("availability") != "available":
+            continue
+        # Domain coverage is deliberately limited to paragraphs and list items.
+        # H3 remains in ownership and source provenance, but can never keep a
+        # domain alive or satisfy a path by itself.
+        hashes = [
+            str(item.get("narrative_block_sha256"))
+            for item in parsed.get("sections", {}).get(domain_id, {}).get("prose", [])
+            if isinstance(item, dict)
+        ]
+        covered = False
+        for block_hash in hashes:
+            source = by_hash.get(str(block_hash), {})
+            timing_refs = set(map(str, source.get("timing_ids", [])))
+            if domain_id == "active_life_chapter" and timing_refs:
+                cited_timing_syntheses = [approved.get(str(item)) for item in source.get("synthesis_ids", [])]
+                if not any(
+                    synthesis
+                    and synthesis.get("reasoning_class") == "natal_timing_interaction"
+                    and timing_refs.issubset(set(map(str, synthesis.get("primary_factors", []))))
+                    for synthesis in cited_timing_syntheses
+                ):
+                    errors.append("reader_timing_source_not_linked_to_cited_synthesis")
+            block_covered = False
+            for synthesis_id in source.get("synthesis_ids", []):
+                synthesis = approved.get(str(synthesis_id))
+                if not synthesis:
+                    continue
+                matched_paths = [
+                    path for path in domain.get("legal_coverage_paths", [])
+                    if _synthesis_matches_reader_path(synthesis, path)
+                ]
+                if domain_id == "active_life_chapter":
+                    synthesis_factors = set(map(str, synthesis.get("primary_factors", [])))
+                    synthesis_timing = {factor for factor in synthesis_factors if factor.startswith("timing.")}
+                    matched_timing = {
+                        timing_id
+                        for path in matched_paths
+                        for timing_id in map(str, path.get("timing_ids", []))
+                    }
+                    if (
+                        synthesis.get("reasoning_class") == "natal_timing_interaction"
+                        and timing_refs
+                        and timing_refs == synthesis_timing
+                        and synthesis_timing == matched_timing
+                        and any(not factor.startswith("timing.") for factor in synthesis_factors)
+                    ):
+                        block_covered = True
+                    if block_covered:
+                        break
+                    continue
+                if matched_paths:
+                    block_covered = True
+                    break
+            direct_claim_ids = set(map(str, source.get("claim_ids", [])))
+            direct_route_authorized = bool(direct_claim_ids) and any(
+                direct_claim_ids.issubset(set(map(str, path.get("source_claim_ids", []))))
+                for path in domain.get("legal_coverage_paths", [])
+            )
+            if not block_covered and not direct_route_authorized:
+                errors.append(f"reader_domain_paragraph_outside_legal_path:{domain_id}")
+            covered = covered or block_covered
+        if not covered:
+            errors.append(f"missing_reader_domain_coverage:{domain_id}")
+    return list(dict.fromkeys(errors))
+
+
+def _validate_subheading_sources(
+    parsed: Dict[str, object], narrative_block_sources: Iterable[Dict[str, object]],
+    approved_syntheses: Iterable[Dict[str, object]], manifest: object,
+) -> List[str]:
+    """Check H3 sourcing without allowing it into coverage or selection."""
+    if not isinstance(manifest, dict):
+        return ["missing_reader_domain_manifest"]
+    approved = {str(item.get("id")): item for item in approved_syntheses if isinstance(item, dict) and item.get("status") == "allowed"}
+    by_hash = {str(item.get("narrative_block_sha256")): item for item in narrative_block_sources if isinstance(item, dict)}
+    domains = {str(item.get("id")): item for item in manifest.get("domains", []) if isinstance(item, dict)}
+    errors: List[str] = []
+    for heading in parsed.get("subheadings", []):
+        if not isinstance(heading, dict):
+            continue
+        block_hash = str(heading.get("narrative_block_sha256"))
+        source = by_hash.get(block_hash)
+        if not source:
+            errors.append("subheading_without_source_map")
+            continue
+        domain_id = str(heading.get("section"))
+        domain = domains.get(domain_id)
+        if not domain or domain.get("availability") != "available":
+            errors.append(f"subheading_not_in_available_domain:{domain_id}")
+            continue
+        synthesis_ids = source.get("synthesis_ids", [])
+        if not isinstance(synthesis_ids, list) or not synthesis_ids:
+            errors.append("subheading_requires_synthesis_source")
+            continue
+        cited_timing: set[str] = set()
+        for synthesis_id in synthesis_ids:
+            synthesis = approved.get(str(synthesis_id))
+            if not synthesis:
+                errors.append("untraceable_subheading_source")
+                continue
+            cited_timing.update(
+                str(factor) for factor in synthesis.get("primary_factors", [])
+                if str(factor).startswith("timing.")
+            )
+            matched_paths = [
+                path for path in domain.get("legal_coverage_paths", [])
+                if _synthesis_matches_reader_path(synthesis, path)
+            ]
+            if not matched_paths:
+                errors.append(f"subheading_synthesis_illegal_for_domain:{domain_id}")
+            legal_timing = {
+                str(timing_id)
+                for path in matched_paths
+                for timing_id in path.get("timing_ids", [])
+            }
+            if set(map(str, source.get("timing_ids", []))) - legal_timing:
+                errors.append(f"subheading_timing_illegal_for_domain:{domain_id}")
+        if set(map(str, source.get("timing_ids", []))) != cited_timing:
+            errors.append("subheading_timing_not_linked_to_cited_synthesis")
+    return list(dict.fromkeys(errors))
+
+
+def _handoff_contract_errors_v13(bundle: Dict[str, object], bundle_kind: str) -> List[str]:
+    """Frozen V4.1.3 bundle checks; legacy extras remain replay-compatible."""
+    contract = _premium_handoff_contract_v13()
     contract_hash = _canonical_hash(contract)
     errors = []
     required_key = f"{bundle_kind}_bundle_required_fields"
     for field in contract[required_key]:
         if field not in bundle:
             errors.append(f"premium_handoff_{bundle_kind}_bundle_missing_required_field:{field}")
+    if bundle.get("premium_handoff_contract_version") != LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION:
+        errors.append("premium_handoff_contract_version_mismatch")
+    if bundle.get("premium_handoff_contract") != contract:
+        errors.append("premium_handoff_contract_body_mismatch")
+    if bundle.get("premium_handoff_contract_sha256") != contract_hash:
+        errors.append("premium_handoff_contract_hash_mismatch")
+    if "premium_handoff_contract" in bundle and _canonical_hash(bundle["premium_handoff_contract"]) != bundle.get("premium_handoff_contract_sha256"):
+        errors.append("premium_handoff_contract_body_hash_mismatch")
+    if _NARRATIVE_PREMIUM_FIELDS.intersection(bundle):
+        errors.append("mixed_version_narrative_block_fields")
+    return errors
+
+
+def _handoff_contract_errors_v14(bundle: Dict[str, object], bundle_kind: str) -> List[str]:
+    """Fail-closed exact shape checks for a current 1.4 bundle."""
+    contract = _premium_handoff_contract()
+    contract_hash = _canonical_hash(contract)
+    errors: List[str] = []
+    required_key = f"{bundle_kind}_bundle_required_fields"
+    expected = set(contract[required_key])
+    if not isinstance(bundle, dict):
+        return [f"invalid_premium_handoff_{bundle_kind}_bundle_shape"]
+    for field in contract[required_key]:
+        if field not in bundle:
+            errors.append(f"premium_handoff_{bundle_kind}_bundle_missing_required_field:{field}")
+    unknown = set(bundle) - expected
+    for field in sorted(unknown):
+        errors.append(f"premium_handoff_{bundle_kind}_bundle_unknown_field:{field}")
+    if set(bundle) != expected:
+        errors.append(f"invalid_premium_handoff_{bundle_kind}_bundle_shape")
     if bundle.get("premium_handoff_contract_version") != PREMIUM_HANDOFF_CONTRACT_VERSION:
         errors.append("premium_handoff_contract_version_mismatch")
     if bundle.get("premium_handoff_contract") != contract:
@@ -908,14 +2003,26 @@ def _handoff_contract_errors(bundle: Dict[str, object], bundle_kind: str) -> Lis
         errors.append("premium_handoff_contract_hash_mismatch")
     if "premium_handoff_contract" in bundle and _canonical_hash(bundle["premium_handoff_contract"]) != bundle.get("premium_handoff_contract_sha256"):
         errors.append("premium_handoff_contract_body_hash_mismatch")
-    return errors
+    if _LEGACY_PREMIUM_FIELDS.intersection(bundle):
+        errors.append("legacy_paragraph_fields_not_allowed_in_v14")
+    return list(dict.fromkeys(errors))
+
+
+def _handoff_contract_errors(bundle: Dict[str, object], bundle_kind: str, premium_contract_version: str = PREMIUM_HANDOFF_CONTRACT_VERSION) -> List[str]:
+    """Version-dispatched bundle shape validation."""
+    if premium_contract_version == LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION:
+        return _handoff_contract_errors_v13(bundle, bundle_kind)
+    if premium_contract_version == PREMIUM_HANDOFF_CONTRACT_VERSION:
+        return _handoff_contract_errors_v14(bundle, bundle_kind)
+    return ["unsupported_premium_handoff_contract_version"]
 
 
 def _verify_authoritative_prepared_handoff(
     prepared_handoff: Optional[Dict[str, object]], authoritative: Optional[Dict[str, object]] = None,
     *, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True,
+    premium_contract_version: str = PREMIUM_HANDOFF_CONTRACT_VERSION,
 ) -> tuple[Optional[datetime], int, bool, List[str]]:
-    """Parse and verify the single deterministic authority for Premium 1.3.
+    """Parse and verify the single deterministic authority for one Premium version.
 
     The first call supplies the materialized deterministic selectors for a
     recomputation.  The second call receives that recomputation and verifies
@@ -923,6 +2030,10 @@ def _verify_authoritative_prepared_handoff(
     Premium guards use this exact path; transport consistency is not authority.
     """
     handoff = prepared_handoff if isinstance(prepared_handoff, dict) else {}
+    try:
+        contract = _premium_handoff_contract_for_version(premium_contract_version)
+    except ValueError:
+        contract = _premium_handoff_contract()
     parameters = handoff.get("preparation_parameters") if isinstance(handoff.get("preparation_parameters"), dict) else {}
     prepared_as_of_raw = parameters.get("effective_as_of")
     prepared_as_of: Optional[datetime] = None
@@ -958,11 +2069,11 @@ def _verify_authoritative_prepared_handoff(
         errors.append("invalid_authoritative_prepared_handoff_stage")
     if handoff.get("premium_report_depth") != "deep":
         errors.append("invalid_authoritative_prepared_handoff_type")
-    if handoff.get("premium_handoff_contract_version") != PREMIUM_HANDOFF_CONTRACT_VERSION:
+    if handoff.get("premium_handoff_contract_version") != premium_contract_version:
         errors.append("authoritative_handoff_contract_version_mismatch")
-    if handoff.get("premium_handoff_contract") != _premium_handoff_contract():
+    if handoff.get("premium_handoff_contract") != contract:
         errors.append("authoritative_handoff_contract_body_mismatch")
-    if handoff.get("premium_handoff_contract_sha256") != _canonical_hash(_premium_handoff_contract()):
+    if handoff.get("premium_handoff_contract_sha256") != _canonical_hash(contract):
         errors.append("authoritative_handoff_contract_hash_mismatch")
     handoff_introduction = handoff.get("reader_introduction")
     handoff_introduction_hash = handoff.get("reader_introduction_sha256")
@@ -992,20 +2103,41 @@ def _verify_authoritative_prepared_handoff(
     return prepared_as_of, prepared_horizon, prepared_include_timing, list(dict.fromkeys(errors))
 
 
-def validate_premium_author_bundle(birth: BirthData, author_bundle: Dict[str, object], profile: Optional[LocalizationProfile] = None, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True, prepared_handoff: Optional[Dict[str, object]] = None) -> Dict[str, object]:
-    """Deterministic Provenance Guard between the Author and Reviewer."""
+def _verify_authoritative_prepared_handoff_v13(
+    prepared_handoff: Optional[Dict[str, object]], authoritative: Optional[Dict[str, object]] = None,
+    *, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True,
+) -> tuple[Optional[datetime], int, bool, List[str]]:
+    return _verify_authoritative_prepared_handoff(
+        prepared_handoff, authoritative, as_of=as_of, horizon_days=horizon_days,
+        include_timing=include_timing, premium_contract_version=LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
+    )
+
+
+def _verify_authoritative_prepared_handoff_v14(
+    prepared_handoff: Optional[Dict[str, object]], authoritative: Optional[Dict[str, object]] = None,
+    *, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True,
+) -> tuple[Optional[datetime], int, bool, List[str]]:
+    return _verify_authoritative_prepared_handoff(
+        prepared_handoff, authoritative, as_of=as_of, horizon_days=horizon_days,
+        include_timing=include_timing, premium_contract_version=PREMIUM_HANDOFF_CONTRACT_VERSION,
+    )
+
+
+def _validate_premium_author_bundle_v13(birth: BirthData, author_bundle: Dict[str, object], profile: Optional[LocalizationProfile] = None, as_of: Optional[datetime] = None, horizon_days: int = 366, include_timing: bool = True, prepared_handoff: Optional[Dict[str, object]] = None) -> Dict[str, object]:
+    """Frozen V4.1.3 Deterministic Provenance Guard for replay."""
     items = author_bundle.get("reasoned_syntheses", [])
-    prepared_as_of, prepared_horizon, prepared_include_timing, _ = _verify_authoritative_prepared_handoff(
+    prepared_as_of, prepared_horizon, prepared_include_timing, _ = _verify_authoritative_prepared_handoff_v13(
         prepared_handoff, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
     )
     checked = validate_premium_syntheses(
         birth, items if isinstance(items, list) else [], profile,
         prepared_as_of, prepared_horizon, prepared_include_timing,
+        premium_contract_version=LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
     )
-    _prepared_as_of, _prepared_horizon, _prepared_include_timing, errors = _verify_authoritative_prepared_handoff(
+    _prepared_as_of, _prepared_horizon, _prepared_include_timing, errors = _verify_authoritative_prepared_handoff_v13(
         prepared_handoff, checked, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
     )
-    errors.extend(_handoff_contract_errors(author_bundle, "author"))
+    errors.extend(_handoff_contract_errors_v13(author_bundle, "author"))
     if author_bundle.get("packet_id") != checked["packet_id"]:
         errors.append("packet_id_mismatch")
     for field in ("prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256"):
@@ -1019,14 +2151,14 @@ def validate_premium_author_bundle(birth: BirthData, author_bundle: Dict[str, ob
         errors.append("draft_report_hash_mismatch")
     approved_ids = {item["id"] for item in checked["reasoned_synthesis"] if item["status"] == "allowed"}
     allowed_claims = {item["id"]: Claim(**item) for item in checked["allowed_claims"]}
-    parsed = _parse_premium_narrative(draft, checked["reader_domain_manifest"])
-    errors.extend(_validate_reader_sections(parsed, author_bundle.get("reader_sections"), checked["reader_domain_manifest"]))
-    source_errors, valid_sources = _validated_paragraph_sources(draft, author_bundle.get("paragraph_sources"), approved_ids, allowed_claims, set(checked["timing_evidence_ids"]), parsed)
+    parsed = _parse_premium_narrative_v13(draft, checked["reader_domain_manifest"])
+    errors.extend(_validate_reader_sections_v13(parsed, author_bundle.get("reader_sections"), checked["reader_domain_manifest"]))
+    source_errors, valid_sources = _validated_paragraph_sources_v13(draft, author_bundle.get("paragraph_sources"), approved_ids, allowed_claims, set(checked["timing_evidence_ids"]), parsed)
     errors.extend(source_errors)
     approved_syntheses = checked["approved_reasoned_syntheses"]
-    errors.extend(_validate_mandatory_coverage(draft, valid_sources, approved_syntheses, checked.get("coverage")))
-    errors.extend(_validate_reader_domain_coverage(parsed, author_bundle.get("reader_sections"), valid_sources, approved_syntheses, checked["reader_domain_manifest"]))
-    selection_errors, selection_plan, selection_plan_hash = _validate_reader_selection_plan(
+    errors.extend(_validate_mandatory_coverage_v13(draft, valid_sources, approved_syntheses, checked.get("coverage")))
+    errors.extend(_validate_reader_domain_coverage_v13(parsed, author_bundle.get("reader_sections"), valid_sources, approved_syntheses, checked["reader_domain_manifest"]))
+    selection_errors, selection_plan, selection_plan_hash = _validate_reader_selection_plan_v13(
         author_bundle.get("reader_selection_plan"), author_bundle.get("reader_selection_plan_sha256"),
         parsed, valid_sources, approved_syntheses, checked["reader_domain_manifest"],
     )
@@ -1035,10 +2167,98 @@ def validate_premium_author_bundle(birth: BirthData, author_bundle: Dict[str, ob
         errors.append("prohibited_extension_in_author_draft")
     if not birth.birth_time_known:
         errors.append("premium_birth_time_required")
-    return {"stage": "deterministic_provenance_guard", "approved": checked["approved"] and not errors, "verification_errors": list(dict.fromkeys(errors)), "packet_id": checked["packet_id"], "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": _premium_handoff_contract(), "premium_handoff_contract_sha256": _canonical_hash(_premium_handoff_contract()), "prepared_chart_signature_sha256": checked["prepared_chart_signature_sha256"], "prepared_signature_synthesis_sha256": checked["prepared_signature_synthesis_sha256"], "prepared_signature_syntheses": checked["prepared_signature_syntheses"], "reader_domain_manifest": checked["reader_domain_manifest"], "reader_domain_manifest_sha256": checked["reader_domain_manifest_sha256"], "reader_selection_plan": selection_plan, "reader_selection_plan_sha256": selection_plan_hash, "approved_reasoned_syntheses": approved_syntheses, "allowed_claims": checked["allowed_claims"], "synthesis_bundle_sha256": expected_synthesis_hash, "draft_report_sha256": _canonical_hash(draft), "timing_evidence_ids": checked["timing_evidence_ids"], "coverage": checked.get("coverage"), "chart_signature": checked["chart_signature"], "narrative_plan": checked["narrative_plan"]}
+    return {"stage": "deterministic_provenance_guard", "approved": checked["approved"] and not errors, "verification_errors": list(dict.fromkeys(errors)), "packet_id": checked["packet_id"], "premium_handoff_contract_version": LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION, "premium_handoff_contract": _premium_handoff_contract_v13(), "premium_handoff_contract_sha256": _canonical_hash(_premium_handoff_contract_v13()), "prepared_chart_signature_sha256": checked["prepared_chart_signature_sha256"], "prepared_signature_synthesis_sha256": checked["prepared_signature_synthesis_sha256"], "prepared_signature_syntheses": checked["prepared_signature_syntheses"], "reader_domain_manifest": checked["reader_domain_manifest"], "reader_domain_manifest_sha256": checked["reader_domain_manifest_sha256"], "reader_selection_plan": selection_plan, "reader_selection_plan_sha256": selection_plan_hash, "approved_reasoned_syntheses": approved_syntheses, "allowed_claims": checked["allowed_claims"], "synthesis_bundle_sha256": expected_synthesis_hash, "draft_report_sha256": _canonical_hash(draft), "timing_evidence_ids": checked["timing_evidence_ids"], "coverage": checked.get("coverage"), "chart_signature": checked["chart_signature"], "narrative_plan": checked["narrative_plan"]}
 
 
-def validate_premium_narrative(
+def _validate_premium_author_bundle_v14(
+    birth: BirthData,
+    author_bundle: Dict[str, object],
+    profile: Optional[LocalizationProfile] = None,
+    as_of: Optional[datetime] = None,
+    horizon_days: int = 366,
+    include_timing: bool = True,
+    prepared_handoff: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
+    """Deterministic Provenance Guard for the current 1.4 narrative contract."""
+    items = author_bundle.get("reasoned_syntheses", [])
+    _prepared_as_of, prepared_horizon, prepared_include_timing, _ = _verify_authoritative_prepared_handoff_v14(
+        prepared_handoff, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
+    )
+    checked = validate_premium_syntheses(
+        birth, items if isinstance(items, list) else [], profile,
+        _prepared_as_of, prepared_horizon, prepared_include_timing,
+        premium_contract_version=PREMIUM_HANDOFF_CONTRACT_VERSION,
+    )
+    _prepared_as_of, _prepared_horizon, _prepared_include_timing, errors = _verify_authoritative_prepared_handoff_v14(
+        prepared_handoff, checked, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
+    )
+    errors.extend(_handoff_contract_errors_v14(author_bundle, "author"))
+    if author_bundle.get("packet_id") != checked["packet_id"]:
+        errors.append("packet_id_mismatch")
+    for field in ("prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256"):
+        if author_bundle.get(field) != checked.get(field):
+            errors.append(f"{field}_mismatch")
+    expected_synthesis_hash = _canonical_hash([item for item in checked["reasoned_synthesis"] if item["status"] == "allowed"])
+    if author_bundle.get("synthesis_bundle_sha256") != expected_synthesis_hash:
+        errors.append("synthesis_bundle_hash_mismatch")
+    draft = author_bundle.get("draft_report")
+    if author_bundle.get("draft_report_sha256") != _canonical_hash(draft):
+        errors.append("draft_report_hash_mismatch")
+    approved_ids = {str(item["id"]) for item in checked["reasoned_synthesis"] if item["status"] == "allowed"}
+    allowed_claims = {str(item["id"]): Claim(**item) for item in checked["allowed_claims"]}
+    manifest = checked["reader_domain_manifest"]
+    parsed = _parse_premium_narrative(draft, manifest)
+    errors.extend(_validate_reader_sections(parsed, author_bundle.get("reader_sections"), manifest))
+    source_errors, valid_sources = _validated_narrative_block_sources(
+        draft, author_bundle.get("narrative_block_sources"), approved_ids, allowed_claims,
+        set(checked["timing_evidence_ids"]), parsed,
+    )
+    errors.extend(source_errors)
+    approved_syntheses = checked["approved_reasoned_syntheses"]
+    errors.extend(_validate_subheading_sources(parsed, valid_sources, approved_syntheses, manifest))
+    eligible_hashes = {
+        str(item.get("narrative_block_sha256"))
+        for item in parsed.get("eligible", []) if isinstance(item, dict)
+    }
+    errors.extend(_validate_mandatory_coverage_v14(draft, valid_sources, approved_syntheses, checked.get("coverage"), eligible_hashes))
+    errors.extend(_validate_reader_domain_coverage(parsed, author_bundle.get("reader_sections"), valid_sources, approved_syntheses, manifest))
+    selection_errors, selection_plan, selection_plan_hash = _validate_reader_selection_plan(
+        author_bundle.get("reader_selection_plan"), author_bundle.get("reader_selection_plan_sha256"),
+        parsed, valid_sources, approved_syntheses, manifest,
+    )
+    errors.extend(selection_errors)
+    if isinstance(draft, str) and _contains_prohibited_extension(draft):
+        errors.append("prohibited_extension_in_author_draft")
+    if not birth.birth_time_known:
+        errors.append("premium_birth_time_required")
+    contract = _premium_handoff_contract()
+    return {
+        "stage": "deterministic_provenance_guard",
+        "approved": checked["approved"] and not errors,
+        "verification_errors": list(dict.fromkeys(errors)),
+        "packet_id": checked["packet_id"],
+        "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION,
+        "premium_handoff_contract": contract,
+        "premium_handoff_contract_sha256": _canonical_hash(contract),
+        "prepared_chart_signature_sha256": checked["prepared_chart_signature_sha256"],
+        "prepared_signature_synthesis_sha256": checked["prepared_signature_synthesis_sha256"],
+        "prepared_signature_syntheses": checked["prepared_signature_syntheses"],
+        "reader_domain_manifest": checked["reader_domain_manifest"],
+        "reader_domain_manifest_sha256": checked["reader_domain_manifest_sha256"],
+        "reader_selection_plan": selection_plan,
+        "reader_selection_plan_sha256": selection_plan_hash,
+        "approved_reasoned_syntheses": approved_syntheses,
+        "allowed_claims": checked["allowed_claims"],
+        "synthesis_bundle_sha256": expected_synthesis_hash,
+        "draft_report_sha256": _canonical_hash(draft),
+        "timing_evidence_ids": checked["timing_evidence_ids"],
+        "coverage": checked.get("coverage"),
+        "chart_signature": checked["chart_signature"],
+        "narrative_plan": checked["narrative_plan"],
+    }
+
+
+def _validate_premium_narrative_v13(
     narrative_payload: Dict[str, object],
     provenance: Dict[str, object],
     birth: BirthData,
@@ -1054,24 +2274,25 @@ def validate_premium_narrative(
     High Narrative Judge is required for semantic equivalence; token checks do
     not claim to prove it.
     """
-    prepared_as_of, prepared_horizon, prepared_include_timing, _ = _verify_authoritative_prepared_handoff(
+    prepared_as_of, prepared_horizon, prepared_include_timing, _ = _verify_authoritative_prepared_handoff_v13(
         prepared_handoff, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
     )
     authoritative = validate_premium_syntheses(
         birth, [], profile, prepared_as_of, prepared_horizon, prepared_include_timing,
+        premium_contract_version=LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
     )
-    _prepared_as_of, _prepared_horizon, _prepared_include_timing, preparation_errors = _verify_authoritative_prepared_handoff(
+    _prepared_as_of, _prepared_horizon, _prepared_include_timing, preparation_errors = _verify_authoritative_prepared_handoff_v13(
         prepared_handoff, authoritative, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
     )
     approved_ids = {str(item.get("id")) for item in provenance.get("approved_reasoned_syntheses", [])}
     report = narrative_payload.get("final_report")
     errors = ([] if provenance.get("approved") else ["author_provenance_not_approved"]) + preparation_errors
-    errors.extend(_handoff_contract_errors(narrative_payload, "reviewer"))
-    if provenance.get("premium_handoff_contract_version") != PREMIUM_HANDOFF_CONTRACT_VERSION:
+    errors.extend(_handoff_contract_errors_v13(narrative_payload, "reviewer"))
+    if provenance.get("premium_handoff_contract_version") != LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION:
         errors.append("provenance_handoff_contract_version_mismatch")
-    if provenance.get("premium_handoff_contract_sha256") != _canonical_hash(_premium_handoff_contract()):
+    if provenance.get("premium_handoff_contract_sha256") != _canonical_hash(_premium_handoff_contract_v13()):
         errors.append("provenance_handoff_contract_hash_mismatch")
-    if provenance.get("premium_handoff_contract") != _premium_handoff_contract():
+    if provenance.get("premium_handoff_contract") != _premium_handoff_contract_v13():
         errors.append("provenance_handoff_contract_body_mismatch")
     if narrative_payload.get("packet_id") != provenance.get("packet_id"):
         errors.append("packet_id_mismatch")
@@ -1160,12 +2381,12 @@ def validate_premium_narrative(
             "stage": "narrative_judged", "approved": False, "verification_errors": list(dict.fromkeys(errors)),
             "semantic_status": "not_publishable", "report": None,
         }
-    parsed = _parse_premium_narrative(report, manifest)
-    errors.extend(_validate_reader_sections(parsed, narrative_payload.get("reader_sections"), manifest))
-    source_errors, valid_sources = _validated_paragraph_sources(report, narrative_payload.get("paragraph_sources"), approved_ids, allowed_claims, set(provenance.get("timing_evidence_ids", [])), parsed)
+    parsed = _parse_premium_narrative_v13(report, manifest)
+    errors.extend(_validate_reader_sections_v13(parsed, narrative_payload.get("reader_sections"), manifest))
+    source_errors, valid_sources = _validated_paragraph_sources_v13(report, narrative_payload.get("paragraph_sources"), approved_ids, allowed_claims, set(provenance.get("timing_evidence_ids", [])), parsed)
     errors.extend(source_errors)
-    errors.extend(_validate_mandatory_coverage(report, valid_sources, provenance.get("approved_reasoned_syntheses", []), provenance.get("coverage")))
-    errors.extend(_validate_reader_domain_coverage(parsed, narrative_payload.get("reader_sections"), valid_sources, provenance.get("approved_reasoned_syntheses", []), manifest))
+    errors.extend(_validate_mandatory_coverage_v13(report, valid_sources, provenance.get("approved_reasoned_syntheses", []), provenance.get("coverage")))
+    errors.extend(_validate_reader_domain_coverage_v13(parsed, narrative_payload.get("reader_sections"), valid_sources, provenance.get("approved_reasoned_syntheses", []), manifest))
     if isinstance(report, str) and _contains_prohibited_extension(report):
         errors.append("prohibited_extension_in_final_narrative")
     return {
@@ -1175,6 +2396,254 @@ def validate_premium_narrative(
         "semantic_status": "reviewer_attested_not_deterministically_proven" if not errors else "not_publishable",
         "report": report if not errors else None,
     }
+
+
+def _validate_premium_narrative_v14(
+    narrative_payload: Dict[str, object],
+    provenance: Dict[str, object],
+    birth: BirthData,
+    profile: Optional[LocalizationProfile] = None,
+    as_of: Optional[datetime] = None,
+    horizon_days: int = 366,
+    include_timing: bool = True,
+    prepared_handoff: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
+    """Publication Guard for the current 1.4 narrative block contract."""
+    if not isinstance(narrative_payload, dict):
+        return {
+            "stage": "narrative_judged", "approved": False,
+            "verification_errors": ["invalid_premium_handoff_reviewer_bundle_shape"],
+            "semantic_status": "not_publishable", "report": None,
+        }
+    if not isinstance(provenance, dict):
+        return {
+            "stage": "narrative_judged", "approved": False,
+            "verification_errors": ["invalid_premium_provenance_shape"],
+            "semantic_status": "not_publishable", "report": None,
+        }
+    prepared_as_of, prepared_horizon, prepared_include_timing, _ = _verify_authoritative_prepared_handoff_v14(
+        prepared_handoff, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
+    )
+    authoritative = validate_premium_syntheses(
+        birth, [], profile, prepared_as_of, prepared_horizon, prepared_include_timing,
+        premium_contract_version=PREMIUM_HANDOFF_CONTRACT_VERSION,
+    )
+    _prepared_as_of, _prepared_horizon, _prepared_include_timing, preparation_errors = _verify_authoritative_prepared_handoff_v14(
+        prepared_handoff, authoritative, as_of=as_of, horizon_days=horizon_days, include_timing=include_timing,
+    )
+    approved_ids = {str(item.get("id")) for item in provenance.get("approved_reasoned_syntheses", []) if isinstance(item, dict)}
+    report = narrative_payload.get("final_report")
+    errors = ([] if provenance.get("approved") else ["author_provenance_not_approved"]) + preparation_errors
+    errors.extend(_handoff_contract_errors_v14(narrative_payload, "reviewer"))
+    contract = _premium_handoff_contract()
+    if provenance.get("premium_handoff_contract_version") != PREMIUM_HANDOFF_CONTRACT_VERSION:
+        errors.append("provenance_handoff_contract_version_mismatch")
+    if provenance.get("premium_handoff_contract_sha256") != _canonical_hash(contract):
+        errors.append("provenance_handoff_contract_hash_mismatch")
+    if provenance.get("premium_handoff_contract") != contract:
+        errors.append("provenance_handoff_contract_body_mismatch")
+    if narrative_payload.get("packet_id") != provenance.get("packet_id"):
+        errors.append("packet_id_mismatch")
+    for field in ("prepared_chart_signature_sha256", "prepared_signature_synthesis_sha256", "reader_domain_manifest_sha256"):
+        if narrative_payload.get(field) != provenance.get(field):
+            errors.append(f"{field}_mismatch")
+        if provenance.get(field) != authoritative.get(field):
+            errors.append(f"provenance_{field}_mismatch")
+        if narrative_payload.get(field) != authoritative.get(field):
+            errors.append(f"authoritative_{field}_mismatch")
+    if provenance.get("packet_id") != authoritative.get("packet_id"):
+        errors.append("provenance_packet_id_mismatch")
+    if provenance.get("chart_signature") != authoritative.get("chart_signature") or _canonical_hash(provenance.get("chart_signature")) != authoritative.get("prepared_chart_signature_sha256"):
+        errors.append("provenance_chart_signature_mismatch")
+    if provenance.get("prepared_signature_syntheses") != authoritative.get("prepared_signature_syntheses") or _canonical_hash(provenance.get("prepared_signature_syntheses")) != authoritative.get("prepared_signature_synthesis_sha256"):
+        errors.append("provenance_signature_synthesis_basis_mismatch")
+    manifest = provenance.get("reader_domain_manifest")
+    reviewer_plan = narrative_payload.get("reader_selection_plan")
+    reviewer_plan_hash = narrative_payload.get("reader_selection_plan_sha256")
+    provenance_plan = provenance.get("reader_selection_plan")
+    provenance_plan_hash = provenance.get("reader_selection_plan_sha256")
+    if provenance_plan_hash != _canonical_hash(provenance_plan):
+        errors.append("provenance_reader_selection_plan_hash_mismatch")
+    if reviewer_plan != provenance_plan:
+        errors.append("reader_selection_plan_body_mismatch")
+    if reviewer_plan_hash != provenance_plan_hash or reviewer_plan_hash != _canonical_hash(reviewer_plan):
+        errors.append("reader_selection_plan_hash_mismatch")
+    if narrative_payload.get("synthesis_bundle_sha256") != provenance.get("synthesis_bundle_sha256"):
+        errors.append("synthesis_bundle_hash_mismatch")
+    if narrative_payload.get("reviewed_draft_sha256") != provenance.get("draft_report_sha256"):
+        errors.append("reviewed_draft_hash_mismatch")
+    verdict = narrative_payload.get("verdict")
+    regeneration_request = narrative_payload.get("regeneration_request")
+    if verdict not in {"approved", "regenerate_author", "blocked"}:
+        errors.append("invalid_reviewer_verdict")
+    if verdict == "approved" and regeneration_request is not None:
+        errors.append("invalid_reviewer_regeneration_request")
+    if verdict == "blocked":
+        if regeneration_request is not None or not isinstance(narrative_payload.get("remaining_warnings"), list) or not any(
+            isinstance(item, str) and item.strip() for item in narrative_payload.get("remaining_warnings", [])
+        ):
+            errors.append("invalid_reviewer_blocked_verdict")
+    if verdict == "regenerate_author":
+        if not isinstance(regeneration_request, dict) or set(regeneration_request) != {"items"} or not isinstance(regeneration_request.get("items"), list) or not regeneration_request["items"]:
+            errors.append("invalid_reviewer_regeneration_request")
+        else:
+            manifest_paths = {
+                str(domain["id"]): {str(path["id"]) for path in domain.get("legal_coverage_paths", [])}
+                for domain in manifest.get("domains", [])
+                if isinstance(domain, dict) and domain.get("availability") == "available"
+            } if isinstance(manifest, dict) else {}
+            seen_requested = set()
+            for item in regeneration_request["items"]:
+                if not isinstance(item, dict) or set(item) != {"domain_id", "path_ids", "reason"}:
+                    errors.append("invalid_reviewer_regeneration_request")
+                    continue
+                domain_id, path_ids, reason = item.get("domain_id"), item.get("path_ids"), item.get("reason")
+                if not isinstance(domain_id, str) or not isinstance(path_ids, list) or not path_ids or not all(isinstance(value, str) for value in path_ids) or len(path_ids) != len(set(path_ids)) or not isinstance(reason, str) or not reason.strip():
+                    errors.append("invalid_reviewer_regeneration_request")
+                    continue
+                if domain_id not in manifest_paths or not set(path_ids).issubset(manifest_paths[domain_id]):
+                    errors.append("invalid_reviewer_regeneration_request")
+                for path_id in path_ids:
+                    marker = (domain_id, path_id)
+                    if marker in seen_requested:
+                        errors.append("duplicate_reviewer_regeneration_request")
+                    seen_requested.add(marker)
+    if narrative_payload.get("final_report_sha256") != _canonical_hash(report):
+        errors.append("final_report_hash_mismatch")
+    allowed_claims = {
+        str(item.get("id")): Claim(**item)
+        for item in provenance.get("allowed_claims", [])
+        if isinstance(item, dict) and item.get("status") == "allowed"
+    }
+    if _canonical_hash(manifest) != provenance.get("reader_domain_manifest_sha256"):
+        errors.append("provenance_reader_domain_manifest_hash_mismatch")
+    if manifest != authoritative.get("reader_domain_manifest"):
+        errors.append("provenance_reader_domain_manifest_mismatch")
+
+    # A non-approved Reviewer verdict is actionable only after its plan and
+    # prepared lineage have been authenticated above.
+    if verdict == "regenerate_author":
+        return {
+            "stage": "narrative_judged", "approved": False, "verification_errors": list(dict.fromkeys(errors)),
+            "semantic_status": "author_regeneration_required" if not errors else "not_publishable",
+            "report": None, "next_step": "regenerate_author" if not errors else None,
+        }
+    if verdict == "blocked":
+        return {
+            "stage": "narrative_judged", "approved": False, "verification_errors": list(dict.fromkeys(errors)),
+            "semantic_status": "not_publishable", "report": None,
+        }
+
+    parsed = _parse_premium_narrative(report, manifest)
+    errors.extend(_validate_reader_sections(parsed, narrative_payload.get("reader_sections"), manifest))
+    source_errors, valid_sources = _validated_narrative_block_sources(
+        report, narrative_payload.get("narrative_block_sources"), approved_ids, allowed_claims,
+        set(provenance.get("timing_evidence_ids", [])), parsed,
+    )
+    errors.extend(source_errors)
+    approved_syntheses = provenance.get("approved_reasoned_syntheses", [])
+    errors.extend(_validate_subheading_sources(parsed, valid_sources, approved_syntheses, manifest))
+    eligible_hashes = {
+        str(item.get("narrative_block_sha256"))
+        for item in parsed.get("eligible", []) if isinstance(item, dict)
+    }
+    errors.extend(_validate_mandatory_coverage_v14(report, valid_sources, approved_syntheses, provenance.get("coverage"), eligible_hashes))
+    errors.extend(_validate_reader_domain_coverage(parsed, narrative_payload.get("reader_sections"), valid_sources, approved_syntheses, manifest))
+    final_selection_errors, final_selection_plan, final_selection_plan_hash = _validate_reader_selection_plan(
+        reviewer_plan, reviewer_plan_hash, parsed, valid_sources, approved_syntheses, manifest,
+    )
+    # Publication revalidates the complete plan against the final physical
+    # report; a plan/hash that was valid for the draft cannot rescue missing
+    # or reordered final paragraph/list-item provenance.
+    errors.extend(final_selection_errors)
+    if final_selection_plan != provenance_plan:
+        errors.append("final_reader_selection_plan_mismatch")
+    if final_selection_plan_hash != provenance_plan_hash:
+        errors.append("final_reader_selection_plan_hash_mismatch")
+    if isinstance(report, str) and _contains_prohibited_extension(report):
+        errors.append("prohibited_extension_in_final_narrative")
+    return {
+        "stage": "narrative_judged",
+        "approved": not errors,
+        "verification_errors": list(dict.fromkeys(errors)),
+        "semantic_status": "reviewer_attested_not_deterministically_proven" if not errors else "not_publishable",
+        "report": report if not errors else None,
+        "premium_handoff_contract_version": PREMIUM_HANDOFF_CONTRACT_VERSION,
+    }
+
+
+def _authoritative_prepared_contract_version(prepared_handoff: object) -> Optional[str]:
+    """Return only the version carried by the authoritative prepared handoff."""
+    if not isinstance(prepared_handoff, dict):
+        return None
+    version = prepared_handoff.get("premium_handoff_contract_version")
+    if version in {PREMIUM_HANDOFF_CONTRACT_VERSION, LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION}:
+        return str(version)
+    return None
+
+
+def _missing_or_unsupported_premium_dispatch(prepared_handoff: object) -> Dict[str, object]:
+    if not isinstance(prepared_handoff, dict):
+        error = "missing_authoritative_prepared_handoff"
+    else:
+        error = "unsupported_premium_handoff_contract_version"
+    return {
+        "stage": "deterministic_provenance_guard",
+        "approved": False,
+        "verification_errors": [error],
+        "semantic_status": "not_publishable",
+    }
+
+
+def validate_premium_author_bundle(
+    birth: BirthData,
+    author_bundle: Dict[str, object],
+    profile: Optional[LocalizationProfile] = None,
+    as_of: Optional[datetime] = None,
+    horizon_days: int = 366,
+    include_timing: bool = True,
+    prepared_handoff: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
+    """Dispatch Author validation only from the authoritative handoff version."""
+    version = _authoritative_prepared_contract_version(prepared_handoff)
+    if version is None:
+        return _missing_or_unsupported_premium_dispatch(prepared_handoff)
+    if version == LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION:
+        if not isinstance(author_bundle, dict):
+            return {"stage": "deterministic_provenance_guard", "approved": False, "verification_errors": ["invalid_premium_handoff_author_bundle_shape"]}
+        return _validate_premium_author_bundle_v13(
+            birth, author_bundle, profile, as_of, horizon_days, include_timing, prepared_handoff,
+        )
+    if not isinstance(author_bundle, dict):
+        return {"stage": "deterministic_provenance_guard", "approved": False, "verification_errors": ["invalid_premium_handoff_author_bundle_shape"]}
+    return _validate_premium_author_bundle_v14(
+        birth, author_bundle, profile, as_of, horizon_days, include_timing, prepared_handoff,
+    )
+
+
+def validate_premium_narrative(
+    narrative_payload: Dict[str, object],
+    provenance: Dict[str, object],
+    birth: BirthData,
+    profile: Optional[LocalizationProfile] = None,
+    as_of: Optional[datetime] = None,
+    horizon_days: int = 366,
+    include_timing: bool = True,
+    prepared_handoff: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
+    """Dispatch Publication validation only from the authoritative handoff version."""
+    version = _authoritative_prepared_contract_version(prepared_handoff)
+    if version is None:
+        result = _missing_or_unsupported_premium_dispatch(prepared_handoff)
+        result["stage"] = "narrative_judged"
+        return result
+    if version == LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION:
+        return _validate_premium_narrative_v13(
+            narrative_payload, provenance, birth, profile, as_of, horizon_days, include_timing, prepared_handoff,
+        )
+    return _validate_premium_narrative_v14(
+        narrative_payload, provenance, birth, profile, as_of, horizon_days, include_timing, prepared_handoff,
+    )
 
 
 def _contains_prohibited_extension(text: str) -> bool:
