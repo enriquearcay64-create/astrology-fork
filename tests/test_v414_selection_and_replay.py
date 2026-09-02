@@ -4,6 +4,7 @@ from copy import deepcopy
 from dataclasses import asdict
 
 import astrology.pipeline as pipeline
+from astrology.reasoning import humanization_instructions, humanization_verifier_instructions
 from tests.test_v414_narrative_blocks import birth
 from tests.v413_helpers import _synthesis_for_path
 from tests.v414_helpers import (
@@ -23,6 +24,18 @@ def _approved_v14():
     )
     assert provenance["approved"], provenance["verification_errors"]
     return handoff, author, meta, provenance
+
+
+def test_v414_runtime_instructions_use_canonical_reader_selection_decisions():
+    decisions = {
+        "represented",
+        "merged_with_represented",
+        "omitted_no_distinct_reader_value",
+    }
+    for language in ("pt-BR", "en-US"):
+        for instruction in (humanization_instructions(language), humanization_verifier_instructions(language)):
+            for decision in decisions:
+                assert decision in instruction
 
 
 def test_v414_selection_never_fabricates_a_path_from_partial_syntheses():

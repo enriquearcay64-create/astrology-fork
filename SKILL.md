@@ -27,7 +27,7 @@ Leia [references/input-schema.md](references/input-schema.md) antes de preparar 
 
 ### Regras adicionais do contrato Premium 1.4
 
-Antes de escrever qualquer prosa, o Author deve inspecionar todo o manifest, construir prospectivamente o `ReaderSelectionPlan` e decidir cada legal path como `represented`, `merged` ou `omitted`. A ordem das paths é apenas serialização; não indica prioridade. O plano não pode ser uma justificativa retrospectiva. No Premium Complete, a seleção não pode apagar um mecanismo humano distinto apenas porque seu fator é secundário à `ChartSignature`.
+Antes de escrever qualquer prosa, o Author deve inspecionar todo o manifest, construir prospectivamente o `ReaderSelectionPlan` e decidir cada legal path como `represented`, `merged_with_represented` ou `omitted_no_distinct_reader_value`. A ordem das paths é apenas serialização; não indica prioridade. O plano não pode ser uma justificativa retrospectiva. No Premium Complete, a seleção não pode apagar um mecanismo humano distinto apenas porque seu fator é secundário à `ChartSignature`.
 
 O parser fechado de 1.4 reconhece `paragraph`, `list_item` ordered/unordered, H3 sourced e H2/avisos determinísticos. Paragraphs e list items são coverage-eligible e cada bloco recebe uma source row própria; H3 é synthesis-only, não participa de mandatory/domain/selection coverage e deve ter um paragraph ou list item filho. Nested lists, tables, blockquotes, HTML blocks, code fences, separators, metadata e H4+ são proibidos. Bullets anexados a um parágrafo são separados como itens independentes. Não inclua números de parágrafos, mecanismos, bullets, subseções, exemplos, palavras, minutos ou páginas na leitura.
 
