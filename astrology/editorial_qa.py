@@ -23,6 +23,16 @@ BROAD_PATTERNS = (
 )
 
 
+GRANDIOSITY_AND_FLATTERY_PATTERNS = (
+    r"\b(?:intensidade vulc[aâ]nica|autoridade penetrante|dom (?:extraordin[aá]rio|natural|inato)|configuraç(?:ão|ões) mais nobres|integridade que é sua marca|vocaç[aã]o talhada|lideran[cç]a excepcional|destino grandioso|você foi desenhado para|você certamente|você desenvolveu precocemente|seus limites são absolutamente|brilhantismo natural|aura magnética|força monumental|capacidade sobre-humana|brilho incomparável|talento magistral|carisma irresistível|aura fascinante|poder quase ilimitado|predestinado a|você é naturalmente superior)\b",
+    r"\b(?:volcanic intensity|penetrating authority|extraordinary gift|innate gift|most noble configurations|naturally marked integrity|tailored vocation|exceptional leadership|grand destiny|you were designed to|you certainly|you precociously developed|your boundaries are absolutely|natural brilliance|magnetic aura|monumental strength|superhuman capacity|incomparable brilliance|masterful talent|irresistible charisma|fascinating aura|almost unlimited power|predestined to|you are naturally superior)\b",
+)
+MEDICALIZATION_PATTERNS = (
+    r"\b(?:problemas? digestivos?|sistema digestivo|regeneraç[aã]o celular|exig[eê]ncia fisiol[oó]gica|resist[eê]ncia f[ií]sica excepcional|causa (?:ins[oô]nia|doen[cç]a)|dist[uú]rbio som[aá]tico|suscetibilidade a enfermidades|predisposiç[aã]o a [uú]lceras|manifestaç[aã]o som[aá]tica direta|esgotamento fisiol[oó]gico|vulnerabilidade imunol[oó]gica|comprometimento do metabolismo|estafa fisiol[oó]gica)\b",
+    r"\b(?:digestive problems?|digestive system|cellular regeneration|physiological requirement|exceptional physical endurance|causes? (?:insomnia|disease)|somatic disorder|susceptibility to disease|predisposition to ulcers|direct somatic manifestation|physiological exhaustion|immune vulnerability|metabolic impairment)\b",
+)
+
+
 def sentences(text: str) -> List[str]:
     plain = re.sub(r"```.*?```|<details.*?</details>", " ", text, flags=re.S | re.I)
     plain = re.sub(r"^#{1,6}.*$|^[-*].*$|^\|.*\|$", " ", plain, flags=re.M)
@@ -79,6 +89,36 @@ def barnum_risk(text: str) -> Dict[str, object]:
     flagged = [sentence for sentence in source if any(re.search(pattern, sentence, re.I) for pattern in BROAD_PATTERNS)]
     return {
         "method": "broad-phrase lint only; a human/LLM reviewer must judge context",
+        "flagged_sentences": flagged,
+        "share": round(len(flagged) / len(source), 3) if source else 0.0,
+    }
+
+
+def grandiosity_and_flattery_risk(text: str) -> Dict[str, object]:
+    """Heuristic lint for grandiosity and flattery patterns.
+
+    A share of 0.0 indicates no known pattern was detected by this lint,
+    not proof of semantic absence. The Reviewer is the primary semantic guard.
+    """
+    source = interpretive_sentences(text)
+    flagged = [sentence for sentence in source if any(re.search(pattern, sentence, re.I) for pattern in GRANDIOSITY_AND_FLATTERY_PATTERNS)]
+    return {
+        "method": "grandiosity-phrase heuristic lint; checks for ungrounded praise or heroic inflation",
+        "flagged_sentences": flagged,
+        "share": round(len(flagged) / len(source), 3) if source else 0.0,
+    }
+
+
+def medicalization_risk(text: str) -> Dict[str, object]:
+    """Heuristic lint for medicalization and physiological claim patterns.
+
+    A share of 0.0 indicates no known pattern was detected by this lint,
+    not proof of semantic absence. The Reviewer is the primary semantic guard.
+    """
+    source = interpretive_sentences(text)
+    flagged = [sentence for sentence in source if any(re.search(pattern, sentence, re.I) for pattern in MEDICALIZATION_PATTERNS)]
+    return {
+        "method": "medicalization-phrase heuristic lint; checks for unwarranted physiological/medical claims",
         "flagged_sentences": flagged,
         "share": round(len(flagged) / len(source), 3) if source else 0.0,
     }

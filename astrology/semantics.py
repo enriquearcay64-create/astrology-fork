@@ -43,10 +43,10 @@ PLANET_FUNCTIONS = {
 
 PLANET_SHORT_FUNCTIONS = {
     "pt": {
-        "sun": "direção pessoal", "moon": "necessidades emocionais", "mercury": "pensamento/comunicação",
-        "venus": "vínculo/valores", "mars": "ação/limites", "jupiter": "crescimento/sentido",
-        "saturn": "estrutura/responsabilidade", "uranus": "autonomia/mudança", "neptune": "imaginação/sensibilidade",
-        "pluto": "intensidade/transformação", "true_node": "direção de desenvolvimento", "chiron": "sensibilidade/reparação",
+        "sun": "direção pessoal", "moon": "necessidades emocionais", "mercury": "pensamento e comunicação",
+        "venus": "vínculo e valores", "mars": "ação e limites", "jupiter": "crescimento e sentido",
+        "saturn": "estrutura e responsabilidade", "uranus": "autonomia e mudança", "neptune": "imaginação e sensibilidade",
+        "pluto": "intensidade e transformação", "true_node": "direção de desenvolvimento", "chiron": "sensibilidade e reparação",
         "lilith_mean": "tensões de limite",
     },
     "en": {

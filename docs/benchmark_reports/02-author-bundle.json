@@ -1,0 +1,3097 @@
+{
+  "prepared_signature_synthesis_sha256": "1fcdbac8249331ac36a9e968296d6b4e7ba22e0dc5dd146e27a80cae8cf599bf",
+  "premium_handoff_contract": {
+    "version": "1.4",
+    "author_bundle_required_fields": [
+      "packet_id",
+      "premium_handoff_contract_version",
+      "premium_handoff_contract",
+      "premium_handoff_contract_sha256",
+      "prepared_chart_signature_sha256",
+      "prepared_signature_synthesis_sha256",
+      "reader_domain_manifest_sha256",
+      "reasoned_syntheses",
+      "draft_report",
+      "narrative_block_sources",
+      "reader_sections",
+      "reader_selection_plan",
+      "reader_selection_plan_sha256",
+      "synthesis_bundle_sha256",
+      "draft_report_sha256"
+    ],
+    "reviewer_bundle_required_fields": [
+      "packet_id",
+      "premium_handoff_contract_version",
+      "premium_handoff_contract",
+      "premium_handoff_contract_sha256",
+      "prepared_chart_signature_sha256",
+      "prepared_signature_synthesis_sha256",
+      "reader_domain_manifest_sha256",
+      "synthesis_bundle_sha256",
+      "reviewed_draft_sha256",
+      "verdict",
+      "corrections_made",
+      "remaining_warnings",
+      "final_report",
+      "final_report_sha256",
+      "narrative_block_sources",
+      "reader_sections",
+      "reader_selection_plan",
+      "reader_selection_plan_sha256",
+      "regeneration_request"
+    ],
+    "author_bundle_exact_shape": true,
+    "reviewer_bundle_exact_shape": true,
+    "source_row_required_fields": [
+      "narrative_block_sha256",
+      "synthesis_ids",
+      "claim_ids",
+      "timing_ids"
+    ],
+    "paragraph_source_fields": "legacy_replay_only",
+    "narrative_block_source_rules": {
+      "paragraph": "one source row; direct Claim or synthesis mode; coverage-eligible",
+      "list_item": "one source row; ordered or unordered; direct Claim or synthesis mode; coverage-eligible",
+      "subheading": "one approved synthesis-only source row; timing IDs must belong to cited syntheses; coverage-ineligible"
+    },
+    "reader_block_parser": {
+      "recognised": [
+        "paragraph",
+        "list_item",
+        "subheading",
+        "canonical_h2",
+        "unavailable_notice"
+      ],
+      "list_styles": [
+        "ordered",
+        "unordered"
+      ],
+      "forbidden": [
+        "nested_list",
+        "table",
+        "blockquote",
+        "html_block",
+        "code_fence",
+        "separator",
+        "metadata",
+        "h4_plus"
+      ],
+      "attached_bullets": "split into independent list_item blocks"
+    },
+    "reasoned_synthesis_fields": [
+      "id",
+      "observation",
+      "primary_factors",
+      "modifiers",
+      "counterweights",
+      "reasoning_class",
+      "confidence_within_astrological_model",
+      "possible_expressions",
+      "alternative_reading",
+      "prohibited_extensions",
+      "source_claim_ids",
+      "source_motif_ids",
+      "composition_operations",
+      "derived_propositions",
+      "narrative_moves",
+      "derived_claim",
+      "verification_errors",
+      "status"
+    ],
+    "reader_section_rules": {
+      "shape": "opening_plus_exactly_16_canonical_domains_plus_integration",
+      "ownership": "every authored paragraph, list item and subheading hash belongs to exactly one section in physical order",
+      "opening_and_integration_fields": [
+        "narrative_block_sha256s"
+      ],
+      "domain_fields": [
+        "domain_id",
+        "narrative_block_sha256s"
+      ],
+      "unavailable": "exact_deterministic_notice and no authored blocks or source rows",
+      "non_prose": "headings, unavailable notices, tables, metadata and separators never satisfy coverage",
+      "fixed_reader_introduction": {
+        "sha256_by_language": {
+          "pt": "6ca69979ad28d1b47feccac52f3b0c1fda5805a6d745d5accf77ad49ee276c98",
+          "en": "7f8ce3f467e49b00cae9928ba7200086e5c2cfaf7688a5e6b371e7e0749b97fe"
+        },
+        "selection": "reader_domain_manifest_locale",
+        "location": "after_an_optional_single_document_title_and_before_the_canonical_opening",
+        "provenance": "fixed_product_copy_excluded_from_narrative_block_sources_and_reader_section_ownership"
+      }
+    },
+    "timing_domain_rule": "paragraph_and_list_item timing_ids equal the cited timing synthesis IDs and each ID matches a satisfied timing_natal path; subheading timing IDs belong to cited syntheses",
+    "reader_selection_rule": "every_available_legal_path_is_accounted_once_by_represented_merged_with_represented_or_omitted_no_distinct_reader_value; only paragraph and list_item provenance participates",
+    "reader_selection_plan_version": "1.0",
+    "prepared_signature_rule": "pre_domain_chart_signature_and_its_deterministic_synthesis_basis_are_frozen",
+    "publication_authority_rule": "original_prepared_handoff_binds_packet_signature_synthesis_basis_manifest_and_materialized_timing_parameters"
+  },
+  "packet_id": "d3b7e003677859198f1db425fc35337dcccbf521329b157857282710d3d60d76",
+  "premium_handoff_contract_sha256": "1cabf661698e2fc608d3f8ddfbb49e4b7826d7071d092f2aea4be130613e1e79",
+  "prepared_chart_signature_sha256": "0dcec68cd09306a57f753934fbd3b9f49c7eeac10fd2664b5ecc6ef46c1848b3",
+  "reader_sections": {
+    "opening": {
+      "narrative_block_sha256s": [
+        "cd56e29f02d5dc014d523464175b1b676e19a27d7a017eab0dcc87fb0e7a6d25",
+        "674201080696d7c81ea814d68d124e1e9347502fffa551f03de4fe9cf758f9fe",
+        "5896ab80747c5d415ddaea0f282bb5e63a63cf85d612406cc767472b84d37d74",
+        "fb7645635888853cf5e03c4ccc0bacb25d4109ac9db3375049311031178f37c4",
+        "1d59587123698f85c66d165e8957d02d3928c4d5a3fa188ca6bfd0923946a503",
+        "feafa8bdc44a2c8e1b49085568ec1f4a1dbc4859bcbf7826976cc654355405af",
+        "bd5ddaddf552c976b8ad835c694ab9ca0cf2ee1de4fc2f36ec43b9d674fc78a1",
+        "ddb1f1b1347e18d47054dc495459a197b7e5d833e908648f16f5b0f25a0230de",
+        "4a70a24dad7316df50e1d54dc5093c3b6471e5c2735760544626c3cbe39dd251",
+        "a7a346c0398158e8ee4a13cc4f59d89bb58ae93aab7ae06cb3d35b76c832f304",
+        "5bd3b0344643d32e5b6a33b7b535d5e188b562d9935a91063bb3dd6f7acee1b0",
+        "88a28f970ac6d2900b7639cf2230f47d72d341881012c8928e8dc55c6697e22c",
+        "a18935e0cddfc2685fcf1674d97071a0e94234dd6d06137786e7f7fc8e51c438",
+        "6a90ef53d00b50664339f65ce06cc6aa4f3c02f9eb89f586f372957ab507eb01",
+        "19216f82d7c4a4ca2740b3f58d44dce06ac8bbf17ead8b260295e0fb541f5b97",
+        "87bd3d5067f139eee4b3a2e30dd367d677ac62868ca5d334ea61ad064d62ab89"
+      ]
+    },
+    "domains": [
+      {
+        "domain_id": "identity_presence",
+        "narrative_block_sha256s": [
+          "7e0fe7a2d43feda6135733bef1314c5f3afd7ce03e68602442c339504779fdba",
+          "d724a002d3c0897b37486681a9343bf08d3e5b96492a514c06ba776554ba9e8b",
+          "153935c29712f1a8b82b3fc73be05a6ea78707229a6346b9c3e9a14de6cddf27",
+          "604815c18519ffe4c894df7b14c93c98442ab1053764dfd30e64a894e788c791",
+          "43e1301ac7438c0d1959d3cdf7ff38757392dfdc09ba3c1044f759d054e60f47",
+          "e1d0681cc22ee234bf624733b28237aa249fd8b407000a5bd49c94aa8dcb5480",
+          "30e6d745d3ff4c16eb2917e66a495923e16c7c3b9bde58593391d7d7bd0d8003",
+          "4442d7633f1c54bd5971db06119bd94e55cdf7862dc2851375d104067ec756e1"
+        ]
+      },
+      {
+        "domain_id": "emotional_security",
+        "narrative_block_sha256s": [
+          "34cd2ce3d137292ba820ff9086c15beb50aaf45ba31d2a01651a28284adc1c7a",
+          "9798032031b1314939614322c66b8575690486922bdbe8498d0e9d8790aabb05",
+          "17acd478c688b1aa23d5737bed615e4850fc4b82a1fa9865cf49cc4d4b5afe3e",
+          "b1999f0b71d16d7a662e7006d145d7b7ed7cb13ac6739f8652a0108e88b89968",
+          "2ad430f9222a22b35a9672dfa1aabf5cc2bbd2ea691a288280f6a8acc531a12b",
+          "ad84b5dfa379728dcaf204b892c12c721b0ebca95c4e7907523454688058be64",
+          "e186acecfc7e55d4bf9523dc72620552b9824cb772cf9d0209de216b72ee86a1"
+        ]
+      },
+      {
+        "domain_id": "mind_learning_communication",
+        "narrative_block_sha256s": [
+          "dfc96ddd0573170f93e6eea7663f09d9b728a8777bbe23f0b9efd17c97802312",
+          "120ae1d446b2a47ab88802ee3971f9cada5f5d8c01a3d532cad268cd6c7f7cf0",
+          "8f940e7c1a643b2e4fda7402954fbe19d4ef9b0397908dfbb2ffa42a211af406",
+          "f0e8750e0a44327724da10d8df62dafcabaa536945149027ddd79d848feee3f7",
+          "be4cf0fea9c90ee4b7a69592c5be0fe7b6594499b7c6baa9fce70360b50690fe",
+          "9dffcc4705dd8f069631bf088f1cdbd8ac4714c1f13f04c4c9814eca20ab74c6",
+          "79a6d036bdbfdc9a45d7d37895364d2f12d831a4add5808922695b29e5905942",
+          "b43d3876df23c842ebfe1614512573b51ef74cf9169d69a86af71ccc95c9c16c"
+        ]
+      },
+      {
+        "domain_id": "desire_action_limits",
+        "narrative_block_sha256s": [
+          "7264e3dbc5624cbbf003cd7d81ccc1518b1968882dcd076a5bfff8df5a05d2e0",
+          "70880c75438ab2a9733386dd3862dcbd7c52b1d149f35ae101b15282f7bab56d",
+          "ea858046bcb593a5445444ddf8a85ca1a2049ce130ed2c55180505d135223eaa",
+          "bac354eb82836f87faf6c70cebfb5a9c7ecba525428fa1df83bfc271edce5122",
+          "5e3a781d0814913a14aed0161616e07059ed8b7d5eb601a59460ff2a2d0d7fa2",
+          "714cd62e88a08478925bb9fa2e2dd82dc6d10620f63b6a063b7ab9a5706fafe0",
+          "cf1218a6a71522a4880fa241c216b8feb81ab1fc7ee924abaf1eb5473437b650"
+        ]
+      },
+      {
+        "domain_id": "love_intimacy_relationship",
+        "narrative_block_sha256s": [
+          "8bf098e007e25c2e489cf562e61d391c1068027d306515eea651b9975e8ab0db",
+          "96e80ab7969832147ef9f88bf59355c37125614eeefe7a3a894b98b2f259733c",
+          "5b931ece3b4cfcaa13449b052d6a5ff10741c55fc68799124b833fc169679af7",
+          "1ca4bafeef6403b0498fab3021de2c20990304d9f5d44a3a05fdcdbe54426340",
+          "9fcc877bf4e982c5001eb438ff4c9caa0bf6ac8682fc3e147b2fe1c961bcd257",
+          "0951cb308c2b6f484bb877c34358e95f62028030ac2824f43741236eb0d96b27"
+        ]
+      },
+      {
+        "domain_id": "creativity_pleasure_aliveness",
+        "narrative_block_sha256s": [
+          "31b5662709c9a1164569bbbeea638b69da807e290ce25b7c58c2dbef6d3890f7",
+          "42dfa673fc61a30ad2a839abf3cdaaf579ce97fd35c1a18ca3bcc55335a5d4bf",
+          "b4e52e366223feac0fe283364086b33971bc980f4dac035b2f05319731bc2f01",
+          "7544344b68a3941b61daca7b59d90fc3ec6b5a486aba2cb6611733c4f455994e",
+          "c90dc7da175f61ec0253e3f6f301566790c8a3d00aecae8ee820ca5dfc33ba71",
+          "edd287817ce5766479c35e3c6f5d65e249e53b2d81ca3cf782cd93207eb7af2d",
+          "93854982b591c86fff3035b4cf762d7f6e2088d46fec1130c1513f384dcb0099"
+        ]
+      },
+      {
+        "domain_id": "work_vocation_visibility",
+        "narrative_block_sha256s": [
+          "200f6d3ef090a994370c80ef2170fa5845e72479bfffaee439862e6104d40cc2",
+          "501481cfdca1286125918a8c5033de54913c073be81bb81dcad602d0110dd388",
+          "5395676329f9976537f01417e6d02cc2162b3431bf9fce4ba782a75b5538f0ec",
+          "1cda0aac86f90584fd3191aec831d33c7b8ca3951ced78022d6ec3da2eec0a6a",
+          "dc567623ab6ac8430345d6d22547388b05a3055798ee27c95cb3f302e1212999"
+        ]
+      },
+      {
+        "domain_id": "money_resources_value",
+        "narrative_block_sha256s": [
+          "60401e47f9772161cae04a34c232f6c63a79f769a87098b33585995eab92903b",
+          "512f4fcec524b5dade241fe1280d194471b82faaedc1ee4aba034b11662a7fa1",
+          "3bfe8b5a4006597f6d9cf47f2ec5283b06cf7ab750a5d32aebb56c553aaca0d8",
+          "208c276241e2e652533fc21f097a294bcf7cd0332e5de5ae8014f45ce3c94a0f",
+          "f8945877b4541eae0c466770b70af3cefdecd72303df7a56f08d6e769f4b38dc",
+          "6c8e45c81161f6f60c443b204d817bbbcee0e662081fff996d640349da01cb18",
+          "8163051ecc708e31ae76a8126d2642d3754f5ac03a11d98d6bb0e4f2a9d0a9b7"
+        ]
+      },
+      {
+        "domain_id": "body_energy_routine",
+        "narrative_block_sha256s": [
+          "7b2d1fadddc659ffb9b67bfd6e0c2b3ffa9b7176e441ff887c17c4552f46dc21",
+          "2c267f331d7ea07824bbfdb1cce9a9a1d43c929d36e02482be8e161b956ee93c",
+          "080759ac9691263fa2d0aa5b32f2add9565454c5af9c9a16c30cac12d2eb88eb",
+          "d2952cb0cde1db68a3a1a8b8828e460bad8f30df5945f44fd0a7f153a99f66c2",
+          "89719da9c89c9415c833cf97d002ff83567cf509f56688d4bcaa9530b8085245",
+          "db7128e90eb963177fb26d7f4e1ec0a28f76d523758afae6b5c0c0e1ffbf3042",
+          "28352149de83dc65770f705b27d1e02f2dcae7c539b4894cad73223874a4dc92",
+          "f76d838742bb7245dc07a126a3b1f8be3659edda80ac450c9703cb762db505bd"
+        ]
+      },
+      {
+        "domain_id": "home_roots_private_life",
+        "narrative_block_sha256s": [
+          "0f3aad71afb6607ea1fe538a750effd47a17141f8a91446ac7ee1207fe3e037e",
+          "fb3344f832b7779bbc12986f81f0466a394ee66ad16388678226cb81ce14ec7c",
+          "243c6c17a6904d371629748d06dca484e43796b519f28f31936d8f1bdc074fcd",
+          "028ed6517983a8c84f6e5458fef4927022fa94f9b473ac46ee83282a3b5b09a0"
+        ]
+      },
+      {
+        "domain_id": "friendship_community_belonging",
+        "narrative_block_sha256s": [
+          "2ac8da40f9feb2fd937dad1caf7959ff22c92f6b2847b56af46cd740673289e3",
+          "a83525744a5dabfd7e6918a1744d72e92127fd3dbfc464c719467895a7c338ca",
+          "25ebc5830840d32340a48017bd39a7ebfa187e60a3bfd3004d2712ed0f00ffb0",
+          "2b8b3763559e40c9eeb59a6e6b45b07a52f4b5b94ffc1d4fd2782164b18129ff",
+          "32cf61a647a53a02b36f06e3e5ae2fad8fe700faadece33b4da6c054c3745631",
+          "b09cf15901ffb81a82e6b81d3e4fb43fdbb64af932522a1be346a729221ec094"
+        ]
+      },
+      {
+        "domain_id": "meaning_beliefs_horizon",
+        "narrative_block_sha256s": [
+          "d5206c3ba54f6788505b4a118a2f0151524c06b6685c88740a54a72e92adfa5d",
+          "c268947673bbf0eee3ba6e55405fd91d7112d4cdc719ba79656800b3ea585770",
+          "ab839ef6656532addc6c5c0d1c14e37fb1f096f27dfb8f14e7f6ba93775e4c9b",
+          "5c799e2594077c14008db0d51999e33f7326f60f03b201d912300fdc7101f9fe"
+        ]
+      },
+      {
+        "domain_id": "shadow_defenses_patterns",
+        "narrative_block_sha256s": [
+          "26b365775ffcb11cd1d03bdc2bd880555bc2b78d77da39fedf928df46f3a3508",
+          "5e306666d84c5006c473df2b5592829fd0f61e160592facd7b381e239fd08ce7",
+          "4c1c1ce64dddda6ca95284e636319bb64092745fb224c69440ff01ccef1e520d",
+          "bed9a9014c9a15e35031e14e6da50dcde6e337d89b5c110b67abac82cdcec25f",
+          "c1dc77d76fdf2cc18040609eee7734597713994e7b812fd7eb25fd3a63dc746a",
+          "af4cb82dd6182bc724f5ec407cd50d9cf08e9ec3671bd61f43aebcc2338080eb",
+          "9930914cb866fe84b42cbed058530860f464e0da27194fd9b98f69d43f443627"
+        ]
+      },
+      {
+        "domain_id": "growth_through_contradiction",
+        "narrative_block_sha256s": [
+          "c8eabf88322140a678b9d9877fcc458875aa0dd6b512b53770a373967f1555b8",
+          "8e78c0c2f2676ba3ed27c7a010a13073a0a5ba0041cebc5d8fdbe200634aade2",
+          "9508228f4ac709d0f15a688038aabe6b5db0593fdcca4944daec67e5fbfad202",
+          "fc6a540ef4e315f6d4bf3a9b9f23801c6b4a3234792dd2734b9cf93300eadb92",
+          "0b6f48165fa1d2f3e08f9c10869bd95b6d4edfd7d6d660f5a4a78caf66099e96",
+          "1c39db3baea6588b24439d0f966ccdd805c924e380d2251706b9d82359a09c74",
+          "b7248aac108b4e303e747344cfb4e9012393e19e8f29ec2598453c343e9571c1"
+        ]
+      },
+      {
+        "domain_id": "developmental_direction",
+        "narrative_block_sha256s": [
+          "5c261e715e7cad4a0f025a19b389831735b7545e443c900e58e0cb99e5a25811",
+          "daeb78ccb6679f4f0000c4c56c2c1d555995a41cecf409131c860f8b0abaa9ef",
+          "2ca60cf50cced7e7e138617859f22c53bf43dd27af33f0a5837a93472ee8efc0",
+          "02ef9973e89f011d5d62d165a6dc09b5c4eb1928f739507a51e43000137a4c37",
+          "77962aa2ec31acddad2c8fab3c48743ca79ad55ee374c461a87b630a823c3fcc",
+          "94f9696c8aaf25525be0c48214264830c4649534507664bfe4e524830633216c",
+          "1c79f59079148c5facf7f9b1fa664fac4353ee68e71268f8151d99b009f2908d"
+        ]
+      },
+      {
+        "domain_id": "active_life_chapter",
+        "narrative_block_sha256s": [
+          "0694c220afcef2bea2e0a393f8b8fd54972f0ce9e578f150e6a41def606d4c31",
+          "3584990d2fcece241467e8b0827d002e560c810e577d0ef022263560cfca04d1",
+          "0894aaac6590cd8ca6658fbe1a659c548c1c627ffb74984a53fe2659f0680ef6",
+          "ce4d2bb40344b8d819e336672764014f8bc7f5dc72cd6e210e1c78b9de7ed134",
+          "c04cfbed75bf0154328a9b9cdbb676135833b4c9f4462d7e5f17c75c966c8975",
+          "571f34ca476b8a37347d7e00b48a81064cf33c601140ef819098b2306e67c824"
+        ]
+      }
+    ],
+    "integration": {
+      "narrative_block_sha256s": [
+        "1f848f172354ff851630d39637b36b1f113a21762fd4f466f99e0506357b8464",
+        "d0df2386ce1ab837990a927b6f69e2c0d8df46a433238952f99ecf56cf2616c7",
+        "ca97b7fadd3eb1371b32820dfb78bf94ffd72fafcf0ed5a2f5ff65d5deb385f5"
+      ]
+    }
+  },
+  "reader_selection_plan_sha256": "143379f1f2743955b48506d6bc857ae4f61cb76cba9dbb97b92c2268e9a13d41",
+  "premium_handoff_contract_version": "1.4",
+  "reader_selection_plan": {
+    "version": "1.0",
+    "domains": [
+      {
+        "domain_id": "identity_presence",
+        "paths": [
+          {
+            "path_id": "reader_path.identity_presence.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.identity_presence"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.identity_presence.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.identity_presence.claim_anchored.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.identity_presence.house_ruler_context.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "emotional_security",
+        "paths": [
+          {
+            "path_id": "reader_path.emotional_security.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.emotional_security"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.emotional_security.house_ruler_context.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "mind_learning_communication",
+        "paths": [
+          {
+            "path_id": "reader_path.mind_learning_communication.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.mind_learning_communication"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.house_ruler_context.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.topical_placidus.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "desire_action_limits",
+        "paths": [
+          {
+            "path_id": "reader_path.desire_action_limits.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.desire_action_limits"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.house_ruler_context.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.house_ruler_context.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "love_intimacy_relationship",
+        "paths": [
+          {
+            "path_id": "reader_path.love_intimacy_relationship.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.love_intimacy_relationship"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "creativity_pleasure_aliveness",
+        "paths": [
+          {
+            "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.creativity_pleasure_aliveness"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.creativity_pleasure_aliveness.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "work_vocation_visibility",
+        "paths": [
+          {
+            "path_id": "reader_path.work_vocation_visibility.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.work_vocation_visibility"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.work_vocation_visibility.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.work_vocation_visibility.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.work_vocation_visibility.house_ruler_context.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.work_vocation_visibility.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.work_vocation_visibility.topical_placidus.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.work_vocation_visibility.topical_placidus.7",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "money_resources_value",
+        "paths": [
+          {
+            "path_id": "reader_path.money_resources_value.house_ruler_context.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.2.jupiter"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.money_resources_value.house_ruler_context.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "body_energy_routine",
+        "paths": [
+          {
+            "path_id": "reader_path.body_energy_routine.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.body_energy_routine"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.house_ruler_context.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "home_roots_private_life",
+        "paths": [
+          {
+            "path_id": "reader_path.home_roots_private_life.house_ruler_context.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.4.venus"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "friendship_community_belonging",
+        "paths": [
+          {
+            "path_id": "reader_path.friendship_community_belonging.house_ruler_context.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.11.jupiter"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.friendship_community_belonging.topical_placidus.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.friendship_community_belonging.topical_placidus.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "meaning_beliefs_horizon",
+        "paths": [
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.meaning_beliefs_horizon"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "shadow_defenses_patterns",
+        "paths": [
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.shadow_defenses_patterns"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.7",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.8",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "growth_through_contradiction",
+        "paths": [
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.growth_through_contradiction"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      },
+      {
+        "domain_id": "developmental_direction",
+        "paths": [
+          {
+            "path_id": "reader_path.developmental_direction.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.developmental_direction"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "active_life_chapter",
+        "paths": [
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader.active_life_chapter"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.7",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "This legal path adds no distinct reader value beyond the represented domain mechanism."
+          }
+        ]
+      }
+    ]
+  },
+  "reasoned_syntheses": [
+    {
+      "id": "reasoned.reader.identity_presence",
+      "observation": "O Ascendente em Capricorn descreve uma porta de entrada simbólica para presença e início de experiências.",
+      "primary_factors": [
+        "ascendant.natal"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "O Ascendente em Capricorn descreve uma porta de entrada simbólica para presença e início de experiências."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.ascendant.1"
+      ],
+      "source_motif_ids": [
+        "ascendant_presence"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "O Ascendente em Capricorn descreve uma porta de entrada simbólica para presença e início de experiências.",
+          "sources": [
+            "claim.ascendant.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.emotional_security",
+      "observation": "Lua em Sagittarius colore necessidades e regulação emocional com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.moon"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Lua em Sagittarius colore necessidades e regulação emocional com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.moon.2"
+      ],
+      "source_motif_ids": [
+        "moon_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Lua em Sagittarius colore necessidades e regulação emocional com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.moon.2"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.mind_learning_communication",
+      "observation": "Mercúrio em Scorpio colore pensamento e comunicação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "position.mercury"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Mercúrio em Scorpio colore pensamento e comunicação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mercury.3"
+      ],
+      "source_motif_ids": [
+        "mercury_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Mercúrio em Scorpio colore pensamento e comunicação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.position.mercury.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.desire_action_limits",
+      "observation": "Marte em Libra colore ação, desejo e limites com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Marte em Libra colore ação, desejo e limites com troca e elaboração; inicia e movimenta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mars.5"
+      ],
+      "source_motif_ids": [
+        "mars_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Marte em Libra colore ação, desejo e limites com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.mars.5"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.love_intimacy_relationship",
+      "observation": "Vênus em Sagittarius colore vínculo, prazer e valores com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.venus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Vênus em Sagittarius colore vínculo, prazer e valores com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.venus.4"
+      ],
+      "source_motif_ids": [
+        "venus_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Vênus em Sagittarius colore vínculo, prazer e valores com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.venus.4"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.creativity_pleasure_aliveness",
+      "observation": "Sol em Scorpio colore identidade, vitalidade e direção com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "position.sun"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Sol em Scorpio colore identidade, vitalidade e direção com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.sun.1"
+      ],
+      "source_motif_ids": [
+        "sun_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Sol em Scorpio colore identidade, vitalidade e direção com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.position.sun.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.work_vocation_visibility",
+      "observation": "Mercúrio está próximo de MC, ficando estruturalmente mais visível em visibilidade e contribuição. Proeminência não equivale a facilidade.",
+      "primary_factors": [
+        "angle.mercury_mc"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Mercúrio está próximo de MC, ficando estruturalmente mais visível em visibilidade e contribuição. Proeminência não equivale a facilidade."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.angle.mercury.mc.2"
+      ],
+      "source_motif_ids": [
+        "mc_prominence"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Mercúrio está próximo de MC, ficando estruturalmente mais visível em visibilidade e contribuição. Proeminência não equivale a facilidade.",
+          "sources": [
+            "claim.angle.mercury.mc.2"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.2.jupiter",
+      "observation": "A casa Placidus 2, ligada a recursos e segurança, tem cúspide em Pisces e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "house_ruler.placidus.2",
+        "position.jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 2, ligada a recursos e segurança, tem cúspide em Pisces e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.2",
+        "claim.position.jupiter.6"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "jupiter_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 2, ligada a recursos e segurança, tem cúspide em Pisces e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.house_ruler.placidus.2",
+            "claim.position.jupiter.6"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.body_energy_routine",
+      "observation": "Marte em Libra colore ação, desejo e limites com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Marte em Libra colore ação, desejo e limites com troca e elaboração; inicia e movimenta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mars.5"
+      ],
+      "source_motif_ids": [
+        "mars_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Marte em Libra colore ação, desejo e limites com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.mars.5"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.4.venus",
+      "observation": "A casa Placidus 4, ligada a raízes e vida privada, tem cúspide em Taurus e é regida por Vênus; isso apenas encaminha esse campo ao contexto natal já autorizado de Vênus. Vênus em Sagittarius colore vínculo, prazer e valores com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "house_ruler.placidus.4",
+        "position.venus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 4, ligada a raízes e vida privada, tem cúspide em Taurus e é regida por Vênus; isso apenas encaminha esse campo ao contexto natal já autorizado de Vênus. Vênus em Sagittarius colore vínculo, prazer e valores com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.4",
+        "claim.position.venus.4"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "venus_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 4, ligada a raízes e vida privada, tem cúspide em Taurus e é regida por Vênus; isso apenas encaminha esse campo ao contexto natal já autorizado de Vênus. Vênus em Sagittarius colore vínculo, prazer e valores com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.house_ruler.placidus.4",
+            "claim.position.venus.4"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.11.jupiter",
+      "observation": "A casa Placidus 11, ligada a redes, futuro e pertencimento, tem cúspide em Sagittarius e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "house_ruler.placidus.11",
+        "position.jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 11, ligada a redes, futuro e pertencimento, tem cúspide em Sagittarius e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.11",
+        "claim.position.jupiter.6"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "jupiter_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 11, ligada a redes, futuro e pertencimento, tem cúspide em Sagittarius e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.house_ruler.placidus.11",
+            "claim.position.jupiter.6"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.meaning_beliefs_horizon",
+      "observation": "Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.jupiter.6"
+      ],
+      "source_motif_ids": [
+        "jupiter_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.jupiter.6"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.shadow_defenses_patterns",
+      "observation": "Coordenação entre ampliação, sentido de Júpiter e imaginação, permeabilidade de Netuno pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.jupiter_opposition_neptune"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre ampliação, sentido de Júpiter e imaginação, permeabilidade de Netuno pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.3"
+      ],
+      "source_motif_ids": [
+        "spirituality_opposition_coordination"
+      ],
+      "composition_operations": [
+        "polarity"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre ampliação, sentido de Júpiter e imaginação, permeabilidade de Netuno pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.growth_through_contradiction",
+      "observation": "Coordenação entre ampliação, sentido de Júpiter e imaginação, permeabilidade de Netuno pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.jupiter_opposition_neptune"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre ampliação, sentido de Júpiter e imaginação, permeabilidade de Netuno pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.3"
+      ],
+      "source_motif_ids": [
+        "spirituality_opposition_coordination"
+      ],
+      "composition_operations": [
+        "polarity"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre ampliação, sentido de Júpiter e imaginação, permeabilidade de Netuno pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.developmental_direction",
+      "observation": "O eixo nodal liga Nodo Norte em Aquarius e Nodo Sul em Leo; casas Placidus 1 e 7: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte.",
+      "primary_factors": [
+        "node_axis.natal"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "O eixo nodal liga Nodo Norte em Aquarius e Nodo Sul em Leo; casas Placidus 1 e 7: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.node_axis.1"
+      ],
+      "source_motif_ids": [
+        "natal_node_axis_developmental_direction",
+        "nodal_axis_sextile_contact",
+        "pleasure_sextile_coordination"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "O eixo nodal liga Nodo Norte em Aquarius e Nodo Sul em Leo; casas Placidus 1 e 7: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte.",
+          "sources": [
+            "claim.node_axis.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "reasoned.reader.active_life_chapter",
+      "observation": "Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.jupiter",
+        "timing.solar_arc.mercury.quincunx.jupiter.1"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.jupiter.6"
+      ],
+      "source_motif_ids": [
+        "jupiter_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.jupiter.6"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.1",
+      "observation": "O Ascendente em Capricorn descreve uma porta de entrada simbólica para presença e início de experiências.",
+      "primary_factors": [
+        "ascendant.natal"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "O Ascendente em Capricorn descreve uma porta de entrada simbólica para presença e início de experiências."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.ascendant.1"
+      ],
+      "source_motif_ids": [
+        "ascendant_presence"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "O Ascendente em Capricorn descreve uma porta de entrada simbólica para presença e início de experiências.",
+          "sources": [
+            "claim.ascendant.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.2",
+      "observation": "Saturno, regente do Ascendente em Capricorn, organiza uma função recorrente na forma de iniciar e orientar-se.",
+      "primary_factors": [
+        "chart_ruler.natal"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Saturno, regente do Ascendente em Capricorn, organiza uma função recorrente na forma de iniciar e orientar-se."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.chart_ruler.1"
+      ],
+      "source_motif_ids": [
+        "chart_ruler_orientation"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Saturno, regente do Ascendente em Capricorn, organiza uma função recorrente na forma de iniciar e orientar-se.",
+          "sources": [
+            "claim.chart_ruler.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.3",
+      "observation": "A estrutura stellium_placidus_house em 12 reúne saturn, uranus, neptune como um padrão integrado, a ser explicado uma vez antes de observar o papel de cada corpo.",
+      "primary_factors": [
+        "configuration.stellium_placidus_house.12.neptune.saturn.uranus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A estrutura stellium_placidus_house em 12 reúne saturn, uranus, neptune como um padrão integrado, a ser explicado uma vez antes de observar o papel de cada corpo."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.configuration.3"
+      ],
+      "source_motif_ids": [
+        "stellium_placidus_house_integrated_structure"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A estrutura stellium_placidus_house em 12 reúne saturn, uranus, neptune como um padrão integrado, a ser explicado uma vez antes de observar o papel de cada corpo.",
+          "sources": [
+            "claim.configuration.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.4",
+      "observation": "A estrutura stellium_sign em Scorpio reúne sun, mercury, pluto como um padrão integrado, a ser explicado uma vez antes de observar o papel de cada corpo.",
+      "primary_factors": [
+        "configuration.stellium_sign.scorpio.mercury.pluto.sun"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A estrutura stellium_sign em Scorpio reúne sun, mercury, pluto como um padrão integrado, a ser explicado uma vez antes de observar o papel de cada corpo."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.configuration.1"
+      ],
+      "source_motif_ids": [
+        "stellium_sign_integrated_structure"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A estrutura stellium_sign em Scorpio reúne sun, mercury, pluto como um padrão integrado, a ser explicado uma vez antes de observar o papel de cada corpo.",
+          "sources": [
+            "claim.configuration.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.5",
+      "observation": "O eixo nodal liga Nodo Norte em Aquarius e Nodo Sul em Leo; casas Placidus 1 e 7: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte.",
+      "primary_factors": [
+        "node_axis.natal"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "O eixo nodal liga Nodo Norte em Aquarius e Nodo Sul em Leo; casas Placidus 1 e 7: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.node_axis.1"
+      ],
+      "source_motif_ids": [
+        "natal_node_axis_developmental_direction",
+        "nodal_axis_sextile_contact",
+        "pleasure_sextile_coordination"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "O eixo nodal liga Nodo Norte em Aquarius e Nodo Sul em Leo; casas Placidus 1 e 7: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte.",
+          "sources": [
+            "claim.node_axis.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.6",
+      "observation": "Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.jupiter.6"
+      ],
+      "source_motif_ids": [
+        "jupiter_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Júpiter em Cancer colore crescimento, sentido e exploração com sensibilidade e ligação emocional; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.jupiter.6"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.7",
+      "observation": "Marte em Libra colore ação, desejo e limites com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Marte em Libra colore ação, desejo e limites com troca e elaboração; inicia e movimenta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mars.5"
+      ],
+      "source_motif_ids": [
+        "mars_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Marte em Libra colore ação, desejo e limites com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.mars.5"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.8",
+      "observation": "Mercúrio em Scorpio colore pensamento e comunicação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "position.mercury"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Mercúrio em Scorpio colore pensamento e comunicação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mercury.3"
+      ],
+      "source_motif_ids": [
+        "mercury_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Mercúrio em Scorpio colore pensamento e comunicação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.position.mercury.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.9",
+      "observation": "Lua em Sagittarius colore necessidades e regulação emocional com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.moon"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Lua em Sagittarius colore necessidades e regulação emocional com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.moon.2"
+      ],
+      "source_motif_ids": [
+        "moon_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Lua em Sagittarius colore necessidades e regulação emocional com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.moon.2"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.10",
+      "observation": "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.neptune"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.neptune.9"
+      ],
+      "source_motif_ids": [
+        "neptune_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.neptune.9"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.11",
+      "observation": "Plutão em Scorpio colore intensidade, poder e transformação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "position.pluto"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Plutão em Scorpio colore intensidade, poder e transformação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.pluto.10"
+      ],
+      "source_motif_ids": [
+        "pluto_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Plutão em Scorpio colore intensidade, poder e transformação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.position.pluto.10"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.12",
+      "observation": "Saturno em Capricorn colore estrutura, responsabilidade e limites com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.saturn"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Saturno em Capricorn colore estrutura, responsabilidade e limites com concretização e continuidade; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.saturn.7"
+      ],
+      "source_motif_ids": [
+        "saturn_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Saturno em Capricorn colore estrutura, responsabilidade e limites com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.saturn.7"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.13",
+      "observation": "Sol em Scorpio colore identidade, vitalidade e direção com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "position.sun"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Sol em Scorpio colore identidade, vitalidade e direção com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.sun.1"
+      ],
+      "source_motif_ids": [
+        "sun_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Sol em Scorpio colore identidade, vitalidade e direção com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.position.sun.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.14",
+      "observation": "Urano em Capricorn colore autonomia, mudança e ruptura de padrões com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.uranus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Urano em Capricorn colore autonomia, mudança e ruptura de padrões com concretização e continuidade; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.uranus.8"
+      ],
+      "source_motif_ids": [
+        "uranus_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Urano em Capricorn colore autonomia, mudança e ruptura de padrões com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.uranus.8"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    },
+    {
+      "id": "coverage.mandatory.15",
+      "observation": "Vênus em Sagittarius colore vínculo, prazer e valores com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.venus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Vênus em Sagittarius colore vínculo, prazer e valores com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.venus.4"
+      ],
+      "source_motif_ids": [
+        "venus_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Vênus em Sagittarius colore vínculo, prazer e valores com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.venus.4"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "pending"
+    }
+  ],
+  "draft_report_sha256": "1c167319c39e062d0c9852af661b0c1419c5d0978c38d2d0addd041fe4be844a",
+  "synthesis_bundle_sha256": "93ef49f1f95d827a41f16d179d2a03c39c1fb9ba4988dda16bf983de7b73ca37",
+  "reader_domain_manifest_sha256": "ab1c0ffcd285c8b9c52ef9032f0689bfafa7b0a2c0d37b4b6c15ef9ddbfc27ef",
+  "draft_report": "### Como entrar nesta leitura\n\nAntes de começar, talvez valha deixar uma coisa de lado: a ideia de que este relatório precisa dizer exatamente quem você é.\n\nUm mapa natal não é uma definição. Ele é mais parecido com um espelho — um jeito de observar algumas das forças, necessidades e contradições que podem existir dentro de você e perceber como elas se encontram na sua forma particular de viver.\n\nAo longo destas páginas, algumas coisas talvez tragam uma sensação imediata de reconhecimento. Outras podem tocar um lugar que você ainda não tinha colocado em palavras. E algumas simplesmente podem não fazer sentido agora. Não há nada de errado nisso. Você não precisa se encaixar na leitura; é a leitura que precisa encontrar alguma verdade na sua experiência.\n\nTambém é natural encontrar aparentes contradições. Podemos querer proximidade e liberdade, segurança e movimento, reconhecimento e silêncio. Essas partes não precisam se anular. Muitas vezes, conhecer-se melhor começa justamente quando deixamos de tentar escolher qual delas é a “verdadeira” e começamos a perceber como todas encontram espaço dentro da mesma pessoa.\n\nPor isso, tente não ler este relatório com a sensação de que precisa entender, concordar ou resolver tudo de uma vez. Dê um pouco de espaço às palavras. Perceba onde algo desperta curiosidade, onde existe identificação, onde surge resistência ou até onde você sente vontade de parar por um momento.\n\nÀ medida que avançar, talvez alguns temas comecem a aparecer de formas diferentes em áreas diferentes da sua vida. É aí que esta leitura ganha profundidade. Mais do que uma coleção de características, o objetivo é ajudar você a perceber os fios que conectam sua maneira de sentir, pensar, amar, escolher, criar, trabalhar e encontrar direção.\n\nE, acima de tudo, lembre-se de que nenhuma interpretação conhece sua história melhor do que você.\n\nA astrologia pode oferecer uma linguagem para enxergar algo por outro ângulo, mas você continua sendo a pessoa que sabe o que viveu, o que sente e o que faz sentido para a sua vida.\n\nLeia com abertura, mas também com liberdade.\n\nFique com aquilo que ilumina alguma coisa em você. O restante pode simplesmente permanecer como uma pergunta.\n\n## Arquitetura do mapa\n\nAo olhar para a estrutura geral do seu mapa, a primeira impressão que se destaca é a convivência de dois grandes centros de gravidade: de um lado, uma forte concentração no signo de Escorpião próxima ao Meio do Céu, reunindo o Sol, Mercúrio e Plutão; de outro, uma concentração substancial em Capricórnio na décima segunda casa, onde se encontram Saturno, Urano e Netuno.\n\nO Sol culmina em Escorpião na décima casa, conferindo propósito investigativo e visibilidade conquistada por profundidade e rigor.\n\nA Lua em Sagitário na décima primeira casa orienta a regulação emocional para a busca de horizonte, liberdade mental e entusiasmo reflexivo.\n\nMercúrio em Escorpião no Meio do Céu atua como instrumento de análise aguda, discernindo causas ocultas e articulando estratégias com precisão.\n\nVênus em Sagitário na décima primeira casa traduz o princípio de valor e afeto em busca de afinidade intelectual, ética e crescimento compartilhado.\n\nMarte em Libra na nona casa direciona a assertividade para a diplomacia, a justiça e a negociação fundamentada em princípios claros.\n\nJúpiter em Câncer na sexta casa atua em dignidade de exaltação, impulsionando dedicação prática, generosidade no trabalho e cuidado protetor na rotina.\n\nSaturno em Capricórnio na décima segunda casa, domiciliado, estrutura a maturidade e o autodomínio através da reflexão concentrada e do trabalho de bastidor.\n\nUrano em Capricórnio na décima segunda casa introduz renovação e independência em relação a modelos e estruturas tradicionais.\n\nNetuno em Capricórnio na décima segunda casa une sensibilidade ética, idealismo e imaginação à disciplina prática.\n\nPlutão em Escorpião na décima casa, domiciliado, confere intensidade transformadora e percepção profunda de dinâmicas de poder e responsabilidade.\n\nO Ascendente em Capricórnio ancora a presença no mundo em sobriedade, postura medida e discernimento antes da ação.\n\nO regente do mapa, Saturno, opera a partir da décima segunda casa em Capricórnio, governando o tempo, a paciência e a solidez construída longe de aparências.\n\nO eixo nodal liga o repertório familiar do Nodo Sul em Leão (casa 7) à experimentação de individuação autônoma do Nodo Norte em Aquário (casa 1).\n\nO stellium na décima segunda casa em Capricórnio (Saturno, Urano e Netuno) estabelece um reservatório profundo de reflexão, autonomia interior e contenção.\n\nO stellium em Escorpião no Meio do Céu (Sol, Mercúrio e Plutão) orienta o mapa para a maestria técnica, a transformação e a liderança estratégica.\n\n## Identidade central e presença\n\nA sua presença no mundo é mediada pelo Ascendente em Capricórnio, que confere um filtro inicial de sobriedade, postura medida e discernimento prático ao modo como você aborda novas experiências. Longe de demonstrar afobação ou necessidade de agradar imediatamente, a sua forma de chegar aos ambientes tende a transmitir firmeza e autocontrole. Há uma preferência espontânea por observar antes de agir, mapeando a dinâmica do espaço e a consistência das pessoas ao redor.\n\nO regente do seu Ascendente, Saturno, localiza-se na décima segunda casa e no próprio signo de Capricórnio, em dignidade de domicílio. Essa posição particular indica que a sua orientação de vida e a sua força estruturante são forjadas em grande parte no recolhimento. Enquanto outras pessoas buscam validação externa constante para firmar a própria identidade, a sua segurança interna ganha consistência quando você dispõe de tempo a sós para organizar pensamentos, planejar etapas e amadurecer propósitos sem interferências externas.\n\nAo chegar a um ambiente desconhecido ou a uma reunião de trabalho importante, a sua postura inicial frequentemente não é a de disputar o centro das atenções, mas a de escolher um ponto estratégico de observação. Há uma pausa deliberada para compreender o cenário e avaliar onde reside a responsabilidade real antes de emitir uma opinião ou assumir um compromisso. Essa contenção não significa hesitação, mas um cálculo consciente sobre o momento certo de agir.\n\nO Sol em Escorpião, situado no Meio do Céu, confere a essa base contida uma direção de vida intensa, focada e investigativa. O Sol em sextil exato com Saturno e Netuno em Capricórnio proporciona uma coordenação favorável entre determinação pessoal, rigor estrutural e sensibilidade ética. A sua identidade não se apoia em aparências, mas no desejo de compreender os mecanismos mais profundos das situações e gerar resultados duradouros.\n\nEssa configuração de identidade pode se manifestar em diferentes registros conforme as circunstâncias:\n- Em expressão integrada: postura serena e confiável, capacidade de assumir responsabilidades sem alarde e autoridade que se impõe pela qualidade silenciosa do trabalho.\n- Em reação sob pressão: fechamento excessivo, tendência a erguer barreiras defensivas e relutância em demonstrar vulnerabilidade por receio de perder o controle.\n- Em falso excesso: isolar-se completamente acreditando que precisa resolver todas as exigências do mundo sozinho, recusando apoio legítimo.\n\n## Mundo emocional e segurança interna\n\nA sua regulação emocional é orientada pela Lua no signo de Sagitário, posicionada na décima primeira casa. Isso significa que, no nível das necessidades internas, o seu bem-estar depende de espaço para respirar, liberdade de movimento e a possibilidade de atribuir sentido e perspectiva aos acontecimentos. Em vez de permanecer em estados de autocomiseração ou ruminação prolongada, a sua tendência natural diante de um desconforto é buscar uma visão mais ampla, recorrer ao humor ou encontrar uma explicação filosófica que ajude a reenquadrar a situação.\n\nA quarta casa, que descreve as suas raízes psicológicas e o refúgio íntimo, tem cúspide no signo de Touro e é regida por Vênus, que por sua vez está posicionada em Sagitário na décima primeira casa. Esse enlace sugere que a sua base interna busca uma sensação de paz, estabilidade e conforto tangível (Touro), mas essa estabilidade é vivenciada plenamente quando conectada a ideais generosos, estudos enriquecedores e amizades que funcionam como uma família de escolha (Vênus em Sagitário). O seu lar psicológico é tanto um refúgio de tranquilidade quanto uma janela aberta para o mundo das ideias.\n\nExiste, contudo, um ajuste contínuo indicado pelo aspecto de quincúncio entre a Lua em Sagitário e Júpiter em Câncer na sexta casa. Esse aspecto aponta para uma tensão entre o desejo de leveza e autonomia emocional (Lua em Sagitário) e uma inclinação quase instintiva para acolher responsabilidades práticas e cuidar das necessidades do cotidiano (Júpiter em Câncer). Por vezes, você pode sentir que o envolvimento em tarefas práticas ou o peso das demandas alheias ameaça a sua liberdade pessoal.\n\nPara manter a segurança interna em equilíbrio, algumas hipóteses de auto-observação podem ser úteis:\n- Notar quando o recurso ao otimismo ou à racionalização é usado para evitar o contato com emoções mais vulneráveis que pedem apenas acolhimento.\n- Observar se a inquietação surge quando rotinas práticas e deveres assumidos parecem sufocar o espaço necessário para a exploração pessoal.\n- Reconhecer que a verdadeira estabilidade emocional não exige fuga nem sobrecarga, mas a criação de uma rotina que respeite tanto os seus compromissos quanto a sua necessidade de ar livre e expansão mental.\n\n## Mente, aprendizagem, decisões e comunicação\n\nO seu estilo cognitivo e comunicativo é moldado por Mercúrio em Escorpião, situado nas proximidades do Meio do Céu, em conjunção com Marte e em sextil com Urano em Capricórnio. Mercúrio em Escorpião não se satisfaz com respostas simplistas ou explicações protocolares. A sua mente opera como uma lente de alta precisão, inclinada a investigar motivações ocultas, desvendar padrões não ditos e compreender a raiz estrutural de qualquer problema.\n\nA terceira casa, associada ao aprendizado imediato e à troca de informações cotidianas, tem cúspide em Áries e é regida por Marte, localizado em Libra na nona casa. Essa combinação produz um mecanismo de tomada de decisão muito particular: enquanto o impulso inicial de aprender e se posicionar é rápido e incisivo (Áries), a elaboração e a conclusão do raciocínio passam por uma ponderação cuidadosa sobre justiça, imparcialidade e equilíbrio (Marte em Libra). Você pensa estrategicamente antes de falar, buscando formulações que sejam ao mesmo tempo contundentes e eticamente sustentáveis.\n\nDiante de um impasse técnico ou de um debate conceitual em que vários interlocutores se apressam em emitir opiniões parciais, a sua reação imediata tende a ser o silêncio investigativo. A mente analisa silenciosamente as premissas de cada argumento, localiza onde estão as fragilidades lógicas e formula uma síntese que reorienta toda a discussão. Quando você finalmente se manifesta, a intervenção costuma ter peso e clareza cirúrgica.\n\nO sextil de Mercúrio com Urano em Capricórnio acrescenta originalidade e rapidez de raciocínio a essa postura reflexiva. Isso facilita a capacidade de articular intuições inovadoras com estruturas conceituais sólidas, permitindo que você encontre soluções originais para problemas antigos de gestão, pesquisa ou comunicação.\n\nEsse arranjo mental manifesta-se tipicamente através de certas polaridades:\n- Na expressão clara: pesquisa minuciosa, poder de persuasão fundamentado e capacidade de traduzir matérias complexas em diretrizes objetivas.\n- Sob tensão ou desconfiança: tendência a analisar excessivamente as intenções dos outros, desconfiando de acordos simples ou postergando decisões por querer antecipar todos os riscos possíveis.\n- Na via de integração: aliar a profundidade investigativa de Escorpião à busca de equidade de Libra, expressando o pensamento com firmeza sem perder a elegância diplomática.\n\n## Desejo, ação, assertividade e limites\n\nA forma como você mobiliza o desejo e estabelece limites no mundo é representada por Marte em Libra, posicionado no final do signo na nona casa, em proximidade angular com Mercúrio em Escorpião. Marte em Libra opera predominantemente por meio da negociação, do cálculo estratégico e da busca por legitimidade. A sua assertividade não costuma ser agressiva ou impulsiva; pelo contrário, você prefere agir com base em princípios de equidade, regras claras e posicionamentos fundamentados.\n\nComo a sua primeira casa é regida por Saturno na décima segunda casa, a iniciativa individual é sempre acompanhada por prudência e autodomínio. Você raramente entra em confrontos diretos desnecessários; prefere construir condições favoráveis nos bastidores ou deixar que a consistência dos fatos desmonte resistências. Os limites pessoais muitas vezes são estabelecidos de forma discreta, reduzindo o acesso ou encerrando conversas que não respeitem critérios mínimos de respeito mútuo.\n\nA oitava casa em Virgem, regida por Mercúrio em Escorpião, reforça a necessidade de clareza e detalhamento rigoroso em acordos compartilhados, contratos e situações que envolvam partilha de poder. Você tende a ter uma percepção aguçada sobre desequilíbrios em relações de dependência, exigindo transparência antes de se comprometer profundamente.\n\nQuando a dinâmica de ação e limites é colocada sob pressão, certas respostas merecem observação:\n- Assertividade equilibrada: habilidade para mediar disputas complexas, defender causas com base em justiça e negociar termos justos sem recorrer à imposição bruta.\n- Hesitação defensiva: demorar a manifestar contrariedade por tentar preservar a harmonia externa a qualquer custo, acumulando descontentamento silencioso.\n- Falsa solução por corte: após um período de tolerância excessiva, romper laços ou retirar-se abruptamente para a décima segunda casa, sem oferecer ao outro a oportunidade de ajuste.\n\n## Amor, atração, intimidade e relacionamentos\n\nA sua vida afetiva e o princípio de atração são iluminados por Vênus em Sagitário na décima primeira casa, em aspecto harmonioso de sextil com Marte em Libra e em contato com a energia de renovação de Urano. Para você, o encantamento amoroso está intimamente ligado à cumplicidade intelectual, ao compartilhamento de ideais de vida e à possibilidade de crescer ao lado de alguém. A atração é despertada por mentes curiosas, pessoas bem-humoradas e relacionamentos que funcionem como uma parceria de exploração do mundo.\n\nA sétima casa, que rege as parcerias estáveis e os compromissos de longo prazo, tem início em Câncer e é regida pela Lua em Sagitário na décima primeira casa. Essa configuração produz um diálogo muito interessante entre a necessidade de afeto e a preservação da independência:\n- Por um lado, Câncer na sétima casa busca acolhimento, lealdade protetora e uma sensação de família na relação a dois.\n- Por outro lado, a regente lunar em Sagitário exige que o vínculo preserve espaço para a autonomia de ambos, sem cobranças possessivas ou dinâmicas de dependência sufocante.\n\nA intimidade profunda, associada à oitava casa em Virgem e regida por Mercúrio em Escorpião, pede honestidade psicológica e discernimento. Você não entrega a sua intimidade com facilidade; é necessário tempo para que a confiança se estabeleça sobre bases sólidas e transparentes. Quando a confiança é conquistada, o vínculo ganha profundidade e lealdade duradoura.\n\nO desafio central nessa área consiste em harmonizar a busca por calor afetivo e abrigo emocional com o imperativo de liberdade e expansão. Quando o relacionamento oferece lealdade sem tentar controlar os passos individuais, você encontra o terreno ideal para se abrir com generosidade e construir uma parceria verdadeiramente enriquecedora.\n\n## Criatividade, prazer, brincadeira e vitalidade\n\nO prazer, o lúdico e a expressão criativa encontram a sua porta de entrada na quinta casa em Gêmeos, cujo regente, Mercúrio, está situado em Escorpião em conjunção com o Meio do Céu. Essa articulação confere à sua criatividade uma natureza curiosa, ágil e ao mesmo tempo investigativa. O ato criativo para você frequentemente envolve a palavra, a elaboração de conceitos, a escrita, o humor perspicaz ou a capacidade de articular diferentes linguagens para dar forma a temas complexos.\n\nVênus em Sagitário na décima primeira casa complementa essa dinâmica orientando o seu senso de prazer em direção a experiências expansivas: viagens, estudos livres, contato com a diversidade cultural e conversas estimulantes entre amigos. O lazer ganha significado quando amplia a sua visão de mundo e renova a sua fé na vida.\n\nA vitalidade central, simbolizada pelo Sol em Escorpião, é regenerada através do foco concentrado e da superação de desafios substantivos. O contato harmonioso do Sol com Saturno e Netuno em Capricórnio indica que a sua energia vital se fortalece quando você canaliza a imaginação criativa em projetos estruturados, que possam ter utilidade real e permanência no tempo.\n\nPara manter a vitalidade e a criatividade fluidas, é enriquecedor observar algumas dinâmicas:\n- Permitir que a curiosidade de Gêmeos brinque livremente com hipóteses e ideias sem a obrigação imediata de que todo projeto tenha que ser grave ou definitivo.\n- Usar o humor e a leveza como antídotos naturais contra o excesso de seriedade que por vezes acompanha o seu foco de trabalho.\n- Reservar momentos regulares para o ócio criativo e para atividades recreativas que não tenham utilidade prática imediata além do simples prazer de criar e explorar.\n\n## Trabalho, vocação, contribuição e visibilidade\n\nO setor vocacional é uma das áreas mais enfatizadas e potentes do seu mapa. Com o Sol e Plutão conjuntos no Meio do Céu em Escorpião e Mercúrio muito próximo a esse ângulo culminante, a sua carreira e a sua contribuição no mundo são marcadas pela busca de autoridade técnica, capacidade de transformação institucional e profundidade estratégica. Você tende a se destacar em papéis que exijam investigação, reestruturação de processos, gestão de crises ou domínio de conhecimentos que a maioria não domina.\n\nA décima casa em Escorpião é regida tradicionalmente por Marte, que está posicionado em Libra na nona casa. Isso conecta diretamente a sua visibilidade e o seu trabalho a campos que envolvem ética, direito, consultoria, docência superior, relações internacionais, publicações ou mediação de interesses complexos. A sua atuação profissional ganha força quando se apoia em uma fundamentação conceitual rigorosa e em uma busca ativa por equidade.\n\nNo âmbito do cotidiano profissional, a sexta casa em Câncer abriga Júpiter exaltado e retrógrado, enquanto a cúspide da casa é regida pela Lua em Sagitário. Júpiter em Câncer confere uma dedicação protetora, generosa e refinada ao trabalho do dia a dia. Você tende a se importar genuinamente com o ambiente e com a qualidade do que entrega, buscando criar métodos de trabalho humanos e acolhedores.\n\nQuando um projeto entra em crise ou uma organização passa por um momento de transição crítica, a sua reação imediata não é o desespero, mas uma concentração silenciosa e resolutiva. Enquanto outros se perdem em especulações, você tende a se debruçar sobre a raiz do problema, redesenhando fluxos e propondo medidas corretivas que restabelecem a solidez operacional.\n\nA tensão mais relevante neste domínio ocorre entre o chamado para uma visibilidade expressiva (Sol, Plutão e Mercúrio no Meio do Céu) e o impulso de reserva do regente do Ascendente (Saturn em Capricórnio na décima segunda casa). A integração dessa polaridade acontece quando você exerce a sua liderança e autoridade através da competência técnica e do direcionamento estratégico, sem necessitar da superexposição pessoal desnecessária.\n\n## Dinheiro, recursos, valor e segurança material\n\nA sua relação com recursos financeiros, posses e senso de valor pessoal é descrita pela segunda casa em Peixes, cujo regente tradicional, Júpiter, encontra-se exaltado no signo de Câncer na sexta casa. Essa configuração sugere uma postura que transcende a mera acumulação material: o dinheiro é percebido fundamentalmente como um meio para garantir estabilidade, prover cuidado àqueles que você estima e financiar projetos com relevância humana e social.\n\nA posição de Júpiter em Câncer na sexta casa indica que a sua prosperidade e o seu fluxo de recursos estão diretamente atrelados ao seu trabalho diário, à prestação de serviços qualificados e à dedicação diligente às suas tarefas. A exaltação de Júpiter favorece a capacidade de gerar valor contínuo a partir do aperfeiçoamento das suas competências e da utilidade prática da sua entrega.\n\nEm contrapartida, a oitava casa em Virgem, regida por Mercúrio em Escorpião, introduz um critério de grande rigor e prudência na administração de recursos partilhados, heranças, investimentos, impostos e dívidas. Se na gestão dos seus próprios ganhos pode haver generosidade e flexibilidade (Peixes e Câncer), nos negócios conjuntos e contratos você tende a exigir prestação de contas detalhada e garantias claras.\n\nPara manter a saúde financeira e material sustentável, algumas diretrizes práticas de auto-observação podem ser aplicadas:\n- Estabelecer limites claros entre generosidade pessoal e obrigações contratuais, evitando assumir passivos financeiros de terceiros por excesso de compaixão.\n- Valorizar adequadamente o seu tempo e a sua especialização técnica, estipulando honorários condizentes com a complexidade do trabalho realizado.\n- Manter o controle orçamentário organizado de forma sistemática (Virgem na oitava casa), equilibrando a confiança intuitiva de Júpiter com o realismo necessário.\n\n## Corpo, energia, rotina e sustentabilidade\n\nA sustentabilidade da sua rotina e a administração da sua energia vital envolvem a interação entre o Sol em Escorpião, Marte em Libra e a dinâmica da sexta casa em Câncer com Júpiter exaltado, contraposta a Saturno e Netuno na décima segunda casa em Capricórnio. A proposta aqui não é emitir diagnósticos de ordem física, mas fornecer hipóteses simbólicas para que você observe os seus ritmos diários, a gestão da carga de trabalho e o equilíbrio entre esforço e repouso.\n\nJúpiter em Câncer na sexta casa confere uma inclinação natural para assumir múltiplos encargos no cotidiano, motivada por um desejo genuíno de ser útil e de cuidar do andamento perfeito dos processos. O risco associado a essa postura é a sobrecarga gradual: por ter facilidade para resolver demandas práticas, você pode tender a absorver responsabilidades adicionais sem perceber que a sua agenda está ficando saturada.\n\nO contrapeso essencial a esse excesso de serviço encontra-se na décima segunda casa, onde Saturno e Netuno em Capricórnio assinalam a necessidade incontornável de intervalos protegidos de silêncio, solitude e desaceleração. Para que o seu nível de energia e foco permaneça estável, o recolhimento não deve ser encarado como luxo ou tempo perdido, mas como uma parte indispensável da sua engrenagem de produtividade.\n\nMarte em Libra no final do signo sugere que a sua energia rende melhor quando os dias seguem uma cadência equilibrada e harmoniosa, evitando picos de esforço desmedido motivados pela urgência de terceiros.\n\nAlgumas práticas de auto-observação simbólica para a sustentabilidade da rotina incluem:\n- Delimitar um horário firme para o término das atividades de trabalho, evitando que pendências secundárias invadam os períodos dedicados ao descanso e à privacidade.\n- Tratar os momentos de retiro e silêncio como compromissos inegociáveis na sua rotina semanal.\n- Avaliar periodicamente se novos compromissos estão sendo aceitos por real necessidade e interesse ou por uma dificuldade temporária de estabelecer limites às demandas do entorno.\n\n## Lar, raízes, família e vida privada\n\nA sua base doméstica, o ambiente familiar e a sensação de enraizamento são representados pela quarta casa no signo de Touro, sob a regência de Vênus em Sagitário na décima primeira casa. A presença de Touro na cúspide do fundo do céu indica que, no íntimo, você necessita de um espaço físico que ofereça paz, segurança, conforto tangível e estabilidade sensorial. O lar ideal é aquele que funciona como um porto seguro, onde o ritmo do mundo exterior pode ser deixado do lado de fora.\n\nNo entanto, a localização da regente Vênus em Sagitário na décima primeira casa acrescenta uma dimensão social e cultural muito rica a essa vida privada. A sua casa não é pensada como um espaço isolado e convencional; ela ganha vida quando abriga livros, referências de viagens, objetos que contam histórias e quando está aberta para encontros calorosos com amigos chegados que compartilham suas buscas intelectuais e humanas.\n\nEssa configuração também descreve uma herança psicológica que busca segurança através da estabilidade material (Touro), mas que evolui na vida adulta para a construção de um ambiente doméstico onde a liberdade de pensamento e o respeito às diferenças individuais são os valores centrais.\n\nA integração deste domínio acontece quando você consegue manter a sua casa como um refúgio de simplicidade e repouso restaurador, sem abrir mão de uma atmosfera aberta, acolhedora e intelectualmente instigante.\n\n## Amizade, comunidade e pertencimento\n\nO seu mundo social, os projetos coletivos e o sentimento de pertencimento a grupos são governados pela décima primeira casa em Sagitário, onde residem a Lua e Vênus. Essa é uma das áreas mais luminosas e expansivas do seu mapa. A presença conjunta desses dois planetas em um signo de Fogo e na casa das afinidades coletivas indica que você encontra grande alegria e renovação emocional no convívio com grupos, movimentos sociais, associações profissionais ou círculos de amizade comprometidos com causas amplas e crescimento mútuo.\n\nO pertencimento para você não se apoia em laços formais ou obrigações protocolares, mas na sintonia ética e filosófica. Você se sente em casa entre pessoas com quem possa debater ideias com franqueza, rir com generosidade e planejar futuros possíveis.\n\nJúpiter, regente dessa décima primeira casa, está situado em Câncer na sexta casa. Isso estabelece uma conexão muito bonita entre a amizade e o apoio mútuo no cotidiano: muitas das suas relações mais significativas nascem no contexto de trabalhos compartilhados, em iniciativas de serviço comunitário ou através de parcerias em que você e seus amigos se ajudam mutuamente a resolver questões práticas da vida.\n\nO cuidado a ser observado reside na gestão da sua energia pessoal:\n- Manter o intercâmbio social rico e ativo sem permitir que os compromissos de grupo drenem o tempo reservado para a sua privacidade.\n- Escolher cultivar amizades que respeitem a sua necessidade periódica de recolhimento, sem interpretar o seu silêncio temporário como afastamento afetivo.\n\n## Sentido, crenças, estudo e horizonte\n\nA busca por significado, a formação de uma cosmovisão e o aprofundamento nos estudos superiores são articulados pela nona casa em Libra — onde se encontram Marte e Mercúrio — e pela presença de Júpiter em Câncer na sexta casa. Para você, uma filosofia de vida não pode ser um conjunto abstrato de dogmas; ela precisa ser testada no diálogo com diferentes perspectivas (Libra) e comprovada pela sua capacidade de gerar cuidado e transformação concreta na realidade cotidiana (Câncer e Escorpião).\n\nCom Mercúrio e Marte na nona casa, a sua mente investigativa se interessa profundamente por questões de justiça, ética, filosofia comparada, psicologia de profundidade e sistemas de pensamento que ajudem a decifrar a complexidade humana. Você possui um talento natural para construir pontes entre visões divergentes, buscando uma síntese que faça sentido lógico e moral.\n\nA posição de Júpiter em Câncer ancora a sua busca de sentido no respeito pela memória, pelas raízes culturais e pela dignidade humana. O seu horizonte se expande quando você coloca o conhecimento a serviço do amadurecimento e da proteção de pessoas e projetos.\n\nA relação de sextil entre o Sol em Escorpião e Saturno e Netuno em Capricórnio protege a sua visão de mundo contra ilusões fáceis ou fanatismos. Você tende a cultivar um ceticismo saudável que, longe de fechar a mente, funciona como um filtro de discernimento para separar o que é especulação vazia daquilo que possui solidez e verdade essencial.\n\n## Sombra, defesas, poder e padrões repetitivos\n\nA análise das dinâmicas de sombra e dos padrões de defesa no seu mapa concentra-se primordialmente no stellium em Capricórnio na décima segunda casa — composto por Saturno, Urano e Netuno — e nos aspectos de oposição que esses planetas formam com Júpiter em Câncer na sexta casa, além da presença de Plutão conjunto ao Sol no Meio do Céu.\n\nO stellium na décima segunda casa em Capricórnio pode apontar para um mecanismo de defesa baseado no autocontrole rigoroso e na repressão de sentimentos de vulnerabilidade. Pode haver uma crença interna inconsciente de que você é o único responsável por sustentar a ordem e que qualquer demonstração de fraqueza ou cansaço pode resultar em perda de controle ou julgamento negativo. Como consequência, surge a tendência a carregar fardos pesados em silêncio, sem solicitar ajuda mesmo quando ela seria necessária e justa.\n\nA oposição entre Júpiter em Câncer na sexta casa e Saturno/Netuno em Capricórnio na décima segunda casa ilustra um padrão pendular que merece atenção:\n- Em um dos polos, você pode se entregar excessivamente ao trabalho e à assistência prática aos outros, assumindo um papel de salvador ou facilitador incansável.\n- Quando a sobrecarga se torna insustentável, o outro polo é ativado, gerando uma sensação de desilusão, cansaço ou a vontade de se retirar abruptamente para um isolamento defensivo.\n\nNo plano das relações de poder, a presença de Plutão e do Sol no Meio do Céu pode suscitar uma vigilância aguçada contra tentativas de manipulação ou controle por parte de figuras de autoridade. Essa sensibilidade é útil para proteger a sua autonomia, mas, se operada de forma reativa, pode levar a posturas de desconfiança preventiva mesmo em ambientes colaborativos seguros.\n\nO caminho de integração desse padrão envolve reconhecer que a verdadeira maturidade não consiste em ser invulnerável, mas em saber dosar o esforço, aceitar as próprias limitações humanas e permitir que outras pessoas também assumam as responsabilidades que lhes cabem.\n\n## Crescimento através da contradição\n\nO mapa natal frequentemente apresenta exigências que parecem antagônicas, mas que, quando compreendidas em profundidade, funcionam como eixos fundamentais de maturação psicológica. No seu caso, o crescimento pessoal se dá através da integração de três grandes polaridades estruturais:\n\nA primeira contradição reside no eixo sexta/décima segunda casas: Júpiter em Câncer na sexta casa impele você a atuar com dedicação, presteza e acolhimento nas tarefas práticas do mundo visível; enquanto Saturno e Netuno em Capricórnio na décima segunda casa exigem isolamento, desapego dos resultados e preservação de um espaço sagrado de silêncio interior. A evolução não consiste em escolher entre servir incansavelmente ou fugir do mundo, mas em construir uma rotina onde o serviço prático seja nutrido e limitado por momentos regulares de recolhimento contemplativo.\n\nA segunda contradição envolve a oposição de estilos entre o Meio do Céu em Escorpião (com o Sol, Mercúrio e Plutão) e a décima segunda casa em Capricórnio:\n- A esfera vocacional convoca você para um papel de impacto, liderança técnica, transformação e visibilidade substancial.\n- A estrutura do Ascendente e da décima segunda casa puxa para a discrição, o anonimato e a atuação reservada.\n- Essa polaridade se resolve quando você compreende que a sua liderança não precisa ser ruidosa; ela se torna muito mais poderosa quando exercida com autoridade técnica, estratégia nos bastidores e foco na entrega real.\n\nA terceira contradição manifesta-se entre a necessidade de liberdade da Lua e Vênus em Sagitário na décima primeira casa e a necessidade de apego protetor e lealdade da sétima casa em Câncer. Aprender que um vínculo afetivo maduro pode coexistir com a plena liberdade individual é a chave para transformar essa aparente contradição em uma relação duradoura e estimulante.\n\n## Direção de desenvolvimento\n\nO eixo dos Nodos Lunares no seu mapa situa-se com o Nodo Sul em Leão na sétima casa e o Nodo Norte em Aquário na primeira casa, recebendo um aspecto harmonioso de sextil de Vênus em Sagitário.\n\nO Nodo Sul em Leão na sétima casa representa um repertório comportamental familiar e confortável: a tendência a buscar sentido, validação e brilho pessoal primordialmente através do olhar do outro ou por meio de parcerias em que você assume o papel central de apoio, admiração ou condução. Embora esse talento relacional seja um recurso valioso, depender dele de forma automática pode fazer com que você condicione a sua autoimagem à aprovação alheia ou permaneça preso a dinâmicas onde precisa performar para ser reconhecido.\n\nO Nodo Norte em Aquário na primeira casa aponta para um território de experimentação e individuação autônoma. O convite desenvolvimental consiste em cultivar uma identidade própria, original e independente das expectativas do entorno. Desenvolver a primeira casa em Aquário significa:\n- Autorizar-se a sustentar posicionamentos próprios com desprendimento, sem a necessidade de buscar consenso unânime.\n- Construir um senso de valor pessoal que não dependa de aplausos imediatos, mas da fidelidade aos seus princípios e à sua visão de futuro.\n- Relacionar-se a partir de um lugar de autonomia e colaboração entre iguais, em vez de dinâmicas baseadas em dependência emocional ou papéis pré-definidos.\n\nO sextil de Vênus em Sagitário com o Nodo Norte atua como um recurso facilitador nesse processo: o seu amor pelo conhecimento, a sua busca por horizontes amplos e os seus ideais éticos oferecem a inspiração necessária para você ousar ser autêntico e construir a sua própria trajetória com liberdade e integridade.\n\n## O capítulo de vida ativo agora\n\nO momento presente marca a convergência de ciclos astrológicos significativos que ativam áreas centrais da sua estrutura natal, assinalando uma fase propícia para revisões de identidade, consolidação de autoridade pessoal e reorganização de prioridades. Não se trata de previsões deterministas de acontecimentos externos, mas da descrição de campos de experiência e amadurecimento que ganham destaque consciente neste período.\n\nNo sistema tradicional de profecções anuais, o ciclo dos 36 anos ativa a primeira casa do seu mapa, no signo de Capricórnio, colocando o regente Saturno como o Senhor do Tempo no período entre novembro de 2025 e novembro de 2026. Esse ciclo coloca em primeiro plano temas de autonomia pessoal, limites, reavaliação de como você se apresenta ao mundo e a necessidade de assumir a responsabilidade direta pelas suas escolhas fundamentais. Como Saturno natal está na décima segunda casa, essa profecção convida a uma arrumação profunda da vida interior e à eliminação de compromissos obsoletos que já não refletem a sua maturidade atual.\n\nSimultaneamente, destacam-se trânsitos planetários de grande relevância que dialogam diretamente com esse momento:\n\n1. Reestruturação e maturação da base de apoio pessoal:\nO trânsito de Saturno em trígono com a sua Lua natal em Sagitário desdobra-se entre setembro de 2026 e março de 2027, com exatidões em 20 de setembro de 2026 e 23 de fevereiro de 2027. Esse trânsito favorece a estabilização das emoções, trazendo maior sobriedade para lidar com necessidades afetivas e auxiliando na consolidação de amizades e projetos de longo prazo. Paralelamente, o trânsito de Saturno em quincúncio com o Sol natal em Escorpião, com exatidões em 02 de novembro de 2026 e 18 de janeiro de 2027, convida a pequenos ajustes de rota na forma como você exerce a sua liderança e administra a sua energia vital, pedindo eliminação de excessos de controle.\n\n2. Realinhamento da individuação e autonomia:\nEntre dezembro de 2026 e janeiro de 2027, ocorre o Retorno Nodal, marcado pela conjunção exata do trânsito do Nodo Norte sobre o seu Nodo Norte natal em Aquário na primeira casa em 19 de dezembro de 2026. Esse ciclo, que se repete a cada dezoito a dezenove anos, funciona como um momento reflexivo privilegiado para recalibrar o seu rumo de vida, reafirmar a sua autenticidade e desatar amarras de dependência relacional originadas no Nodo Sul em Leão.\n\n3. Calibração entre ambição e sustentabilidade de poder:\nEm setembro de 2026, com exatidão em 06 de setembro de 2026, o trânsito de Júpiter em quadratura com Plutão natal no Meio do Céu estimula revisões em torno de ambição, impacto profissional e governança pessoal. Além disso, as ativações por direções e progressões secundárias envolvendo Mercúrio, Vênus e Marte no mesmo horizonte temporal reforçam a importância de alinhar comunicação, acordos de parceria e metas de carreira com a sua verdade interior.\n\n## Integração final\n\nAo contemplar o seu mapa como um todo integrado, o fio condutor que une as suas diversas partes é o amadurecimento de uma autoridade que não precisa fazer barulho para ser consistente. A combinação entre a profundidade investigativa de Escorpião no Meio do Céu, a disciplina silenciosa de Capricórnio na décima segunda casa e no Ascendente, a visão ampla da Lua e Vênus em Sagitário e a dedicação cuidadosa de Júpiter em Câncer constrói uma personalidade rica em recursos e substância.\n\nA sua caminhada ganha força quando você reconhece que não precisa escolher entre a força e a sensibilidade, nem entre o recolhimento e a realização no mundo. A sua contribuição mais valiosa surge justamente quando a sua experiência prática é amadurecida no silêncio da reflexão e depois oferecida com clareza, generosidade e integridade à sociedade.\n\nDiante da sua trajetória e dos passos que você escolhe dar a partir de agora, uma pergunta central permanece como bússola para o seu caminhar: de que maneira você pode continuar assumindo a sua autoridade e o seu impacto no mundo sem abrir mão do silêncio, dos limites e do cuidado que sustentam a sua verdade interior?",
+  "narrative_block_sources": [
+    {
+      "narrative_block_sha256": "cd56e29f02d5dc014d523464175b1b676e19a27d7a017eab0dcc87fb0e7a6d25",
+      "synthesis_ids": [
+        "reasoned.reader.shadow_defenses_patterns"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "674201080696d7c81ea814d68d124e1e9347502fffa551f03de4fe9cf758f9fe",
+      "synthesis_ids": [
+        "coverage.mandatory.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "5896ab80747c5d415ddaea0f282bb5e63a63cf85d612406cc767472b84d37d74",
+      "synthesis_ids": [
+        "coverage.mandatory.2"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "fb7645635888853cf5e03c4ccc0bacb25d4109ac9db3375049311031178f37c4",
+      "synthesis_ids": [
+        "coverage.mandatory.3"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "1d59587123698f85c66d165e8957d02d3928c4d5a3fa188ca6bfd0923946a503",
+      "synthesis_ids": [
+        "coverage.mandatory.4"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "feafa8bdc44a2c8e1b49085568ec1f4a1dbc4859bcbf7826976cc654355405af",
+      "synthesis_ids": [
+        "coverage.mandatory.5"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "bd5ddaddf552c976b8ad835c694ab9ca0cf2ee1de4fc2f36ec43b9d674fc78a1",
+      "synthesis_ids": [
+        "coverage.mandatory.6"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "ddb1f1b1347e18d47054dc495459a197b7e5d833e908648f16f5b0f25a0230de",
+      "synthesis_ids": [
+        "coverage.mandatory.7"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "4a70a24dad7316df50e1d54dc5093c3b6471e5c2735760544626c3cbe39dd251",
+      "synthesis_ids": [
+        "coverage.mandatory.8"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "a7a346c0398158e8ee4a13cc4f59d89bb58ae93aab7ae06cb3d35b76c832f304",
+      "synthesis_ids": [
+        "coverage.mandatory.9"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "5bd3b0344643d32e5b6a33b7b535d5e188b562d9935a91063bb3dd6f7acee1b0",
+      "synthesis_ids": [
+        "coverage.mandatory.10"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "88a28f970ac6d2900b7639cf2230f47d72d341881012c8928e8dc55c6697e22c",
+      "synthesis_ids": [
+        "coverage.mandatory.11"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "a18935e0cddfc2685fcf1674d97071a0e94234dd6d06137786e7f7fc8e51c438",
+      "synthesis_ids": [
+        "coverage.mandatory.12"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "6a90ef53d00b50664339f65ce06cc6aa4f3c02f9eb89f586f372957ab507eb01",
+      "synthesis_ids": [
+        "coverage.mandatory.13"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "19216f82d7c4a4ca2740b3f58d44dce06ac8bbf17ead8b260295e0fb541f5b97",
+      "synthesis_ids": [
+        "coverage.mandatory.14"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "87bd3d5067f139eee4b3a2e30dd367d677ac62868ca5d334ea61ad064d62ab89",
+      "synthesis_ids": [
+        "coverage.mandatory.15"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "7e0fe7a2d43feda6135733bef1314c5f3afd7ce03e68602442c339504779fdba",
+      "synthesis_ids": [
+        "reasoned.reader.identity_presence"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "d724a002d3c0897b37486681a9343bf08d3e5b96492a514c06ba776554ba9e8b",
+      "synthesis_ids": [
+        "reasoned.reader.identity_presence"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "153935c29712f1a8b82b3fc73be05a6ea78707229a6346b9c3e9a14de6cddf27",
+      "synthesis_ids": [
+        "reasoned.reader.identity_presence"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "604815c18519ffe4c894df7b14c93c98442ab1053764dfd30e64a894e788c791",
+      "synthesis_ids": [
+        "reasoned.reader.identity_presence"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "43e1301ac7438c0d1959d3cdf7ff38757392dfdc09ba3c1044f759d054e60f47",
+      "synthesis_ids": [
+        "reasoned.reader.identity_presence"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "e1d0681cc22ee234bf624733b28237aa249fd8b407000a5bd49c94aa8dcb5480",
+      "synthesis_ids": [
+        "reasoned.reader.identity_presence"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "30e6d745d3ff4c16eb2917e66a495923e16c7c3b9bde58593391d7d7bd0d8003",
+      "synthesis_ids": [
+        "reasoned.reader.identity_presence"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "4442d7633f1c54bd5971db06119bd94e55cdf7862dc2851375d104067ec756e1",
+      "synthesis_ids": [
+        "reasoned.reader.identity_presence"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "34cd2ce3d137292ba820ff9086c15beb50aaf45ba31d2a01651a28284adc1c7a",
+      "synthesis_ids": [
+        "reasoned.reader.emotional_security"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "9798032031b1314939614322c66b8575690486922bdbe8498d0e9d8790aabb05",
+      "synthesis_ids": [
+        "reasoned.reader.emotional_security"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "17acd478c688b1aa23d5737bed615e4850fc4b82a1fa9865cf49cc4d4b5afe3e",
+      "synthesis_ids": [
+        "reasoned.reader.emotional_security"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "b1999f0b71d16d7a662e7006d145d7b7ed7cb13ac6739f8652a0108e88b89968",
+      "synthesis_ids": [
+        "reasoned.reader.emotional_security"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "2ad430f9222a22b35a9672dfa1aabf5cc2bbd2ea691a288280f6a8acc531a12b",
+      "synthesis_ids": [
+        "reasoned.reader.emotional_security"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "ad84b5dfa379728dcaf204b892c12c721b0ebca95c4e7907523454688058be64",
+      "synthesis_ids": [
+        "reasoned.reader.emotional_security"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "e186acecfc7e55d4bf9523dc72620552b9824cb772cf9d0209de216b72ee86a1",
+      "synthesis_ids": [
+        "reasoned.reader.emotional_security"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "dfc96ddd0573170f93e6eea7663f09d9b728a8777bbe23f0b9efd17c97802312",
+      "synthesis_ids": [
+        "reasoned.reader.mind_learning_communication"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "120ae1d446b2a47ab88802ee3971f9cada5f5d8c01a3d532cad268cd6c7f7cf0",
+      "synthesis_ids": [
+        "reasoned.reader.mind_learning_communication"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "8f940e7c1a643b2e4fda7402954fbe19d4ef9b0397908dfbb2ffa42a211af406",
+      "synthesis_ids": [
+        "reasoned.reader.mind_learning_communication"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "f0e8750e0a44327724da10d8df62dafcabaa536945149027ddd79d848feee3f7",
+      "synthesis_ids": [
+        "reasoned.reader.mind_learning_communication"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "be4cf0fea9c90ee4b7a69592c5be0fe7b6594499b7c6baa9fce70360b50690fe",
+      "synthesis_ids": [
+        "reasoned.reader.mind_learning_communication"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "9dffcc4705dd8f069631bf088f1cdbd8ac4714c1f13f04c4c9814eca20ab74c6",
+      "synthesis_ids": [
+        "reasoned.reader.mind_learning_communication"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "79a6d036bdbfdc9a45d7d37895364d2f12d831a4add5808922695b29e5905942",
+      "synthesis_ids": [
+        "reasoned.reader.mind_learning_communication"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "b43d3876df23c842ebfe1614512573b51ef74cf9169d69a86af71ccc95c9c16c",
+      "synthesis_ids": [
+        "reasoned.reader.mind_learning_communication"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "7264e3dbc5624cbbf003cd7d81ccc1518b1968882dcd076a5bfff8df5a05d2e0",
+      "synthesis_ids": [
+        "reasoned.reader.desire_action_limits"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "70880c75438ab2a9733386dd3862dcbd7c52b1d149f35ae101b15282f7bab56d",
+      "synthesis_ids": [
+        "reasoned.reader.desire_action_limits"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "ea858046bcb593a5445444ddf8a85ca1a2049ce130ed2c55180505d135223eaa",
+      "synthesis_ids": [
+        "reasoned.reader.desire_action_limits"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "bac354eb82836f87faf6c70cebfb5a9c7ecba525428fa1df83bfc271edce5122",
+      "synthesis_ids": [
+        "reasoned.reader.desire_action_limits"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "5e3a781d0814913a14aed0161616e07059ed8b7d5eb601a59460ff2a2d0d7fa2",
+      "synthesis_ids": [
+        "reasoned.reader.desire_action_limits"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "714cd62e88a08478925bb9fa2e2dd82dc6d10620f63b6a063b7ab9a5706fafe0",
+      "synthesis_ids": [
+        "reasoned.reader.desire_action_limits"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "cf1218a6a71522a4880fa241c216b8feb81ab1fc7ee924abaf1eb5473437b650",
+      "synthesis_ids": [
+        "reasoned.reader.desire_action_limits"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "8bf098e007e25c2e489cf562e61d391c1068027d306515eea651b9975e8ab0db",
+      "synthesis_ids": [
+        "reasoned.reader.love_intimacy_relationship"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "96e80ab7969832147ef9f88bf59355c37125614eeefe7a3a894b98b2f259733c",
+      "synthesis_ids": [
+        "reasoned.reader.love_intimacy_relationship"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "5b931ece3b4cfcaa13449b052d6a5ff10741c55fc68799124b833fc169679af7",
+      "synthesis_ids": [
+        "reasoned.reader.love_intimacy_relationship"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "1ca4bafeef6403b0498fab3021de2c20990304d9f5d44a3a05fdcdbe54426340",
+      "synthesis_ids": [
+        "reasoned.reader.love_intimacy_relationship"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "9fcc877bf4e982c5001eb438ff4c9caa0bf6ac8682fc3e147b2fe1c961bcd257",
+      "synthesis_ids": [
+        "reasoned.reader.love_intimacy_relationship"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "0951cb308c2b6f484bb877c34358e95f62028030ac2824f43741236eb0d96b27",
+      "synthesis_ids": [
+        "reasoned.reader.love_intimacy_relationship"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "31b5662709c9a1164569bbbeea638b69da807e290ce25b7c58c2dbef6d3890f7",
+      "synthesis_ids": [
+        "reasoned.reader.creativity_pleasure_aliveness"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "42dfa673fc61a30ad2a839abf3cdaaf579ce97fd35c1a18ca3bcc55335a5d4bf",
+      "synthesis_ids": [
+        "reasoned.reader.creativity_pleasure_aliveness"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "b4e52e366223feac0fe283364086b33971bc980f4dac035b2f05319731bc2f01",
+      "synthesis_ids": [
+        "reasoned.reader.creativity_pleasure_aliveness"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "7544344b68a3941b61daca7b59d90fc3ec6b5a486aba2cb6611733c4f455994e",
+      "synthesis_ids": [
+        "reasoned.reader.creativity_pleasure_aliveness"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "c90dc7da175f61ec0253e3f6f301566790c8a3d00aecae8ee820ca5dfc33ba71",
+      "synthesis_ids": [
+        "reasoned.reader.creativity_pleasure_aliveness"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "edd287817ce5766479c35e3c6f5d65e249e53b2d81ca3cf782cd93207eb7af2d",
+      "synthesis_ids": [
+        "reasoned.reader.creativity_pleasure_aliveness"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "93854982b591c86fff3035b4cf762d7f6e2088d46fec1130c1513f384dcb0099",
+      "synthesis_ids": [
+        "reasoned.reader.creativity_pleasure_aliveness"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "200f6d3ef090a994370c80ef2170fa5845e72479bfffaee439862e6104d40cc2",
+      "synthesis_ids": [
+        "reasoned.reader.work_vocation_visibility"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "501481cfdca1286125918a8c5033de54913c073be81bb81dcad602d0110dd388",
+      "synthesis_ids": [
+        "reasoned.reader.work_vocation_visibility"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "5395676329f9976537f01417e6d02cc2162b3431bf9fce4ba782a75b5538f0ec",
+      "synthesis_ids": [
+        "reasoned.reader.work_vocation_visibility"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "1cda0aac86f90584fd3191aec831d33c7b8ca3951ced78022d6ec3da2eec0a6a",
+      "synthesis_ids": [
+        "reasoned.reader.work_vocation_visibility"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "dc567623ab6ac8430345d6d22547388b05a3055798ee27c95cb3f302e1212999",
+      "synthesis_ids": [
+        "reasoned.reader.work_vocation_visibility"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "60401e47f9772161cae04a34c232f6c63a79f769a87098b33585995eab92903b",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.2.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "512f4fcec524b5dade241fe1280d194471b82faaedc1ee4aba034b11662a7fa1",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.2.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "3bfe8b5a4006597f6d9cf47f2ec5283b06cf7ab750a5d32aebb56c553aaca0d8",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.2.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "208c276241e2e652533fc21f097a294bcf7cd0332e5de5ae8014f45ce3c94a0f",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.2.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "f8945877b4541eae0c466770b70af3cefdecd72303df7a56f08d6e769f4b38dc",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.2.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "6c8e45c81161f6f60c443b204d817bbbcee0e662081fff996d640349da01cb18",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.2.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "8163051ecc708e31ae76a8126d2642d3754f5ac03a11d98d6bb0e4f2a9d0a9b7",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.2.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "7b2d1fadddc659ffb9b67bfd6e0c2b3ffa9b7176e441ff887c17c4552f46dc21",
+      "synthesis_ids": [
+        "reasoned.reader.body_energy_routine"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "2c267f331d7ea07824bbfdb1cce9a9a1d43c929d36e02482be8e161b956ee93c",
+      "synthesis_ids": [
+        "reasoned.reader.body_energy_routine"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "080759ac9691263fa2d0aa5b32f2add9565454c5af9c9a16c30cac12d2eb88eb",
+      "synthesis_ids": [
+        "reasoned.reader.body_energy_routine"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "d2952cb0cde1db68a3a1a8b8828e460bad8f30df5945f44fd0a7f153a99f66c2",
+      "synthesis_ids": [
+        "reasoned.reader.body_energy_routine"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "89719da9c89c9415c833cf97d002ff83567cf509f56688d4bcaa9530b8085245",
+      "synthesis_ids": [
+        "reasoned.reader.body_energy_routine"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "db7128e90eb963177fb26d7f4e1ec0a28f76d523758afae6b5c0c0e1ffbf3042",
+      "synthesis_ids": [
+        "reasoned.reader.body_energy_routine"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "28352149de83dc65770f705b27d1e02f2dcae7c539b4894cad73223874a4dc92",
+      "synthesis_ids": [
+        "reasoned.reader.body_energy_routine"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "f76d838742bb7245dc07a126a3b1f8be3659edda80ac450c9703cb762db505bd",
+      "synthesis_ids": [
+        "reasoned.reader.body_energy_routine"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "0f3aad71afb6607ea1fe538a750effd47a17141f8a91446ac7ee1207fe3e037e",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.4.venus"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "fb3344f832b7779bbc12986f81f0466a394ee66ad16388678226cb81ce14ec7c",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.4.venus"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "243c6c17a6904d371629748d06dca484e43796b519f28f31936d8f1bdc074fcd",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.4.venus"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "028ed6517983a8c84f6e5458fef4927022fa94f9b473ac46ee83282a3b5b09a0",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.4.venus"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "2ac8da40f9feb2fd937dad1caf7959ff22c92f6b2847b56af46cd740673289e3",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.11.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "a83525744a5dabfd7e6918a1744d72e92127fd3dbfc464c719467895a7c338ca",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.11.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "25ebc5830840d32340a48017bd39a7ebfa187e60a3bfd3004d2712ed0f00ffb0",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.11.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "2b8b3763559e40c9eeb59a6e6b45b07a52f4b5b94ffc1d4fd2782164b18129ff",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.11.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "32cf61a647a53a02b36f06e3e5ae2fad8fe700faadece33b4da6c054c3745631",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.11.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "b09cf15901ffb81a82e6b81d3e4fb43fdbb64af932522a1be346a729221ec094",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.11.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "d5206c3ba54f6788505b4a118a2f0151524c06b6685c88740a54a72e92adfa5d",
+      "synthesis_ids": [
+        "reasoned.reader.meaning_beliefs_horizon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "c268947673bbf0eee3ba6e55405fd91d7112d4cdc719ba79656800b3ea585770",
+      "synthesis_ids": [
+        "reasoned.reader.meaning_beliefs_horizon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "ab839ef6656532addc6c5c0d1c14e37fb1f096f27dfb8f14e7f6ba93775e4c9b",
+      "synthesis_ids": [
+        "reasoned.reader.meaning_beliefs_horizon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "5c799e2594077c14008db0d51999e33f7326f60f03b201d912300fdc7101f9fe",
+      "synthesis_ids": [
+        "reasoned.reader.meaning_beliefs_horizon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "26b365775ffcb11cd1d03bdc2bd880555bc2b78d77da39fedf928df46f3a3508",
+      "synthesis_ids": [
+        "reasoned.reader.shadow_defenses_patterns"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "5e306666d84c5006c473df2b5592829fd0f61e160592facd7b381e239fd08ce7",
+      "synthesis_ids": [
+        "reasoned.reader.shadow_defenses_patterns"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "4c1c1ce64dddda6ca95284e636319bb64092745fb224c69440ff01ccef1e520d",
+      "synthesis_ids": [
+        "reasoned.reader.shadow_defenses_patterns"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "bed9a9014c9a15e35031e14e6da50dcde6e337d89b5c110b67abac82cdcec25f",
+      "synthesis_ids": [
+        "reasoned.reader.shadow_defenses_patterns"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "c1dc77d76fdf2cc18040609eee7734597713994e7b812fd7eb25fd3a63dc746a",
+      "synthesis_ids": [
+        "reasoned.reader.shadow_defenses_patterns"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "af4cb82dd6182bc724f5ec407cd50d9cf08e9ec3671bd61f43aebcc2338080eb",
+      "synthesis_ids": [
+        "reasoned.reader.shadow_defenses_patterns"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "9930914cb866fe84b42cbed058530860f464e0da27194fd9b98f69d43f443627",
+      "synthesis_ids": [
+        "reasoned.reader.shadow_defenses_patterns"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "c8eabf88322140a678b9d9877fcc458875aa0dd6b512b53770a373967f1555b8",
+      "synthesis_ids": [
+        "reasoned.reader.growth_through_contradiction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "8e78c0c2f2676ba3ed27c7a010a13073a0a5ba0041cebc5d8fdbe200634aade2",
+      "synthesis_ids": [
+        "reasoned.reader.growth_through_contradiction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "9508228f4ac709d0f15a688038aabe6b5db0593fdcca4944daec67e5fbfad202",
+      "synthesis_ids": [
+        "reasoned.reader.growth_through_contradiction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "fc6a540ef4e315f6d4bf3a9b9f23801c6b4a3234792dd2734b9cf93300eadb92",
+      "synthesis_ids": [
+        "reasoned.reader.growth_through_contradiction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "0b6f48165fa1d2f3e08f9c10869bd95b6d4edfd7d6d660f5a4a78caf66099e96",
+      "synthesis_ids": [
+        "reasoned.reader.growth_through_contradiction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "1c39db3baea6588b24439d0f966ccdd805c924e380d2251706b9d82359a09c74",
+      "synthesis_ids": [
+        "reasoned.reader.growth_through_contradiction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "b7248aac108b4e303e747344cfb4e9012393e19e8f29ec2598453c343e9571c1",
+      "synthesis_ids": [
+        "reasoned.reader.growth_through_contradiction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "5c261e715e7cad4a0f025a19b389831735b7545e443c900e58e0cb99e5a25811",
+      "synthesis_ids": [
+        "reasoned.reader.developmental_direction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "daeb78ccb6679f4f0000c4c56c2c1d555995a41cecf409131c860f8b0abaa9ef",
+      "synthesis_ids": [
+        "reasoned.reader.developmental_direction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "2ca60cf50cced7e7e138617859f22c53bf43dd27af33f0a5837a93472ee8efc0",
+      "synthesis_ids": [
+        "reasoned.reader.developmental_direction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "02ef9973e89f011d5d62d165a6dc09b5c4eb1928f739507a51e43000137a4c37",
+      "synthesis_ids": [
+        "reasoned.reader.developmental_direction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "77962aa2ec31acddad2c8fab3c48743ca79ad55ee374c461a87b630a823c3fcc",
+      "synthesis_ids": [
+        "reasoned.reader.developmental_direction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "94f9696c8aaf25525be0c48214264830c4649534507664bfe4e524830633216c",
+      "synthesis_ids": [
+        "reasoned.reader.developmental_direction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "1c79f59079148c5facf7f9b1fa664fac4353ee68e71268f8151d99b009f2908d",
+      "synthesis_ids": [
+        "reasoned.reader.developmental_direction"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "0694c220afcef2bea2e0a393f8b8fd54972f0ce9e578f150e6a41def606d4c31",
+      "synthesis_ids": [
+        "reasoned.reader.active_life_chapter"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.solar_arc.mercury.quincunx.jupiter.1"
+      ]
+    },
+    {
+      "narrative_block_sha256": "3584990d2fcece241467e8b0827d002e560c810e577d0ef022263560cfca04d1",
+      "synthesis_ids": [
+        "reasoned.reader.active_life_chapter"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.solar_arc.mercury.quincunx.jupiter.1"
+      ]
+    },
+    {
+      "narrative_block_sha256": "0894aaac6590cd8ca6658fbe1a659c548c1c627ffb74984a53fe2659f0680ef6",
+      "synthesis_ids": [
+        "reasoned.reader.active_life_chapter"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.solar_arc.mercury.quincunx.jupiter.1"
+      ]
+    },
+    {
+      "narrative_block_sha256": "ce4d2bb40344b8d819e336672764014f8bc7f5dc72cd6e210e1c78b9de7ed134",
+      "synthesis_ids": [
+        "reasoned.reader.active_life_chapter"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.solar_arc.mercury.quincunx.jupiter.1"
+      ]
+    },
+    {
+      "narrative_block_sha256": "c04cfbed75bf0154328a9b9cdbb676135833b4c9f4462d7e5f17c75c966c8975",
+      "synthesis_ids": [
+        "reasoned.reader.active_life_chapter"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.solar_arc.mercury.quincunx.jupiter.1"
+      ]
+    },
+    {
+      "narrative_block_sha256": "571f34ca476b8a37347d7e00b48a81064cf33c601140ef819098b2306e67c824",
+      "synthesis_ids": [
+        "reasoned.reader.active_life_chapter"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.solar_arc.mercury.quincunx.jupiter.1"
+      ]
+    },
+    {
+      "narrative_block_sha256": "1f848f172354ff851630d39637b36b1f113a21762fd4f466f99e0506357b8464",
+      "synthesis_ids": [
+        "reasoned.reader.shadow_defenses_patterns"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "d0df2386ce1ab837990a927b6f69e2c0d8df46a433238952f99ecf56cf2616c7",
+      "synthesis_ids": [
+        "reasoned.reader.shadow_defenses_patterns"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "ca97b7fadd3eb1371b32820dfb78bf94ffd72fafcf0ed5a2f5ff65d5deb385f5",
+      "synthesis_ids": [
+        "reasoned.reader.shadow_defenses_patterns"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    }
+  ]
+}
