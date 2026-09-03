@@ -1055,31 +1055,36 @@ def validate_technical_relationship_fidelity(
 
     body_re = "|".join(body_map.keys())
     aspect_re = "|".join(aspect_map.keys())
-    # Match: Body1 ... aspect ... Body2 (e|and|,|com) Body3
-    pattern = (
-        rf"\b({body_re})\b[^\.\n]*?\b({aspect_re})\b[^\.\n]*?\b({body_re})\b\s*"
-        rf"(?:e|and|,)\s*(?:com\s+)?(?:a\s+)?(?:o\s+)?\b({body_re})\b"
-    )
+
+    # Split text into clauses on sentence breaks, semicolons, and strong conjunctions
+    clauses = re.split(r"[;\.\n]|\balém de\b|\benquanto\b|\bmas\b|\bembora\b", report_text, flags=re.IGNORECASE)
 
     errors: List[str] = []
-    for match in re.finditer(pattern, report_text, re.IGNORECASE):
-        raw_b1 = match.group(1).lower()
-        raw_asp = match.group(2).lower()
-        raw_b2 = match.group(3).lower()
-        raw_b3 = match.group(4).lower()
+    for clause in clauses:
+        no_asp = rf"(?:(?!\b(?:{aspect_re})\b).)*?"
+        pattern = (
+            rf"(?<!\bcom\s)(?<!\bde\s)(?<!\bdo\s)(?<!\bda\s)(?<!\bao\s)(?<!\bà\s)(?<!\bwith\s)(?<!\bto\s)(?<!\bof\s)"
+            rf"\b({body_re})\b{no_asp}\b({aspect_re})\b{no_asp}\b({body_re})\b\s*"
+            rf"(?:e|and|,)\s*(?:com\s+)?(?:a\s+)?(?:o\s+)?\b({body_re})\b"
+        )
+        for match in re.finditer(pattern, clause, re.IGNORECASE):
+            raw_b1 = match.group(1).lower()
+            raw_asp = match.group(2).lower()
+            raw_b2 = match.group(3).lower()
+            raw_b3 = match.group(4).lower()
 
-        b1 = body_map.get(raw_b1)
-        asp = aspect_map.get(raw_asp)
-        b2 = body_map.get(raw_b2)
-        b3 = body_map.get(raw_b3)
+            b1 = body_map.get(raw_b1)
+            asp = aspect_map.get(raw_asp)
+            b2 = body_map.get(raw_b2)
+            b3 = body_map.get(raw_b3)
 
-        if not (b1 and asp and b2 and b3):
-            continue
+            if not (b1 and asp and b2 and b3):
+                continue
 
-        for target in (b2, b3):
-            pair = (b1, target)
-            actual = actual_aspects.get(pair)
-            if actual != asp:
-                errors.append(f"unauthorized_aspect_relationship:{b1}_{asp}_{target}")
+            for target in (b2, b3):
+                pair = (b1, target)
+                actual = actual_aspects.get(pair)
+                if actual != asp:
+                    errors.append(f"unauthorized_aspect_relationship:{b1}_{asp}_{target}")
 
     return list(dict.fromkeys(errors))

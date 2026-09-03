@@ -125,17 +125,38 @@ def validate_authored_draft(
     block_plan = json.loads(block_plan_path.read_text(encoding="utf-8"))
     draft_report = draft_report_path.read_text(encoding="utf-8")
     manifest = handoff["reader_domain_manifest"]
-
     sources, sections, audit_trace = bind_prospective_plan_to_prose(draft_report, block_plan, manifest)
+
+    all_synths = list(block_plan.get("composed_syntheses", []))
+
+    for ps in handoff.get("prepared_signature_syntheses", []):
+        if ps["id"] not in [x["id"] for x in all_synths]:
+            all_synths.append(ps)
+
+    from datetime import datetime
+    effective_as_of = handoff["preparation_parameters"]["effective_as_of"]
+    parsed_as_of = datetime.fromisoformat(str(effective_as_of).replace("Z", "+00:00"))
+    from astrology.pipeline import validate_premium_syntheses, _canonical_hash
+    checked = validate_premium_syntheses(birth, all_synths, profile, parsed_as_of, 366, True, premium_contract_version="1.4")
+    approved_synths = [item for item in checked["reasoned_synthesis"] if item["status"] == "allowed"]
+    expected_synthesis_hash = _canonical_hash(approved_synths)
+
+    sel_plan = block_plan.get("selection_plan") or build_canonical_selection_plan(manifest)
+
     author_bundle = build_author_bundle(
-        handoff, draft_report, sources, reader_sections=sections,
+        handoff, draft_report, sources,
+        reader_selection_plan=sel_plan,
+        reasoned_syntheses=all_synths,
+        reader_sections=sections,
+        synthesis_bundle_sha256=expected_synthesis_hash,
     )
-    author_bundle["prospective_provenance_audit"] = audit_trace
 
     (output_dir / "02-author-bundle.json").write_text(json.dumps(author_bundle, ensure_ascii=False, indent=2), encoding="utf-8")
+    (output_dir / "02-prospective-audit.json").write_text(json.dumps(audit_trace, ensure_ascii=False, indent=2), encoding="utf-8")
 
     provenance_result = validate_premium_author_bundle(birth, author_bundle, profile, prepared_handoff=handoff)
     (output_dir / "03-provenance-guard.json").write_text(json.dumps(provenance_result, ensure_ascii=False, indent=2), encoding="utf-8")
+
 
     return {
         "author_bundle": author_bundle,
@@ -150,19 +171,36 @@ def validate_reviewed_report(
     final_report_path: Path,
     author_bundle_path: Path,
     provenance_path: Path,
+    handoff_path: Path,
+    block_plan_path: Path,
     output_dir: Path,
 ) -> Dict[str, object]:
     """Builds ReviewerBundle, runs Publication Guard, Editorial QA, and Relationship Fidelity checks."""
     author_bundle = json.loads(author_bundle_path.read_text(encoding="utf-8"))
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    handoff = json.loads(handoff_path.read_text(encoding="utf-8"))
+    block_plan = json.loads(block_plan_path.read_text(encoding="utf-8"))
     final_report = final_report_path.read_text(encoding="utf-8")
+    manifest = handoff["reader_domain_manifest"]
+
+    # In Contract 1.4, when prose undergoes reviewer layout/language edits,
+    # physical hashes and block ownership must be rebound to preserve exact physical provenance
+    final_sources, final_sections, audit_trace = bind_prospective_plan_to_prose(final_report, block_plan, manifest)
 
     reviewer_bundle = build_reviewer_bundle(
-        author_bundle, provenance, final_report=final_report,
+        author_bundle, provenance,
+        final_report=final_report,
+        narrative_block_sources=final_sources,
+        reader_sections=final_sections,
     )
     (output_dir / "04-reviewer-bundle.json").write_text(json.dumps(reviewer_bundle, ensure_ascii=False, indent=2), encoding="utf-8")
+    (output_dir / "04-prospective-final-audit.json").write_text(json.dumps(audit_trace, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    pub_result = validate_premium_narrative(reviewer_bundle, provenance, birth, profile)
+
+    pub_result = validate_premium_narrative(
+        reviewer_bundle, provenance, birth, profile,
+        prepared_handoff=handoff, include_timing=True,
+    )
     (output_dir / "05-publication-guard.json").write_text(json.dumps(pub_result, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # Editorial QA Lints
@@ -183,7 +221,14 @@ def validate_reviewed_report(
     }
     (output_dir / "06-editorial-qa.json").write_text(json.dumps(qa_report, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    # Assemble publication report with deterministic technical appendix
+    appendix_path = output_dir / "canonical_technical_appendix.md"
+    appendix_text = appendix_path.read_text(encoding="utf-8") if appendix_path.exists() else ""
+    full_publication_report = f"{final_report.strip()}\n\n---\n\n{appendix_text.strip()}\n"
+    (output_dir / "relatorio_publicacao_valencia_v22.md").write_text(full_publication_report, encoding="utf-8")
+
     return qa_report
+
 
 
 if __name__ == "__main__":
