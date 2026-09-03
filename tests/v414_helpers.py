@@ -135,47 +135,21 @@ def build_author_bundle_v14(
             ],
             "integration": {"narrative_block_sha256s": [str(x["narrative_block_sha256"]) for x in parsed["sections"]["integration"]["authored"]]},
         }
-    contract = pipeline._premium_handoff_contract()
-    required = set(contract["author_bundle_required_fields"])
-    author = {key: legacy_author[key] for key in required if key in legacy_author}
-    author.update({
-        "premium_handoff_contract_version": contract["version"],
-        "premium_handoff_contract": contract,
-        "premium_handoff_contract_sha256": pipeline._canonical_hash(contract),
-        "packet_id": result["packet_id"],
-        "prepared_chart_signature_sha256": result["prepared_chart_signature_sha256"] if "prepared_chart_signature_sha256" in result else pipeline._canonical_hash(result["chart_signature"]),
-        "prepared_signature_synthesis_sha256": result["prepared_signature_synthesis_sha256"] if "prepared_signature_synthesis_sha256" in result else pipeline._canonical_hash(result["reasoned_synthesis"]),
-        "reader_domain_manifest_sha256": pipeline._canonical_hash(result["reader_domain_manifest"]),
-        "narrative_block_sources": sources,
-        "reader_sections": sections,
-        "draft_report": report,
-        "draft_report_sha256": pipeline._canonical_hash(report),
-    })
-    author.pop("paragraph_sources", None)
+    author = pipeline.build_author_bundle(
+        result, report, sources,
+        reader_selection_plan=legacy_author["reader_selection_plan"],
+        reasoned_syntheses=legacy_author["reasoned_syntheses"],
+        reader_sections=sections,
+        synthesis_bundle_sha256=legacy_author.get("synthesis_bundle_sha256"),
+    )
+
     return author, {"direct": direct, "manifest": manifest}
 
 
+
 def reviewer_bundle_v14(author: Dict[str, object], provenance: Dict[str, object]) -> Dict[str, object]:
-    contract = pipeline._premium_handoff_contract()
-    return {
-        "packet_id": provenance["packet_id"],
-        "premium_handoff_contract_version": contract["version"],
-        "premium_handoff_contract": contract,
-        "premium_handoff_contract_sha256": pipeline._canonical_hash(contract),
-        "prepared_chart_signature_sha256": provenance["prepared_chart_signature_sha256"],
-        "prepared_signature_synthesis_sha256": provenance["prepared_signature_synthesis_sha256"],
-        "reader_domain_manifest_sha256": provenance["reader_domain_manifest_sha256"],
-        "synthesis_bundle_sha256": provenance["synthesis_bundle_sha256"],
-        "reviewed_draft_sha256": provenance["draft_report_sha256"],
-        "verdict": "approved", "corrections_made": [], "remaining_warnings": [],
-        "final_report": author["draft_report"],
-        "final_report_sha256": pipeline._canonical_hash(author["draft_report"]),
-        "narrative_block_sources": author["narrative_block_sources"],
-        "reader_sections": author["reader_sections"],
-        "reader_selection_plan": provenance["reader_selection_plan"],
-        "reader_selection_plan_sha256": provenance["reader_selection_plan_sha256"],
-        "regeneration_request": None,
-    }
+    return pipeline.build_reviewer_bundle(author, provenance)
+
 
 
 def build_author_bundle_v13_for_replay(

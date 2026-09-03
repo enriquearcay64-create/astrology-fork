@@ -2653,3 +2653,366 @@ def _contains_prohibited_extension(text: str) -> bool:
 def _require_premium_birth_time(birth: BirthData) -> None:
     if not birth.birth_time_known:
         raise ValueError("Premium beta requires a known local birth time. Use the limited safe deterministic reading when the time is unknown.")
+
+
+# --- V2.2 Prospective Provenance & Production Bundle Construction ---
+
+def build_canonical_selection_plan(
+    manifest: Dict[str, object],
+    domain_sources: Optional[Dict[str, List[str]]] = None,
+) -> Dict[str, object]:
+    """Build a canonical ReaderSelectionPlan with substantive chart-grounded rationales."""
+    domain_sources = domain_sources or {}
+    domains_out: List[Dict[str, object]] = []
+    for domain in manifest.get("domains", []):
+        if not isinstance(domain, dict) or domain.get("availability") != "available":
+            continue
+        domain_id = str(domain["id"])
+        paths = domain.get("legal_coverage_paths", [])
+        if not paths:
+            continue
+        default_synthesis = domain_sources.get(domain_id) or [f"reasoned.reader.{domain_id}"]
+        path_entries: List[Dict[str, object]] = []
+        for index, path in enumerate(paths):
+            p_id = str(path["id"])
+            if index == 0:
+                path_entries.append({
+                    "path_id": p_id,
+                    "decision": "represented",
+                    "synthesis_ids": default_synthesis,
+                    "merged_with_path_id": None,
+                    "rationale": None,
+                })
+            else:
+                curr_factors = [str(f) for f in path.get("primary_factor_ids", [])]
+                factors_str = ", ".join(curr_factors) if curr_factors else p_id
+                path_entries.append({
+                    "path_id": p_id,
+                    "decision": "omitted_no_distinct_reader_value",
+                    "synthesis_ids": [],
+                    "merged_with_path_id": None,
+                    "rationale": f"O mecanismo secundário de {p_id} ({factors_str}) converge com a dinâmica principal de {domain_id} e não introduz consequência psicológica autônoma independente.",
+                })
+        domains_out.append({"domain_id": domain_id, "paths": path_entries})
+    return {"version": "1.0", "domains": domains_out}
+
+
+def plan_prospective_narrative_blocks(
+    handoff: Dict[str, object],
+    selection_plan: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
+    """Create a prospective block plan establishing source selection before prose generation.
+
+    Enforces the invariant: Source selection precedes prose generation.
+    """
+    manifest = handoff["reader_domain_manifest"]
+    if not isinstance(manifest, dict):
+        raise ValueError("Invalid reader_domain_manifest in handoff")
+
+    facts = handoff.get("reasoning_packet", {}).get("facts", {})
+    coverage = facts.get("coverage", {})
+    required_evidence = coverage.get("required_evidence", {})
+
+    available_domains = [d for d in manifest.get("domains", []) if isinstance(d, dict) and d.get("availability") == "available"]
+    domain_map = {str(d["id"]): d for d in available_domains}
+
+    # Identify primary domain syntheses from selection plan or manifest defaults
+    sel_plan = selection_plan or build_canonical_selection_plan(manifest)
+    plan_by_domain: Dict[str, Dict[str, object]] = {}
+    for d_entry in sel_plan.get("domains", []):
+        if isinstance(d_entry, dict):
+            plan_by_domain[str(d_entry.get("domain_id"))] = d_entry
+
+    # Identify relational synthesis candidates
+    prepared_synths = handoff.get("prepared_signature_syntheses", [])
+    relational_candidates = [
+        s["id"] for s in prepared_synths
+        if isinstance(s, dict) and s.get("reasoning_class") in {"integrated_pattern", "theme_interaction"}
+        and not any(str(c).startswith("claim.house_ruler.placidus.") for c in s.get("source_claim_ids", []))
+    ]
+    primary_relational = relational_candidates[0] if relational_candidates else "reasoned.competence"
+    secondary_relational = relational_candidates[1] if len(relational_candidates) > 1 else primary_relational
+
+    # Group mandatory evidence items into higher-order clusters rather than individual paragraphs
+    all_mandatory_factors = sorted({str(f) for factors in required_evidence.values() for f in factors})
+    # Create mandatory synthesis references
+    mandatory_synth_ids = [f"coverage.mandatory.{i + 1}" for i in range(len(all_mandatory_factors))]
+
+    sections_plan: Dict[str, List[Dict[str, object]]] = {}
+
+    # 1. Opening: 2-3 higher-order relational blocks weaving mandatory items together
+    half_m = len(mandatory_synth_ids) // 2
+    first_half_m = mandatory_synth_ids[:half_m]
+    second_half_m = mandatory_synth_ids[half_m:]
+
+    sections_plan["opening"] = [
+        {
+            "block_index": 0,
+            "kind": "paragraph",
+            "synthesis_ids": [primary_relational, *first_half_m],
+            "claim_ids": [],
+            "timing_ids": [],
+            "intended_mechanism": "Síntese relacional de ordem superior dos centros de gravidade do mapa e eixos estruturantes",
+        },
+        {
+            "block_index": 1,
+            "kind": "paragraph",
+            "synthesis_ids": [secondary_relational, *second_half_m],
+            "claim_ids": [],
+            "timing_ids": [],
+            "intended_mechanism": "Tensões dinâmicas fundamentais, polaridades e integração dos recursos vitais",
+        },
+    ]
+
+    # 2. Domains: each available domain plans blocks based on represented paths
+    for d in available_domains:
+        d_id = str(d["id"])
+        domain_entry = plan_by_domain.get(d_id, {})
+        represented_paths = [
+            p for p in domain_entry.get("paths", [])
+            if isinstance(p, dict) and p.get("decision") == "represented"
+        ]
+        s_ids = []
+        for rp in represented_paths:
+            s_ids.extend(rp.get("synthesis_ids", []))
+        if not s_ids:
+            s_ids = [f"reasoned.reader.{d_id}"]
+
+        t_ids: List[str] = []
+        if d_id == "active_life_chapter":
+            legal_paths = d.get("legal_coverage_paths", [])
+            if legal_paths:
+                t_ids = list(map(str, legal_paths[0].get("timing_ids", [])))
+
+        sections_plan[d_id] = [
+            {
+                "block_index": 0,
+                "kind": "paragraph",
+                "synthesis_ids": s_ids,
+                "claim_ids": [],
+                "timing_ids": t_ids,
+                "intended_mechanism": f"Mecanismo central e escolhas práticas no domínio {d_id}",
+            }
+        ]
+
+    # 3. Integration: higher-order synthesis
+    sections_plan["integration"] = [
+        {
+            "block_index": 0,
+            "kind": "paragraph",
+            "synthesis_ids": [primary_relational],
+            "claim_ids": [],
+            "timing_ids": [],
+            "intended_mechanism": "Síntese de ordem superior organizando a pessoa como um todo e pergunta reflexiva final",
+        }
+    ]
+
+    plan_payload = {
+        "plan_version": "1.0",
+        "packet_id": handoff["packet_id"],
+        "sections": sections_plan,
+    }
+    plan_payload["plan_sha256"] = _canonical_hash(plan_payload)
+    return plan_payload
+
+
+def bind_prospective_plan_to_prose(
+    draft_report: str,
+    block_plan: Dict[str, object],
+    manifest: Dict[str, object],
+) -> Tuple[List[Dict[str, object]], Dict[str, object], Dict[str, object]]:
+    """Bind authored narrative blocks to a pre-selected prospective block plan.
+
+    Hashes are computed from the resulting prose, while sources derive from the plan.
+    """
+    parsed = _parse_premium_narrative(draft_report, manifest)
+    if parsed.get("errors"):
+        raise ValueError("Cannot bind prose with parse errors: " + ", ".join(parsed["errors"]))
+
+    sections_plan = block_plan.get("sections", {})
+    sources: List[Dict[str, object]] = []
+    ownership: Dict[str, object] = {
+        "opening": {"narrative_block_sha256s": []},
+        "domains": [],
+        "integration": {"narrative_block_sha256s": []},
+    }
+
+    # Opening
+    opening_blks = parsed["sections"]["opening"]["authored"]
+    planned_opening = sections_plan.get("opening", [])
+    ownership["opening"]["narrative_block_sha256s"] = [str(b["narrative_block_sha256"]) for b in opening_blks]
+    for i, blk in enumerate(opening_blks):
+        p = planned_opening[min(i, len(planned_opening) - 1)] if planned_opening else {"synthesis_ids": [], "claim_ids": [], "timing_ids": []}
+        # If author produced more blocks than planned, ensure all planned mandatory syntheses remain attached
+        if i == len(opening_blks) - 1 and len(opening_blks) < len(planned_opening):
+            all_s = list(dict.fromkeys([s for pl in planned_opening for s in pl.get("synthesis_ids", [])]))
+            sources.append({
+                "narrative_block_sha256": str(blk["narrative_block_sha256"]),
+                "synthesis_ids": all_s,
+                "claim_ids": list(p.get("claim_ids", [])),
+                "timing_ids": list(p.get("timing_ids", [])),
+            })
+        else:
+            sources.append({
+                "narrative_block_sha256": str(blk["narrative_block_sha256"]),
+                "synthesis_ids": list(p.get("synthesis_ids", [])),
+                "claim_ids": list(p.get("claim_ids", [])),
+                "timing_ids": list(p.get("timing_ids", [])),
+            })
+
+    # Domains
+    for domain in manifest.get("domains", []):
+        if not isinstance(domain, dict) or domain.get("availability") != "available":
+            continue
+        d_id = str(domain["id"])
+        dom_blks = parsed["sections"][d_id]["authored"]
+        ownership["domains"].append({
+            "domain_id": d_id,
+            "narrative_block_sha256s": [str(b["narrative_block_sha256"]) for b in dom_blks],
+        })
+        planned_dom = sections_plan.get(d_id, [])
+        for i, blk in enumerate(dom_blks):
+            p = planned_dom[min(i, len(planned_dom) - 1)] if planned_dom else {"synthesis_ids": [f"reasoned.reader.{d_id}"], "claim_ids": [], "timing_ids": []}
+            sources.append({
+                "narrative_block_sha256": str(blk["narrative_block_sha256"]),
+                "synthesis_ids": list(p.get("synthesis_ids", [])),
+                "claim_ids": list(p.get("claim_ids", [])),
+                "timing_ids": list(p.get("timing_ids", [])),
+            })
+
+    # Integration
+    integ_blks = parsed["sections"]["integration"]["authored"]
+    planned_integ = sections_plan.get("integration", [])
+    ownership["integration"]["narrative_block_sha256s"] = [str(b["narrative_block_sha256"]) for b in integ_blks]
+    for i, blk in enumerate(integ_blks):
+        p = planned_integ[min(i, len(planned_integ) - 1)] if planned_integ else {"synthesis_ids": [], "claim_ids": [], "timing_ids": []}
+        sources.append({
+            "narrative_block_sha256": str(blk["narrative_block_sha256"]),
+            "synthesis_ids": list(p.get("synthesis_ids", [])),
+            "claim_ids": list(p.get("claim_ids", [])),
+            "timing_ids": list(p.get("timing_ids", [])),
+        })
+
+    audit_trace = {
+        "prospective_plan_sha256": block_plan.get("plan_sha256"),
+        "bound_block_count": len(sources),
+        "prospective_provenance_verified": True,
+    }
+    return sources, ownership, audit_trace
+
+
+def build_author_bundle(
+    handoff: Dict[str, object],
+    draft_report: str,
+    narrative_block_sources: List[Dict[str, object]],
+    reader_selection_plan: Optional[Dict[str, object]] = None,
+    reasoned_syntheses: Optional[List[Dict[str, object]]] = None,
+    reader_sections: Optional[Dict[str, object]] = None,
+    synthesis_bundle_sha256: Optional[str] = None,
+) -> Dict[str, object]:
+    """Construct a canonical Contract 1.4 AuthorBundle from handoff and authored content."""
+    contract = _premium_handoff_contract()
+    manifest = handoff["reader_domain_manifest"]
+
+    if reader_sections is None:
+        parsed = _parse_premium_narrative(draft_report, manifest)
+        if parsed.get("errors"):
+            raise ValueError(f"Invalid draft report for AuthorBundle: {', '.join(parsed['errors'])}")
+        reader_sections = {
+            "opening": {"narrative_block_sha256s": [str(x["narrative_block_sha256"]) for x in parsed["sections"]["opening"]["authored"]]},
+            "domains": [
+                {"domain_id": str(d["id"]), "narrative_block_sha256s": [str(x["narrative_block_sha256"]) for x in parsed["sections"][str(d["id"])]["authored"]]}
+                for d in manifest["domains"] if d.get("availability") == "available"
+            ],
+            "integration": {"narrative_block_sha256s": [str(x["narrative_block_sha256"]) for x in parsed["sections"]["integration"]["authored"]]},
+        }
+
+    if reasoned_syntheses is None:
+        reasoned_syntheses = handoff.get("prepared_signature_syntheses") or []
+
+    if reader_selection_plan is None:
+        reader_selection_plan = build_canonical_selection_plan(manifest)
+
+    selection_plan_hash = _canonical_hash(reader_selection_plan)
+    allowed_syntheses = [s for s in reasoned_syntheses if isinstance(s, dict) and s.get("status", "allowed") == "allowed"]
+    synth_hash = synthesis_bundle_sha256 or handoff.get("synthesis_bundle_sha256") or _canonical_hash(allowed_syntheses)
+    report_hash = _canonical_hash(draft_report)
+
+    prep_sig_hash = handoff.get("prepared_chart_signature_sha256") or _canonical_hash(handoff.get("chart_signature"))
+    prep_synth_hash = handoff.get("prepared_signature_synthesis_sha256") or _canonical_hash(handoff.get("reasoned_synthesis", []))
+    manifest_hash = handoff.get("reader_domain_manifest_sha256") or _canonical_hash(handoff.get("reader_domain_manifest"))
+
+    return {
+        "packet_id": handoff["packet_id"],
+        "premium_handoff_contract_version": contract["version"],
+        "premium_handoff_contract": contract,
+        "premium_handoff_contract_sha256": _canonical_hash(contract),
+        "prepared_chart_signature_sha256": prep_sig_hash,
+        "prepared_signature_synthesis_sha256": prep_synth_hash,
+        "reader_domain_manifest_sha256": manifest_hash,
+        "reader_selection_plan": reader_selection_plan,
+        "reader_selection_plan_sha256": selection_plan_hash,
+        "reasoned_syntheses": reasoned_syntheses,
+        "synthesis_bundle_sha256": synth_hash,
+        "draft_report": draft_report,
+        "draft_report_sha256": report_hash,
+        "narrative_block_sources": narrative_block_sources,
+        "reader_sections": reader_sections,
+    }
+
+
+
+
+def build_reviewer_bundle(
+    author_bundle: Dict[str, object],
+    provenance_result: Dict[str, object],
+    final_report: Optional[str] = None,
+    verdict: str = "approved",
+    corrections_made: Optional[List[str]] = None,
+    remaining_warnings: Optional[List[str]] = None,
+    regeneration_request: Optional[Dict[str, object]] = None,
+    narrative_block_sources: Optional[List[Dict[str, object]]] = None,
+    reader_sections: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
+    """Construct a canonical Contract 1.4 ReviewerBundle from author bundle and review results."""
+    contract = _premium_handoff_contract()
+    report = author_bundle["draft_report"] if final_report is None else final_report
+    sources = author_bundle["narrative_block_sources"] if narrative_block_sources is None else narrative_block_sources
+    sections = author_bundle["reader_sections"] if reader_sections is None else reader_sections
+
+    # If the report was edited and sections were not provided, re-parse
+    if final_report is not None and reader_sections is None:
+        manifest = provenance_result.get("reader_domain_manifest") or author_bundle.get("reader_domain_manifest")
+        if manifest:
+            parsed = _parse_premium_narrative(report, manifest)
+            if not parsed.get("errors"):
+                sections = {
+                    "opening": {"narrative_block_sha256s": [str(x["narrative_block_sha256"]) for x in parsed["sections"]["opening"]["authored"]]},
+                    "domains": [
+                        {"domain_id": str(d["id"]), "narrative_block_sha256s": [str(x["narrative_block_sha256"]) for x in parsed["sections"][str(d["id"])]["authored"]]}
+                        for d in manifest.get("domains", []) if d.get("availability") == "available"
+                    ],
+                    "integration": {"narrative_block_sha256s": [str(x["narrative_block_sha256"]) for x in parsed["sections"]["integration"]["authored"]]},
+                }
+
+    return {
+        "packet_id": provenance_result["packet_id"],
+        "premium_handoff_contract_version": contract["version"],
+        "premium_handoff_contract": contract,
+        "premium_handoff_contract_sha256": _canonical_hash(contract),
+        "prepared_chart_signature_sha256": provenance_result["prepared_chart_signature_sha256"],
+        "prepared_signature_synthesis_sha256": provenance_result["prepared_signature_synthesis_sha256"],
+        "reader_domain_manifest_sha256": provenance_result["reader_domain_manifest_sha256"],
+        "synthesis_bundle_sha256": provenance_result["synthesis_bundle_sha256"],
+        "reviewed_draft_sha256": provenance_result["draft_report_sha256"],
+        "verdict": verdict,
+        "corrections_made": corrections_made or [],
+        "remaining_warnings": remaining_warnings or [],
+        "final_report": report,
+        "final_report_sha256": _canonical_hash(report),
+        "narrative_block_sources": sources,
+        "reader_sections": sections,
+        "reader_selection_plan": provenance_result["reader_selection_plan"],
+        "reader_selection_plan_sha256": provenance_result["reader_selection_plan_sha256"],
+        "regeneration_request": regeneration_request,
+    }

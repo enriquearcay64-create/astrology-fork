@@ -795,3 +795,291 @@ def render_report(depth: str, chart: SafeInterpretiveChart, claims: Iterable[Cla
     if depth != "deep":
         raise ValueError("report_depth must be executive, deep or technical")
     return deep_reading(chart, claims, themes, hierarchy, timing, timeline, paradoxes, compensations, structure, profile, reasoned_syntheses, narrative_plan, developmental_intervals, chart_signature)
+
+
+# --- V2.2 Canonical Deterministic Technical Fact Rendering ---
+
+CANONICAL_BODIES_ORDER = [
+    "sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn",
+    "uranus", "neptune", "pluto", "true_node", "chiron", "lilith_mean",
+]
+
+CANONICAL_BODIES_NAMES = {
+    "pt": {
+        "sun": "Sol", "moon": "Lua", "mercury": "Mercúrio", "venus": "Vênus",
+        "mars": "Marte", "jupiter": "Júpiter", "saturn": "Saturno", "uranus": "Urano",
+        "neptune": "Netuno", "pluto": "Plutão", "true_node": "Nodo Norte Verdadeiro",
+        "chiron": "Quíron", "lilith_mean": "Lilith (Média)",
+    },
+    "en": {
+        "sun": "Sun", "moon": "Moon", "mercury": "Mercury", "venus": "Venus",
+        "mars": "Mars", "jupiter": "Jupiter", "saturn": "Saturn", "uranus": "Uranus",
+        "neptune": "Neptune", "pluto": "Pluto", "true_node": "True North Node",
+        "chiron": "Chiron", "lilith_mean": "Lilith (Mean)",
+    },
+}
+
+CANONICAL_ASPECTS_NAMES = {
+    "pt": {
+        "conjunction": "Conjunção", "sextile": "Sextil", "square": "Quadratura",
+        "trine": "Trígono", "quincunx": "Quincúncio", "opposition": "Oposição",
+    },
+    "en": {
+        "conjunction": "Conjunction", "sextile": "Sextile", "square": "Square",
+        "trine": "Trine", "quincunx": "Quincunx", "opposition": "Opposition",
+    },
+}
+
+
+def format_degree_minute(deg_float: float, lang: str = "pt") -> Tuple[str, str]:
+    """Format longitude degree into exact degrees, minutes and localized sign with 60m rollover fix."""
+    signs = SIGNS["pt"] if str(lang).startswith("pt") else SIGNS["en"]
+    normalized = float(deg_float) % 360.0
+    sign_idx = int(normalized // 30) % 12
+    deg_in_sign = normalized % 30.0
+    d = int(deg_in_sign)
+    m = int(round((deg_in_sign - d) * 60))
+    if m == 60:
+        d += 1
+        m = 0
+    if d == 30:
+        d = 0
+        sign_idx = (sign_idx + 1) % 12
+    return f"{d:02d}°{m:02d}'", signs[sign_idx]
+
+
+def format_orb_degree_minute(orb: float) -> Tuple[str, str]:
+    """Format aspect orb into decimal degrees and exact degrees/minutes with 60m rollover fix."""
+    orb_clean = max(0.0, float(orb))
+    d = int(orb_clean)
+    m = int(round((orb_clean - d) * 60))
+    if m == 60:
+        d += 1
+        m = 0
+    return f"{orb_clean:.2f}°", f"{d:02d}°{m:02d}'"
+
+
+def render_canonical_technical_appendix(
+    chart_or_birth: object,
+    profile: Optional[LocalizationProfile] = None,
+    timing: Optional[Dict[str, object]] = None,
+    lang: Optional[str] = None,
+) -> str:
+    """Deterministically renders exact Swiss Ephemeris data into an immutable technical appendix."""
+    from .models import BirthData
+    from .engine import calculate_chart
+
+    if isinstance(chart_or_birth, BirthData):
+        raw_chart = calculate_chart(chart_or_birth)
+    elif hasattr(chart_or_birth, "positions"):
+        raw_chart = chart_or_birth
+    elif hasattr(chart_or_birth, "chart") and hasattr(chart_or_birth.chart, "positions"):
+        raw_chart = chart_or_birth.chart
+    else:
+        raise TypeError("chart_or_birth must be a BirthData or Chart instance")
+
+    active_lang = "pt" if lang is None and profile is None else (lang or (profile.preferred_language if profile else "pt"))
+    is_pt = str(active_lang).startswith("pt")
+    target_lang = "pt" if is_pt else "en"
+
+    lines: List[str] = []
+    title = "## Apêndice Técnico Canônico" if is_pt else "## Canonical Technical Appendix"
+    lines.append(title)
+    lines.append("")
+
+    intro = (
+        "*Os dados abaixo são calculados deterministicamente pelo motor astronômico de alta precisão "
+        "(Swiss Ephemeris / pyswisseph) e constituem a verdade técnica imutável deste mapa natal.*"
+        if is_pt else
+        "*The data below is deterministically computed by the high-precision astronomical engine "
+        "(Swiss Ephemeris / pyswisseph) and constitutes the immutable technical ground truth of this birth chart.*"
+    )
+    lines.append(intro)
+    lines.append("")
+
+    # 1. Planetary Positions
+    p_title = "### 1. Posições Planetárias e Pontos Natais" if is_pt else "### 1. Planetary Positions and Natal Points"
+    lines.append(p_title)
+    lines.append("")
+    if is_pt:
+        lines.append("| Ponto | Pos. Exata | Signo | Casa Placidus | Movimento |")
+    else:
+        lines.append("| Point | Exact Pos. | Sign | Placidus House | Motion |")
+    lines.append("| :--- | :--- | :--- | :--- | :--- |")
+
+    names_map = CANONICAL_BODIES_NAMES[target_lang]
+    positions = getattr(raw_chart, "positions", {})
+    placements = getattr(raw_chart, "house_placements", {})
+
+    for key in CANONICAL_BODIES_ORDER:
+        if key in positions:
+            pos = positions[key]
+            name = names_map.get(key, getattr(pos, "label", key))
+            deg_str, sign_str = format_degree_minute(pos.longitude, target_lang)
+            motion = ("Retrógrado (R)" if is_pt else "Retrograde (R)") if pos.retrograde else ("Direto" if is_pt else "Direct")
+            house_entry = placements.get(key)
+            h_val = getattr(house_entry, "placidus_house", None) if house_entry else None
+            h_str = f"{'Casa' if is_pt else 'House'} {h_val}" if h_val is not None else "—"
+            lines.append(f"| {name} | {deg_str} | {sign_str} | {h_str} | {motion} |")
+
+    lines.append("")
+
+    # 2. Principal Angles & Cusps
+    a_title = "### 2. Ângulos Principais e Cúspides de Casas" if is_pt else "### 2. Principal Angles and House Cusps"
+    lines.append(a_title)
+    lines.append("")
+    if is_pt:
+        lines.append("| Ângulo / Cúspide | Pos. Exata | Signo |")
+    else:
+        lines.append("| Angle / Cusp | Exact Pos. | Sign |")
+    lines.append("| :--- | :--- | :--- |")
+
+    angles = getattr(raw_chart, "angles", {})
+    angle_labels_pt = {"asc": "Ascendente (ASC)", "mc": "Meio do Céu (MC)", "dsc": "Descendente (DSC)", "ic": "Fundo do Céu (IC)"}
+    angle_labels_en = {"asc": "Ascendant (ASC)", "mc": "Midheaven (MC)", "dsc": "Descendant (DSC)", "ic": "Imum Coeli (IC)"}
+    active_labels = angle_labels_pt if is_pt else angle_labels_en
+
+    for key in ("asc", "mc", "dsc", "ic"):
+        val = angles.get(key)
+        if val is not None:
+            deg_str, sign_str = format_degree_minute(val, target_lang)
+            lines.append(f"| {active_labels.get(key, key.upper())} | {deg_str} | {sign_str} |")
+
+    cusps = getattr(raw_chart, "house_cusps_placidus", []) or []
+    for i, cusp in enumerate(cusps):
+        deg_str, sign_str = format_degree_minute(cusp, target_lang)
+        prefix = "Casa" if is_pt else "House"
+        lines.append(f"| {prefix} {i + 1} (Placidus) | {deg_str} | {sign_str} |")
+
+    lines.append("")
+
+    # 3. Aspects & Orbs
+    asp_title = "### 3. Aspectos Maiores e Orbes Exatos" if is_pt else "### 3. Major Aspects and Exact Orbs"
+    lines.append(asp_title)
+    lines.append("")
+    if is_pt:
+        lines.append("| Fator 1 | Aspecto | Fator 2 | Orbe Decimal | Orbe Minutos | Estado |")
+    else:
+        lines.append("| Factor 1 | Aspect | Factor 2 | Decimal Orb | Minute Orb | Status |")
+    lines.append("| :--- | :--- | :--- | :--- | :--- | :--- |")
+
+    aspect_names = CANONICAL_ASPECTS_NAMES[target_lang]
+    aspects = sorted(getattr(raw_chart, "aspects", []) or [], key=lambda a: getattr(a, "orb", 0.0))
+    for asp in aspects:
+        p1 = names_map.get(asp.left, str(asp.left).title())
+        p2 = names_map.get(asp.right, str(asp.right).title())
+        asp_name = aspect_names.get(asp.kind, str(asp.kind).title())
+        orb_deg, orb_min = format_orb_degree_minute(asp.orb)
+        status = ("Aplicando" if is_pt else "Applying") if asp.applying else ("Separando" if is_pt else "Separating")
+        lines.append(f"| {p1} | {asp_name} | {p2} | {orb_deg} | {orb_min} | {status} |")
+
+    lines.append("")
+
+    # 4. Optional Timing Facts Section
+    if timing:
+        t_title = "### 4. Fatos Canônicos de Timing" if is_pt else "### 4. Canonical Timing Facts"
+        lines.append(t_title)
+        lines.append("")
+        phase = timing.get("current_phase", {})
+        focus = phase.get("traditional_focus", {})
+        time_lord = focus.get("time_lord")
+        if time_lord:
+            t_lord_name = names_map.get(time_lord, str(time_lord).title())
+            h_num = focus.get("house")
+            if is_pt:
+                lines.append(f"- **Profecção Anual:** Casa {h_num} (Signo Inteiro); Senhor do Ano: {t_lord_name}.")
+            else:
+                lines.append(f"- **Annual Profection:** House {h_num} (Whole Sign); Time Lord: {t_lord_name}.")
+
+        transits = timing.get("modern_stream", {}).get("major_transits", [])
+        if transits:
+            lines.append("")
+            if is_pt:
+                lines.append("| Ativação | Trânsito | Aspecto | Alvo Natal | Janela | Exatidão |")
+            else:
+                lines.append("| Activation | Transit | Aspect | Natal Target | Window | Exact Date |")
+            lines.append("| :--- | :--- | :--- | :--- | :--- | :--- |")
+            for tr in transits:
+                body_name = names_map.get(tr.get("body"), str(tr.get("body")).title())
+                asp_name = aspect_names.get(tr.get("aspect"), str(tr.get("aspect")).title())
+                target_name = names_map.get(tr.get("target"), str(tr.get("target")).title())
+                w_start = str(tr.get("start", ""))[:10]
+                w_end = str(tr.get("end", ""))[:10]
+                w_str = f"{w_start} .. {w_end}" if w_start and w_end else "—"
+                exact = str(tr.get("exact_date") or tr.get("closest_approach_date") or "—")[:10]
+                act_id = str(tr.get("id", "activation"))
+                lines.append(f"| {act_id} | {body_name} | {asp_name} | {target_name} | {w_str} | {exact} |")
+
+    return "\n".join(lines)
+
+
+def validate_technical_relationship_fidelity(
+    report_text: str,
+    chart: SafeInterpretiveChart,
+    lang: str = "pt",
+) -> List[str]:
+    """Deterministically check that aspect relationships claimed in prose exist in chart.aspects.
+
+    Detects false syntactic combinations where multiple targets are subordinated
+    to an aspect that only applies to one (e.g. 'Saturn sextiles Sun and Neptune'
+    when Saturn is conjunct Neptune).
+    """
+    body_map = {
+        "sol": "sun", "sun": "sun",
+        "lua": "moon", "moon": "moon",
+        "mercúrio": "mercury", "mercurio": "mercury", "mercury": "mercury",
+        "vênus": "venus", "venus": "venus",
+        "marte": "mars", "mars": "mars",
+        "júpiter": "jupiter", "jupiter": "jupiter",
+        "saturno": "saturn", "saturn": "saturn",
+        "urano": "uranus", "uranus": "uranus",
+        "netuno": "neptune", "neptune": "neptune",
+        "plutão": "pluto", "plutao": "pluto", "pluto": "pluto",
+        "quíron": "chiron", "chiron": "chiron",
+    }
+    aspect_map = {
+        "sextil": "sextile", "sextile": "sextile",
+        "conjunção": "conjunction", "conjuncao": "conjunction", "conjunction": "conjunction",
+        "quadratura": "square", "square": "square",
+        "trígono": "trine", "trigono": "trine", "trine": "trine",
+        "quincúncio": "quincunx", "quincuncio": "quincunx", "quincunx": "quincunx",
+        "oposição": "opposition", "oposicao": "opposition", "opposition": "opposition",
+    }
+
+    actual_aspects: Dict[Tuple[str, str], str] = {}
+    for asp in getattr(chart, "aspects", []) or []:
+        left, right, kind = getattr(asp, "left", ""), getattr(asp, "right", ""), getattr(asp, "kind", "")
+        if left and right and kind:
+            actual_aspects[(left, right)] = kind
+            actual_aspects[(right, left)] = kind
+
+    body_re = "|".join(body_map.keys())
+    aspect_re = "|".join(aspect_map.keys())
+    # Match: Body1 ... aspect ... Body2 (e|and|,|com) Body3
+    pattern = (
+        rf"\b({body_re})\b[^\.\n]*?\b({aspect_re})\b[^\.\n]*?\b({body_re})\b\s*"
+        rf"(?:e|and|,)\s*(?:com\s+)?(?:a\s+)?(?:o\s+)?\b({body_re})\b"
+    )
+
+    errors: List[str] = []
+    for match in re.finditer(pattern, report_text, re.IGNORECASE):
+        raw_b1 = match.group(1).lower()
+        raw_asp = match.group(2).lower()
+        raw_b2 = match.group(3).lower()
+        raw_b3 = match.group(4).lower()
+
+        b1 = body_map.get(raw_b1)
+        asp = aspect_map.get(raw_asp)
+        b2 = body_map.get(raw_b2)
+        b3 = body_map.get(raw_b3)
+
+        if not (b1 and asp and b2 and b3):
+            continue
+
+        for target in (b2, b3):
+            pair = (b1, target)
+            actual = actual_aspects.get(pair)
+            if actual != asp:
+                errors.append(f"unauthorized_aspect_relationship:{b1}_{asp}_{target}")
+
+    return list(dict.fromkeys(errors))
