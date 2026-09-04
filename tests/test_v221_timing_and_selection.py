@@ -44,13 +44,14 @@ def test_canonical_timing_renderer_schema_and_real_dates():
     fmt_en = format_canonical_timing_activation(first_act, lang="en")
     assert fmt_en["technique"] == "Major Transit"
 
-    # Verify appendix markdown rendering
+    # Verify appendix markdown rendering with distinct peak/type
     appendix = render_canonical_technical_appendix(CHART_3_BIRTH, timing=timing, lang="pt")
     assert "Fatos Canônicos de Timing" in appendix
-    assert "| Ativação | Técnica | Trânsito | Aspecto | Alvo Natal | Janela | Exatidão |" in appendix
+    assert "| Ativação | Técnica | Trânsito | Aspecto | Alvo Natal | Janela | Pico (Tipo) |" in appendix
     assert "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |" in appendix
     assert fmt["activation_id"] in appendix
     assert fmt["technique"] in appendix
+
 
 
 def test_reader_selection_plan_order_agnostic_and_multi_path():

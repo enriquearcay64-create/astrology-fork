@@ -33,6 +33,7 @@ from astrology.pipeline import (
     bind_prospective_plan_to_prose,
     build_author_bundle,
     build_reviewer_bundle,
+    build_canonical_selection_plan,
     validate_premium_author_bundle,
     validate_premium_narrative,
 )

@@ -861,10 +861,14 @@ def format_orb_degree_minute(orb: float) -> Tuple[str, str]:
 
 def format_canonical_timing_activation(
     activation: Dict[str, object],
-    lang: str = "pt",
+    lang: Union[str, LocalizationProfile] = "pt",
 ) -> Dict[str, str]:
     """Format a timing activation record into a canonical schema with verified real dates."""
-    is_pt = str(lang).startswith("pt")
+    if hasattr(lang, "preferred_language"):
+        lang_str = str(lang.preferred_language)
+    else:
+        lang_str = str(lang or "pt")
+    is_pt = lang_str.startswith("pt")
     target_lang = "pt" if is_pt else "en"
     names_map = CANONICAL_BODIES_NAMES[target_lang]
     aspect_names = CANONICAL_ASPECTS_NAMES[target_lang]
@@ -967,7 +971,42 @@ def format_canonical_timing_activation(
 
     w_start = _clean_date_str(activation.get("window_start") or activation.get("start") or activation.get("orb_entry_at"))
     w_end = _clean_date_str(activation.get("window_end") or activation.get("end") or activation.get("orb_exit_at"))
-    exact = _clean_date_str(activation.get("exact_at") or activation.get("exact_date") or activation.get("closest_approach_at") or activation.get("closest_approach_date"))
+
+    exact_raw = _clean_date_str(activation.get("exact_at") or activation.get("exact_date"))
+    closest_raw = _clean_date_str(activation.get("closest_approach_at") or activation.get("closest_approach_date"))
+
+    # Preserve the engine's distinction between perfected (exact_at) and near-exact (closest_approach_at)
+    perfected_flag = activation.get("perfected")
+    if perfected_flag is True:
+        is_exact = True
+    elif perfected_flag is False:
+        is_exact = False
+    elif exact_raw and not closest_raw:
+        is_exact = True
+    elif closest_raw and not exact_raw:
+        is_exact = False
+    elif exact_raw:
+        is_exact = True
+    else:
+        is_exact = False
+
+    exact_at = exact_raw if is_exact else ""
+    closest_approach_at = closest_raw if not is_exact else (closest_raw or "")
+    peak_date = exact_raw if is_exact else (closest_raw or exact_raw)
+
+    if peak_date:
+        if is_exact:
+            peak_type = "exact"
+            peak_label = "Exatidão" if is_pt else "Exact"
+            peak_display = f"{peak_date} (Exatidão)" if is_pt else f"{peak_date} (Exact)"
+        else:
+            peak_type = "closest_approach"
+            peak_label = "Aprox. Máxima" if is_pt else "Closest Approach"
+            peak_display = f"{peak_date} (Aprox. Máxima)" if is_pt else f"{peak_date} (Closest Approach)"
+    else:
+        peak_type = "none"
+        peak_label = "—"
+        peak_display = "—"
 
     window_str = f"{w_start} .. {w_end}" if w_start and w_end else (w_start or w_end or "—")
 
@@ -978,10 +1017,18 @@ def format_canonical_timing_activation(
         "aspect": asp_name,
         "target": tgt_name,
         "window_start": w_start,
-        "exact_peak": exact,
+        "exact_peak": exact_at or peak_date,
+        "exact_at": exact_at,
+        "closest_approach_at": closest_approach_at,
+        "perfected": is_exact,
+        "peak_date": peak_date,
+        "peak_type": peak_type,
+        "peak_label": peak_label,
+        "peak_display": peak_display,
         "window_end": w_end,
         "window": window_str,
     }
+
 
 
 def render_canonical_technical_appendix(
@@ -1120,13 +1167,14 @@ def render_canonical_technical_appendix(
         if transits:
             lines.append("")
             if is_pt:
-                lines.append("| Ativação | Técnica | Trânsito | Aspecto | Alvo Natal | Janela | Exatidão |")
+                lines.append("| Ativação | Técnica | Trânsito | Aspecto | Alvo Natal | Janela | Pico (Tipo) |")
             else:
-                lines.append("| Activation | Technique | Transit | Aspect | Natal Target | Window | Exact Date |")
+                lines.append("| Activation | Technique | Transit | Aspect | Natal Target | Window | Peak (Type) |")
             lines.append("| :--- | :--- | :--- | :--- | :--- | :--- | :--- |")
             for tr in transits:
                 entry = format_canonical_timing_activation(tr, target_lang)
-                lines.append(f"| {entry['activation_id']} | {entry['technique']} | {entry['transit_body']} | {entry['aspect']} | {entry['target']} | {entry['window']} | {entry['exact_peak'] or '—'} |")
+                lines.append(f"| {entry['activation_id']} | {entry['technique']} | {entry['transit_body']} | {entry['aspect']} | {entry['target']} | {entry['window']} | {entry['peak_display']} |")
+
 
     return "\n".join(lines)
 

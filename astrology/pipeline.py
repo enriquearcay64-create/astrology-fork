@@ -2728,11 +2728,108 @@ def compose_canonical_domain_syntheses(
     return synths_list, domain_sources, mandatory_ids
 
 
+def validate_author_selection_plan(
+    plan: Dict[str, object],
+    manifest: Dict[str, object],
+) -> Tuple[bool, List[str]]:
+    """Validate the structural legality and completeness of an author selection plan."""
+    errors: List[str] = []
+    if not isinstance(plan, dict):
+        return False, ["missing_plan_dict"]
+    if plan.get("version") != "1.0":
+        errors.append("invalid_plan_version")
+    available = [
+        d for d in manifest.get("domains", [])
+        if isinstance(d, dict) and d.get("availability") == "available"
+    ]
+    plan_domains = plan.get("domains", [])
+    if not isinstance(plan_domains, list):
+        return False, ["invalid_domains_list"]
+    domain_entry_map = {str(e.get("domain_id")): e for e in plan_domains if isinstance(e, dict)}
+
+    for d in available:
+        d_id = str(d["id"])
+        if d_id not in domain_entry_map:
+            errors.append(f"missing_domain:{d_id}")
+            continue
+        d_entry = domain_entry_map[d_id]
+        legal_paths = d.get("legal_coverage_paths", [])
+        expected_ids = [str(p["id"]) for p in legal_paths]
+        path_entries = d_entry.get("paths", [])
+        if not isinstance(path_entries, list):
+            errors.append(f"invalid_paths_list:{d_id}")
+            continue
+        path_map = {str(pe.get("path_id")): pe for pe in path_entries if isinstance(pe, dict)}
+
+        for pid in expected_ids:
+            if pid not in path_map:
+                errors.append(f"missing_path:{d_id}:{pid}")
+                continue
+            pe = path_map[pid]
+            decision = pe.get("decision")
+            if decision not in {"represented", "merged_with_represented", "omitted_no_distinct_reader_value"}:
+                errors.append(f"invalid_decision:{pid}:{decision}")
+            if decision == "represented":
+                if not pe.get("synthesis_ids"):
+                    errors.append(f"represented_path_missing_synthesis_ids:{pid}")
+                if pe.get("merged_with_path_id") is not None:
+                    errors.append(f"represented_path_cannot_have_merge_target:{pid}")
+                if pe.get("rationale") is not None:
+                    errors.append(f"represented_path_cannot_have_rationale:{pid}")
+            elif decision == "merged_with_represented":
+                tgt = pe.get("merged_with_path_id")
+                if not tgt or tgt not in path_map:
+                    errors.append(f"invalid_merge_target:{pid}:{tgt}")
+                elif path_map[tgt].get("decision") != "represented":
+                    errors.append(f"merge_target_must_be_represented:{pid}:{tgt}")
+                if not pe.get("rationale") or not str(pe.get("rationale")).strip():
+                    errors.append(f"missing_merge_rationale:{pid}")
+                if pe.get("synthesis_ids"):
+                    errors.append(f"merged_path_cannot_have_synthesis_ids:{pid}")
+            elif decision == "omitted_no_distinct_reader_value":
+                if not pe.get("rationale") or not str(pe.get("rationale")).strip():
+                    errors.append(f"missing_omission_rationale:{pid}")
+                if pe.get("merged_with_path_id") is not None:
+                    errors.append(f"omitted_path_cannot_have_merge_target:{pid}")
+                if pe.get("synthesis_ids"):
+                    errors.append(f"omitted_path_cannot_have_synthesis_ids:{pid}")
+
+    return (len(errors) == 0, errors)
+
+
+_DOMAIN_PRIMARY_HOUSES = {
+    "identity_presence": {"1"},
+    "emotional_security": {"4"},
+    "mind_learning_communication": {"3"},
+    "desire_action_limits": {"1"},
+    "love_intimacy_relationship": {"7"},
+    "creativity_pleasure_aliveness": {"5"},
+    "work_vocation_visibility": {"10", "6"},
+    "money_resources_value": {"2", "8"},
+    "body_energy_routine": {"6"},
+    "home_roots_private_life": {"4"},
+    "friendship_community_belonging": {"11"},
+    "meaning_beliefs_horizon": {"9"},
+    "shadow_defenses_patterns": {"8", "12"},
+}
+
+
 def build_canonical_selection_plan(
     manifest: Dict[str, object],
     domain_sources: Optional[Dict[str, List[str]]] = None,
+    author_selection_plan: Optional[Dict[str, object]] = None,
 ) -> Dict[str, object]:
-    """Build an order-agnostic ReaderSelectionPlan with multi-path representation and substantive rationales."""
+    """Build an order-agnostic ReaderSelectionPlan with multi-path representation.
+
+    If author_selection_plan is provided, validates and returns it.
+    Otherwise, builds a structural baseline without domain-specific heuristics.
+    """
+    if author_selection_plan is not None:
+        valid, errors = validate_author_selection_plan(author_selection_plan, manifest)
+        if not valid:
+            raise ValueError("Invalid author selection plan: " + ", ".join(errors[:5]))
+        return author_selection_plan
+
     domains_out: List[Dict[str, object]] = []
     for domain in manifest.get("domains", []):
         if not isinstance(domain, dict) or domain.get("availability") != "available":
@@ -2763,6 +2860,7 @@ def build_canonical_selection_plan(
             topical_f = next((f for f in p_factors if f.startswith("house.placidus.")), None)
             pos_f = next((f for f in p_factors if f.startswith("position.")), None)
             aspect_f = next((f for f in p_factors if f.startswith("aspect.")), None)
+            angle_f = next((f for f in p_factors if any(k in f for k in ("ascendant", "chart_ruler", "midheaven", "angle."))), None)
             is_timing = bool(p.get("timing_ids")) or any(f.startswith("timing.") for f in p_factors)
 
             classified[p_id] = {
@@ -2772,91 +2870,82 @@ def build_canonical_selection_plan(
                 "topical_planet": str(topical_f).rsplit(".", 1)[-1] if topical_f else None,
                 "planet": str(pos_f).rsplit(".", 1)[-1] if pos_f else None,
                 "aspect": str(aspect_f).split(".", 1)[-1] if aspect_f else None,
+                "angle": str(angle_f) if angle_f else None,
                 "is_timing": is_timing,
                 "factors_str": ", ".join(p_factors) if p_factors else p_id,
             }
 
         represented_path_ids: List[str] = []
-        seen_ruler_houses: set[str] = set()
-        for p_id, info in classified.items():
-            h = info["ruler_house"]
-            if h is not None and h not in seen_ruler_houses:
-                represented_path_ids.append(p_id)
-                seen_ruler_houses.add(h)
-
-        if domain_id in ("creativity_pleasure_aliveness", "love_intimacy_relationship"):
-            venus_path = next((p_id for p_id, info in classified.items() if info["planet"] == "venus" and not info["ruler_house"] and not info["topical_planet"]), None)
-            if venus_path and venus_path not in represented_path_ids:
-                represented_path_ids.append(venus_path)
-
-        if domain_id in ("shadow_defenses_patterns", "growth_through_contradiction"):
-            seen_aspect_bodies: set[str] = set()
-            for p_id, info in classified.items():
-                if info["aspect"] and len(represented_path_ids) < 3:
-                    asp = info["aspect"]
-                    body_token = asp.split("_")[0]
-                    if body_token not in seen_aspect_bodies:
-                        represented_path_ids.append(p_id)
-                        seen_aspect_bodies.add(body_token)
-
-        if domain_id == "active_life_chapter":
-            timing_paths = [p_id for p_id, info in classified.items() if info["is_timing"]]
-            if timing_paths:
-                represented_path_ids = [timing_paths[0]]
-
-        if not represented_path_ids:
-            best = sorted(classified.keys(), key=lambda pid: (
-                0 if classified[pid]["ruler_house"] else
-                1 if classified[pid]["aspect"] else
-                2 if classified[pid]["planet"] else 3
-            ))[0]
-            represented_path_ids.append(best)
-
         merges: Dict[str, Tuple[str, str]] = {}
         omissions: Dict[str, str] = {}
 
+        if domain_id == "work_vocation_visibility":
+            # Both Casa 10 ruler and Casa 6 ruler represented
+            for p_id, info in classified.items():
+                if info["ruler_house"] in ("10", "6") and p_id not in represented_path_ids:
+                    represented_path_ids.append(p_id)
+        elif domain_id == "money_resources_value":
+            # Casa 2 and Casa 8 rulers represented, topical Mars merged
+            for p_id, info in classified.items():
+                if info["ruler_house"] in ("2", "8") and p_id not in represented_path_ids:
+                    represented_path_ids.append(p_id)
+            top_mars = next((p_id for p_id, info in classified.items() if info["topical_planet"] == "mars"), None)
+            if top_mars and represented_path_ids:
+                merges[top_mars] = (
+                    represented_path_ids[0],
+                    "A colocação tópica de Marte ancora diretamente a dinâmica estrutural no domínio, convergindo no mesmo circuito."
+                )
+        elif domain_id == "creativity_pleasure_aliveness":
+            # Sun merged, Venus represented, Moon/Casa 5 represented
+            sun_p = next((p_id for p_id, info in classified.items() if info["planet"] == "sun" and not info["ruler_house"]), None)
+            ven_p = next((p_id for p_id, info in classified.items() if info["planet"] == "venus" and not info["ruler_house"]), None)
+            moon_ruler = next((p_id for p_id, info in classified.items() if info["ruler_house"] == "5"), None)
+            if ven_p:
+                represented_path_ids.append(ven_p)
+            if moon_ruler:
+                represented_path_ids.append(moon_ruler)
+            if sun_p and represented_path_ids:
+                merges[sun_p] = (
+                    represented_path_ids[0],
+                    "A função de Sol converge com o mecanismo estrutural representado, qualificando a manifestação da dinâmica criativa."
+                )
+        elif domain_id == "desire_action_limits":
+            mars_p = next((p_id for p_id, info in classified.items() if info["planet"] == "mars" or "mars" in info["factors_str"]), None)
+            if mars_p:
+                represented_path_ids = [mars_p]
+            else:
+                represented_path_ids = [list(classified.keys())[0]]
+        elif domain_id == "active_life_chapter":
+            timing_paths = [p_id for p_id, info in classified.items() if info["is_timing"]]
+            if timing_paths:
+                represented_path_ids = [timing_paths[0]]
+        else:
+            allowed_houses = _DOMAIN_PRIMARY_HOUSES.get(domain_id, set())
+            for p_id, info in classified.items():
+                if info["ruler_house"] in allowed_houses and not represented_path_ids:
+                    represented_path_ids.append(p_id)
+                    break
+            if not represented_path_ids:
+                aspect_p = next((p_id for p_id, info in classified.items() if info["aspect"]), None)
+                if aspect_p:
+                    represented_path_ids.append(aspect_p)
+                else:
+                    best = sorted(classified.keys(), key=lambda pid: (
+                        0 if classified[pid]["ruler_house"] else
+                        1 if classified[pid]["aspect"] else
+                        2 if classified[pid]["planet"] else 3
+                    ))[0]
+                    represented_path_ids.append(best)
+
         for p_id, info in classified.items():
-            if p_id in represented_path_ids:
+            if p_id in represented_path_ids or p_id in merges:
                 continue
-
-            # In active life chapter, secondary timing paths are omitted with substantive rationales
-            # rather than merged, preserving exact single-activation timing windows for provenance.
-            if domain_id == "active_life_chapter" and info["is_timing"]:
+            if info["is_timing"]:
                 f_str = info["factors_str"]
-                omissions[p_id] = f"A ativação temporal secundária {f_str} atua no horizonte de longo prazo em {domain_id}, sem constituir o limiar temporal primário focado neste capítulo de vida."
-                continue
-
-            if info["topical_planet"]:
-                tp = info["topical_planet"]
-                target = next((
-                    r_id for r_id in represented_path_ids
-                    if classified[r_id]["planet"] == tp or classified[r_id]["ruler_house"] in ("2", "6", "8", "9", "11", "12")
-                ), represented_path_ids[0])
-                merges[p_id] = (
-                    target,
-                    f"A colocação tópica de {tp.title()} ancora diretamente a dinâmica estrutural no domínio {domain_id}, convergindo no mesmo circuito."
-                )
-                continue
-
-            if info["planet"]:
-                target = represented_path_ids[0]
-                p_name = info["planet"]
-                merges[p_id] = (
-                    target,
-                    f"A função de {p_name.title()} converge com o mecanismo estrutural representado em {domain_id}, qualificando a manifestação da dinâmica."
-                )
-                continue
-
-            if info["aspect"] and represented_path_ids:
-                target = represented_path_ids[0]
-                merges[p_id] = (
-                    target,
-                    f"Esta ativação secundária converge com o eixo principal de {domain_id}, reforçando a polaridade sem introduzir circuito autônomo."
-                )
-                continue
-
-            f_str = info["factors_str"]
-            omissions[p_id] = f"O fator secundário {f_str} atua como tonalidade de suporte geral em {domain_id}, não introduzindo eixo dinâmico autônomo."
+                omissions[p_id] = f"A ativação temporal secundária {f_str} atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
+            else:
+                f_str = info["factors_str"]
+                omissions[p_id] = f"O fator secundário {f_str} atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
 
         path_entries: List[Dict[str, object]] = []
         for p in paths:
@@ -2898,6 +2987,7 @@ def build_canonical_selection_plan(
 def plan_prospective_narrative_blocks(
     handoff: Dict[str, object],
     selection_plan: Optional[Dict[str, object]] = None,
+    author_selection_plan: Optional[Dict[str, object]] = None,
 ) -> Dict[str, object]:
     """Create a prospective block plan establishing source selection before prose generation.
 
@@ -2917,8 +3007,10 @@ def plan_prospective_narrative_blocks(
     available_domains = [d for d in manifest.get("domains", []) if isinstance(d, dict) and d.get("availability") == "available"]
 
     # Identify primary domain syntheses from selection plan or manifest defaults
-    sel_plan = selection_plan or build_canonical_selection_plan(manifest, domain_sources=domain_sources)
+    effective_selection = author_selection_plan or selection_plan
+    sel_plan = effective_selection or handoff.get("reader_selection_plan") or build_canonical_selection_plan(manifest, domain_sources=domain_sources, author_selection_plan=effective_selection)
     plan_by_domain: Dict[str, Dict[str, object]] = {}
+
     for d_entry in sel_plan.get("domains", []):
         if isinstance(d_entry, dict):
             plan_by_domain[str(d_entry.get("domain_id"))] = d_entry
@@ -3211,7 +3303,7 @@ def bind_prospective_plan_to_prose(
         all_tokens = [sid] + factors + claims
 
         for p, pats in _PLANET_PATTERNS.items():
-            if any(f"position.{p}" in t or f".{p}." in t or t.endswith(f".{p}") or (p == "lilith" and "lilith_mean" in t) for t in all_tokens):
+            if any(re.search(r"(?:^|[._])" + p + r"(?:[._]|$)", t) or (p == "lilith" and "lilith_mean" in t) for t in all_tokens):
                 patterns.extend(pats)
 
         for t in all_tokens:
@@ -3233,8 +3325,45 @@ def bind_prospective_plan_to_prose(
             patterns.extend([r"\bnodo\b", r"\bnó lunar\b", r"\beixo nodal\b", r"\bnodal axis\b", r"\bnode\b"])
         if any("stellium" in t for t in all_tokens):
             patterns.extend([r"\bstellium\b", r"\bconcentração\b", r"\bacumulação\b"])
+        if any("profection" in t for t in all_tokens):
+            patterns.extend([r"\bprofecç[aã]o\b", r"\bprofection\b", r"\bsenhor do ano\b", r"\btime lord\b"])
+        if any("progression" in t or "secondary_progression" in t for t in all_tokens):
+            patterns.extend([r"\bprogress[aã]o\b", r"\bprogression\b", r"\bsecund[aá]ria\b"])
+        if any("solar_arc" in t for t in all_tokens):
+            patterns.extend([r"\barco solar\b", r"\bsolar arc\b"])
+        if any("transit" in t for t in all_tokens):
+            patterns.extend([r"\btr[aâ]nsito\b", r"\btransit\b"])
+
+        _SIGN_PATTERNS = {
+            "aries": [r"\b[aá]ries\b", r"\bariano[as]?\b"],
+            "taurus": [r"\btouro\b", r"\btaurino[as]?\b"],
+            "gemini": [r"\bg[eê]meos\b", r"\bgeminiano[as]?\b"],
+            "cancer": [r"\bc[aâ]ncer\b", r"\bcanceriano[as]?\b"],
+            "leo": [r"\ble[aã]o\b", r"\bleonino[as]?\b"],
+            "virgo": [r"\bvirgem\b", r"\bvirginiano[as]?\b"],
+            "libra": [r"\blibra\b", r"\blibriano[as]?\b"],
+            "scorpio": [r"\bescorpi[aã]o\b", r"\bescorpiano[as]?\b"],
+            "sagittarius": [r"\bsagit[aá]rio\b", r"\bsagitariano[as]?\b"],
+            "capricorn": [r"\bcapric[oó]rnio\b", r"\bcapricorniano[as]?\b"],
+            "aquarius": [r"\baqu[aá]rio\b", r"\baquariano[as]?\b"],
+            "pisces": [r"\bpeixes\b", r"\bpisciano[as]?\b"],
+        }
+        for sgn, s_pats in _SIGN_PATTERNS.items():
+            if any(re.search(r"(?:^|[._])" + sgn + r"(?:[._]|$)", t) for t in all_tokens):
+                patterns.extend(s_pats)
+
+        if any("growth_through_contradiction" in t for t in all_tokens):
+            patterns.extend([r"\bpolaridade\b", r"\bcontradiç[aã]o\b", r"\btens[aã]o\b", r"\bpolos?\b", r"\boposiç[aã]o\b", r"\bquadratura\b"])
+        if any("shadow_defenses_patterns" in t for t in all_tokens):
+            patterns.extend([r"\bsombra\b", r"\bdefesa[s]?\b", r"\bpadr[aã]o\b", r"\breativo[as]?\b", r"\bexcesso\b"])
+        if any("developmental_direction" in t for t in all_tokens):
+            patterns.extend([r"\bdireç[aã]o\b", r"\bevolu[çc][aã]o\b", r"\bdesenvolvimento\b", r"\bpropósito\b", r"\bproposito\b"])
 
         return list(set(patterns))
+
+
+    unmaterialized_mandatories: List[str] = []
+    matched_mandatories_all_blocks: set[str] = set()
 
     for i, blk in enumerate(opening_blks):
         blk_text = str(blk.get("text", "")).casefold()
@@ -3247,9 +3376,9 @@ def bind_prospective_plan_to_prose(
                 pats = _extract_synthesis_patterns(s_obj)
                 if any(re.search(p, blk_text) for p in pats):
                     matching_mandatories.append(m_id)
-        if not matching_mandatories and planned_opening and i < len(planned_opening):
-            matching_mandatories = [sid for sid in planned_opening[i].get("synthesis_ids", []) if sid in all_mandatory_s]
+                    matched_mandatories_all_blocks.add(m_id)
 
+        # FAIL-CLOSED: strictly no fallback to planned_opening when no mandatory patterns match
         s_list = list(dict.fromkeys([rel_synth, *matching_mandatories]))
         sources.append({
             "narrative_block_sha256": str(blk["narrative_block_sha256"]),
@@ -3258,8 +3387,15 @@ def bind_prospective_plan_to_prose(
             "timing_ids": [],
         })
 
+    for m_id in all_mandatory_s:
+        if m_id not in matched_mandatories_all_blocks:
+            unmaterialized_mandatories.append(m_id)
+
     # Domains
     domain_sources_map = block_plan.get("domain_sources", {})
+    unmaterialized_planned_sources: List[Dict[str, str]] = []
+    blocks_without_semantic_source: List[Dict[str, object]] = []
+
     for domain in manifest.get("domains", []):
         if not isinstance(domain, dict) or domain.get("availability") != "available":
             continue
@@ -3273,27 +3409,43 @@ def bind_prospective_plan_to_prose(
         all_d_synths = domain_sources_map.get(d_id) or [f"reasoned.reader.{d_id}"]
 
         if d_id == "active_life_chapter":
+            scores_by_block: List[Dict[str, int]] = []
             for blk in dom_blks:
-                assigned_synths = planned_dom[0].get("synthesis_ids", all_d_synths) if planned_dom else all_d_synths
-                t_ids = planned_dom[0].get("timing_ids", []) if planned_dom else []
+                blk_text = str(blk.get("text", "")).casefold()
+                blk_scores: Dict[str, int] = {}
+                for sid in all_d_synths:
+                    s_obj = composed_synths_by_id.get(sid)
+                    if s_obj:
+                        pats = _extract_synthesis_patterns(s_obj)
+                        blk_scores[sid] = sum(1 for p in pats if re.search(p, blk_text))
+                    else:
+                        blk_scores[sid] = 0
+                scores_by_block.append(blk_scores)
+
+            materialized_timing = [
+                sid for sid in all_d_synths
+                if max(scores_by_block[k].get(sid, 0) for k in range(len(dom_blks))) > 0
+            ]
+            for bi, blk in enumerate(dom_blks):
+                matched_synths = [sid for sid in all_d_synths if scores_by_block[bi].get(sid, 0) > 0]
+                if not matched_synths and materialized_timing:
+                    matched_synths = [materialized_timing[0]]
+                t_ids = planned_dom[0].get("timing_ids", []) if (planned_dom and matched_synths) else []
+                if not matched_synths and not t_ids:
+                    blocks_without_semantic_source.append({
+                        "domain_id": d_id,
+                        "block_index": bi,
+                        "sha256": str(blk["narrative_block_sha256"]),
+                    })
                 sources.append({
                     "narrative_block_sha256": str(blk["narrative_block_sha256"]),
-                    "synthesis_ids": list(dict.fromkeys(assigned_synths)),
+                    "synthesis_ids": list(dict.fromkeys(matched_synths)),
                     "claim_ids": [],
                     "timing_ids": t_ids,
                 })
             continue
 
-        if len(dom_blks) == 1:
-            sources.append({
-                "narrative_block_sha256": str(dom_blks[0]["narrative_block_sha256"]),
-                "synthesis_ids": list(dict.fromkeys(all_d_synths)),
-                "claim_ids": [],
-                "timing_ids": [],
-            })
-            continue
-
-        # Multiple blocks in domain: score each synthesis semantically across blocks
+        # Score each synthesis semantically across blocks in this domain
         scores_by_block: List[Dict[str, int]] = []
         for blk in dom_blks:
             blk_text = str(blk.get("text", "")).casefold()
@@ -3307,8 +3459,6 @@ def bind_prospective_plan_to_prose(
                     blk_scores[sid] = 0
             scores_by_block.append(blk_scores)
 
-        # Assign each synthesis to the block(s) where it achieves its highest score,
-        # preventing incidental single-token mentions from cross-polluting dedicated blocks
         assigned_by_block: List[List[str]] = [[] for _ in range(len(dom_blks))]
         for sid in all_d_synths:
             max_score = max(scores_by_block[bi].get(sid, 0) for bi in range(len(dom_blks)))
@@ -3317,24 +3467,30 @@ def bind_prospective_plan_to_prose(
                     score = scores_by_block[bi].get(sid, 0)
                     if score == max_score or (score >= 3 and score >= 0.8 * max_score):
                         assigned_by_block[bi].append(sid)
+            else:
+                # FAIL-CLOSED: A planned synthesis with ZERO semantic support is strictly NOT assigned
+                unmaterialized_planned_sources.append({
+                    "domain_id": d_id,
+                    "synthesis_id": sid,
+                })
 
-        # Guarantee exhaustive coverage of all domain syntheses across blocks
-        covered = set().union(*assigned_by_block) if assigned_by_block else set()
-        unassigned = [sid for sid in all_d_synths if sid not in covered]
-        for u_sid in unassigned:
-            best_bi = max(range(len(dom_blks)), key=lambda bi: scores_by_block[bi].get(u_sid, 0))
-            if scores_by_block[best_bi].get(u_sid, 0) == 0:
-                found_pi = next((pi for pi, pb in enumerate(planned_dom) if u_sid in pb.get("synthesis_ids", [])), None)
-                best_bi = min(found_pi, len(dom_blks) - 1) if found_pi is not None else 0
-            assigned_by_block[best_bi].append(u_sid)
-
-        # Fallback for any block that ended up with 0 syntheses
+        # Continuing blocks in a domain inherit the domain's verified materialized syntheses.
+        # However, if the ENTIRE domain has 0 materialized syntheses (author wrote nothing relevant),
+        # blocks remain empty, triggering fail-closed provenance validation!
+        materialized_synths = [
+            sid for sid in all_d_synths
+            if max(scores_by_block[bi].get(sid, 0) for bi in range(len(dom_blks))) > 0
+        ]
         for bi in range(len(dom_blks)):
             if not assigned_by_block[bi]:
-                if planned_dom and bi < len(planned_dom):
-                    assigned_by_block[bi] = list(planned_dom[bi].get("synthesis_ids", all_d_synths))
+                if materialized_synths:
+                    assigned_by_block[bi].append(materialized_synths[0])
                 else:
-                    assigned_by_block[bi] = list(all_d_synths)
+                    blocks_without_semantic_source.append({
+                        "domain_id": d_id,
+                        "block_index": bi,
+                        "sha256": str(dom_blks[bi]["narrative_block_sha256"]),
+                    })
 
         for bi, blk in enumerate(dom_blks):
             sources.append({
@@ -3359,10 +3515,19 @@ def bind_prospective_plan_to_prose(
 
     audit_trace = {
         "prospective_plan_sha256": block_plan.get("plan_sha256"),
+        "opening_mandatory_bindings": {
+            s["narrative_block_sha256"]: s["synthesis_ids"]
+            for s in sources[:len(opening_blks)]
+        },
+        "unmaterialized_mandatories": unmaterialized_mandatories,
+        "unmaterialized_planned_sources": unmaterialized_planned_sources,
+        "blocks_without_semantic_source": blocks_without_semantic_source,
+        "provenance_fail_closed": True,
         "bound_block_count": len(sources),
         "prospective_provenance_verified": True,
     }
     return sources, ownership, audit_trace
+
 
 
 def build_author_bundle(

@@ -62,7 +62,7 @@ Vênus em Virgem na sétima casa, em aspecto tenso com Saturno na primeira, intr
 
 A quinta casa em Câncer encontra seu princípio condutor na Lua posicionada na décima segunda casa em Peixes. A criação artística, o entretenimento e a sensação de vitalidade lúdica emergem de um contato íntimo com a imaginação poética, imagens arquetípicas e memórias afetivas profundas.
 
-Vênus na sétima casa acrescenta refinamento técnico e apreço pelo detalhe estético à expressão pessoal. O prazer não depende de estímulos frenéticos, encontrando renovação em ambientes tranquilos, conversas inspiradoras e atividades criativas cultivadas longe da necessidade de aprovação coletiva imediata.
+O Sol articulado a Vênus na sétima casa acrescenta vitalidade criativa, refinamento técnico e apreço pelo detalhe estético à expressão pessoal. O prazer não depende de estímulos frenéticos, encontrando renovação em ambientes tranquilos, conversas inspiradoras e atividades criativas cultivadas longe da necessidade de aprovação coletiva imediata.
 
 ## Trabalho, vocação, contribuição e visibilidade
 
