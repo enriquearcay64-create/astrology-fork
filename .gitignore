@@ -14,3 +14,5 @@ dist/
 # Generated UX audits and local report inputs
 ux-audit*/
 *.local.json
+.agents/
+runs/

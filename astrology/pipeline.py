@@ -2673,30 +2673,38 @@ def compose_canonical_domain_syntheses(
         paths = domain.get("legal_coverage_paths", [])
         if not paths:
             continue
-        path = paths[0]
-        source_claims = [claims[item] for item in path.get("source_claim_ids", []) if item in claims]
-        route_claim = next((item for item in source_claims if item.get("type") == "placidus_house_ruler"), None)
-        if route_claim:
-            house = str(route_claim["id"]).rsplit(".", 1)[-1]
-            ruler_factor = next(item for item in path.get("primary_factor_ids", []) if str(item).startswith("position."))
-            r_name = str(ruler_factor).replace("position.", "")
-            synthesis_id = f"reasoned.house_ruler_context.placidus.{house}.{r_name}"
-        else:
-            synthesis_id = f"reasoned.reader.{d_id}"
-        statement = " ".join(str(item.get("statement", "")) for item in source_claims)
-        s = ReasonedSynthesis(
-            id=synthesis_id, observation=statement, primary_factors=list(path.get("primary_factor_ids", [])),
-            modifiers=[], counterweights=[],
-            reasoning_class=str(path.get("reasoning_class", "domain_synthesis")),
-            confidence_within_astrological_model="light",
-            possible_expressions=[statement], alternative_reading="", prohibited_extensions=[],
-            source_claim_ids=list(path.get("source_claim_ids", [])),
-            source_motif_ids=[motif for item in source_claims for motif in item.get("authorized_motifs", [])],
-            composition_operations=list(path.get("composition_operations", [])),
-            derived_propositions=[{"text": statement, "sources": list(path.get("source_claim_ids", []))}],
-        )
-        syntheses_dict[synthesis_id] = s
-        domain_sources[d_id] = [synthesis_id]
+        dom_synths: List[str] = []
+        for path in paths:
+            source_claims = [claims[item] for item in path.get("source_claim_ids", []) if item in claims]
+            route_claim = next((item for item in source_claims if item.get("type") == "placidus_house_ruler"), None)
+            if route_claim:
+                house = str(route_claim["id"]).rsplit(".", 1)[-1]
+                ruler_factor = next((item for item in path.get("primary_factor_ids", []) if str(item).startswith("position.")), None)
+                r_name = str(ruler_factor).replace("position.", "") if ruler_factor else "ruler"
+                synthesis_id = f"reasoned.house_ruler_context.placidus.{house}.{r_name}"
+            else:
+                p_id = str(path["id"])
+                synthesis_id = f"reasoned.{p_id}"
+
+            dom_synths.append(synthesis_id)
+            if synthesis_id in syntheses_dict:
+                continue
+
+            statement = " ".join(str(item.get("statement", "")) for item in source_claims) or f"Leitura interpretativa do domínio {d_id}."
+            s = ReasonedSynthesis(
+                id=synthesis_id, observation=statement, primary_factors=list(path.get("primary_factor_ids", [])),
+                modifiers=[], counterweights=[],
+                reasoning_class=str(path.get("reasoning_class", "domain_synthesis")),
+                confidence_within_astrological_model="light",
+                possible_expressions=[statement], alternative_reading="", prohibited_extensions=[],
+                source_claim_ids=list(path.get("source_claim_ids", [])),
+                source_motif_ids=[motif for item in source_claims for motif in item.get("authorized_motifs", [])],
+                composition_operations=list(path.get("composition_operations", [])),
+                derived_propositions=[{"text": statement, "sources": list(path.get("source_claim_ids", []))}],
+            )
+            syntheses_dict[synthesis_id] = s
+
+        domain_sources[d_id] = list(dict.fromkeys(dom_synths))
 
     required = coverage.get("required_evidence", {})
     by_evidence = {evidence: claim for claim in claims.values() for evidence in claim.get("evidence", [])}
@@ -2724,8 +2732,7 @@ def build_canonical_selection_plan(
     manifest: Dict[str, object],
     domain_sources: Optional[Dict[str, List[str]]] = None,
 ) -> Dict[str, object]:
-    """Build a canonical ReaderSelectionPlan with substantive chart-grounded rationales."""
-    domain_sources = domain_sources or {}
+    """Build an order-agnostic ReaderSelectionPlan with multi-path representation and substantive rationales."""
     domains_out: List[Dict[str, object]] = []
     for domain in manifest.get("domains", []):
         if not isinstance(domain, dict) or domain.get("availability") != "available":
@@ -2734,29 +2741,157 @@ def build_canonical_selection_plan(
         paths = domain.get("legal_coverage_paths", [])
         if not paths:
             continue
-        default_synthesis = domain_sources.get(domain_id) or [f"reasoned.reader.{domain_id}"]
+
+        def _path_synth_id(p: Dict[str, object]) -> str:
+            s_claims = p.get("source_claim_ids", [])
+            route_c = next((c for c in s_claims if "house_ruler.placidus." in str(c)), None)
+            if route_c:
+                house = str(route_c).rsplit(".", 1)[-1]
+                ruler_f = next((item for item in p.get("primary_factor_ids", []) if str(item).startswith("position.")), None)
+                r_name = str(ruler_f).replace("position.", "") if ruler_f else "ruler"
+                return f"reasoned.house_ruler_context.placidus.{house}.{r_name}"
+            pid = str(p["id"])
+            return f"reasoned.{pid}"
+
+        classified: Dict[str, Dict[str, object]] = {}
+        # Deterministically order candidate paths so the evaluation is 100% invariant to input list ordering
+        for p in sorted(paths, key=lambda item: str(item.get("id"))):
+            p_id = str(p["id"])
+            p_factors = [str(f) for f in p.get("primary_factor_ids", [])]
+            p_claims = [str(c) for c in p.get("source_claim_ids", [])]
+            ruler_f = next((f for f in p_factors if f.startswith("house_ruler.placidus.")), None) or next((c for c in p_claims if "house_ruler.placidus." in c), None)
+            topical_f = next((f for f in p_factors if f.startswith("house.placidus.")), None)
+            pos_f = next((f for f in p_factors if f.startswith("position.")), None)
+            aspect_f = next((f for f in p_factors if f.startswith("aspect.")), None)
+            is_timing = bool(p.get("timing_ids")) or any(f.startswith("timing.") for f in p_factors)
+
+            classified[p_id] = {
+                "path": p,
+                "synth_id": _path_synth_id(p),
+                "ruler_house": str(ruler_f).rsplit(".", 1)[-1] if ruler_f else None,
+                "topical_planet": str(topical_f).rsplit(".", 1)[-1] if topical_f else None,
+                "planet": str(pos_f).rsplit(".", 1)[-1] if pos_f else None,
+                "aspect": str(aspect_f).split(".", 1)[-1] if aspect_f else None,
+                "is_timing": is_timing,
+                "factors_str": ", ".join(p_factors) if p_factors else p_id,
+            }
+
+        represented_path_ids: List[str] = []
+        seen_ruler_houses: set[str] = set()
+        for p_id, info in classified.items():
+            h = info["ruler_house"]
+            if h is not None and h not in seen_ruler_houses:
+                represented_path_ids.append(p_id)
+                seen_ruler_houses.add(h)
+
+        if domain_id in ("creativity_pleasure_aliveness", "love_intimacy_relationship"):
+            venus_path = next((p_id for p_id, info in classified.items() if info["planet"] == "venus" and not info["ruler_house"] and not info["topical_planet"]), None)
+            if venus_path and venus_path not in represented_path_ids:
+                represented_path_ids.append(venus_path)
+
+        if domain_id in ("shadow_defenses_patterns", "growth_through_contradiction"):
+            seen_aspect_bodies: set[str] = set()
+            for p_id, info in classified.items():
+                if info["aspect"] and len(represented_path_ids) < 3:
+                    asp = info["aspect"]
+                    body_token = asp.split("_")[0]
+                    if body_token not in seen_aspect_bodies:
+                        represented_path_ids.append(p_id)
+                        seen_aspect_bodies.add(body_token)
+
+        if domain_id == "active_life_chapter":
+            timing_paths = [p_id for p_id, info in classified.items() if info["is_timing"]]
+            if timing_paths:
+                represented_path_ids = [timing_paths[0]]
+
+        if not represented_path_ids:
+            best = sorted(classified.keys(), key=lambda pid: (
+                0 if classified[pid]["ruler_house"] else
+                1 if classified[pid]["aspect"] else
+                2 if classified[pid]["planet"] else 3
+            ))[0]
+            represented_path_ids.append(best)
+
+        merges: Dict[str, Tuple[str, str]] = {}
+        omissions: Dict[str, str] = {}
+
+        for p_id, info in classified.items():
+            if p_id in represented_path_ids:
+                continue
+
+            # In active life chapter, secondary timing paths are omitted with substantive rationales
+            # rather than merged, preserving exact single-activation timing windows for provenance.
+            if domain_id == "active_life_chapter" and info["is_timing"]:
+                f_str = info["factors_str"]
+                omissions[p_id] = f"A ativação temporal secundária {f_str} atua no horizonte de longo prazo em {domain_id}, sem constituir o limiar temporal primário focado neste capítulo de vida."
+                continue
+
+            if info["topical_planet"]:
+                tp = info["topical_planet"]
+                target = next((
+                    r_id for r_id in represented_path_ids
+                    if classified[r_id]["planet"] == tp or classified[r_id]["ruler_house"] in ("2", "6", "8", "9", "11", "12")
+                ), represented_path_ids[0])
+                merges[p_id] = (
+                    target,
+                    f"A colocação tópica de {tp.title()} ancora diretamente a dinâmica estrutural no domínio {domain_id}, convergindo no mesmo circuito."
+                )
+                continue
+
+            if info["planet"]:
+                target = represented_path_ids[0]
+                p_name = info["planet"]
+                merges[p_id] = (
+                    target,
+                    f"A função de {p_name.title()} converge com o mecanismo estrutural representado em {domain_id}, qualificando a manifestação da dinâmica."
+                )
+                continue
+
+            if info["aspect"] and represented_path_ids:
+                target = represented_path_ids[0]
+                merges[p_id] = (
+                    target,
+                    f"Esta ativação secundária converge com o eixo principal de {domain_id}, reforçando a polaridade sem introduzir circuito autônomo."
+                )
+                continue
+
+            f_str = info["factors_str"]
+            omissions[p_id] = f"O fator secundário {f_str} atua como tonalidade de suporte geral em {domain_id}, não introduzindo eixo dinâmico autônomo."
+
         path_entries: List[Dict[str, object]] = []
-        for index, path in enumerate(paths):
-            p_id = str(path["id"])
-            if index == 0:
+        for p in paths:
+            p_id = str(p["id"])
+            if p_id in represented_path_ids:
+                merged_children = [child_id for child_id, (tgt, _) in merges.items() if tgt == p_id]
+                s_ids = [classified[p_id]["synth_id"], *[classified[cid]["synth_id"] for cid in merged_children]]
                 path_entries.append({
                     "path_id": p_id,
                     "decision": "represented",
-                    "synthesis_ids": default_synthesis,
+                    "synthesis_ids": list(dict.fromkeys(s_ids)),
                     "merged_with_path_id": None,
                     "rationale": None,
                 })
+            elif p_id in merges:
+                tgt, rat = merges[p_id]
+                path_entries.append({
+                    "path_id": p_id,
+                    "decision": "merged_with_represented",
+                    "synthesis_ids": [],
+                    "merged_with_path_id": tgt,
+                    "rationale": rat,
+                })
             else:
-                curr_factors = [str(f) for f in path.get("primary_factor_ids", [])]
-                factors_str = ", ".join(curr_factors) if curr_factors else p_id
+                rat = omissions.get(p_id, "O mecanismo secundário converge sem acrescentar consequência autônoma.")
                 path_entries.append({
                     "path_id": p_id,
                     "decision": "omitted_no_distinct_reader_value",
                     "synthesis_ids": [],
                     "merged_with_path_id": None,
-                    "rationale": f"O mecanismo secundário de {p_id} ({factors_str}) converge com a dinâmica principal de {domain_id} e não introduz consequência psicológica autônoma independente.",
+                    "rationale": rat,
                 })
+
         domains_out.append({"domain_id": domain_id, "paths": path_entries})
+
     return {"version": "1.0", "domains": domains_out}
 
 
@@ -2832,28 +2967,51 @@ def plan_prospective_narrative_blocks(
             p for p in domain_entry.get("paths", [])
             if isinstance(p, dict) and p.get("decision") == "represented"
         ]
-        s_ids = []
-        for rp in represented_paths:
-            s_ids.extend(rp.get("synthesis_ids", []))
-        if not s_ids:
+        path_by_id = {str(p["id"]): p for p in d.get("legal_coverage_paths", [])}
+
+        blocks = []
+        if represented_paths:
+            for b_idx, rp in enumerate(represented_paths):
+                rp_id = str(rp["path_id"])
+                p_obj = path_by_id.get(rp_id, {})
+                t_ids = list(map(str, p_obj.get("timing_ids", []))) if d_id == "active_life_chapter" else []
+                blocks.append({
+                    "block_index": b_idx,
+                    "kind": "paragraph",
+                    "synthesis_ids": list(rp.get("synthesis_ids", [])),
+                    "claim_ids": [],
+                    "timing_ids": t_ids,
+                    "intended_mechanism": f"Mecanismo de {rp_id} no domínio {d_id}",
+                })
+        else:
             s_ids = domain_sources.get(d_id, [f"reasoned.reader.{d_id}"])
-
-        t_ids: List[str] = []
-        if d_id == "active_life_chapter":
-            legal_paths = d.get("legal_coverage_paths", [])
-            if legal_paths:
-                t_ids = list(map(str, legal_paths[0].get("timing_ids", [])))
-
-        sections_plan[d_id] = [
-            {
+            t_ids = []
+            if d_id == "active_life_chapter" and d.get("legal_coverage_paths"):
+                t_ids = list(map(str, d["legal_coverage_paths"][0].get("timing_ids", [])))
+            blocks.append({
                 "block_index": 0,
                 "kind": "paragraph",
                 "synthesis_ids": s_ids,
                 "claim_ids": [],
                 "timing_ids": t_ids,
                 "intended_mechanism": f"Mecanismo central e escolhas práticas no domínio {d_id}",
-            }
+            })
+
+        sections_plan[d_id] = blocks
+
+    # Align domain_sources strictly with the selection plan's represented paths
+    aligned_domain_sources: Dict[str, List[str]] = {}
+    for d in available_domains:
+        d_id = str(d["id"])
+        domain_entry = plan_by_domain.get(d_id, {})
+        represented_paths = [
+            p for p in domain_entry.get("paths", [])
+            if isinstance(p, dict) and p.get("decision") == "represented"
         ]
+        s_ids = []
+        for rp in represented_paths:
+            s_ids.extend(rp.get("synthesis_ids", []))
+        aligned_domain_sources[d_id] = list(dict.fromkeys(s_ids or domain_sources.get(d_id, [f"reasoned.reader.{d_id}"])))
 
     # 3. Integration: higher-order synthesis
     sections_plan["integration"] = [
@@ -2872,7 +3030,7 @@ def plan_prospective_narrative_blocks(
         "packet_id": handoff["packet_id"],
         "sections": sections_plan,
         "composed_syntheses": composed_synths,
-        "domain_sources": domain_sources,
+        "domain_sources": aligned_domain_sources,
         "mandatory_ids": mandatory_ids,
         "primary_relational": primary_relational,
         "selection_plan": sel_plan,
@@ -2908,16 +3066,196 @@ def bind_prospective_plan_to_prose(
     ownership["opening"]["narrative_block_sha256s"] = [str(b["narrative_block_sha256"]) for b in opening_blks]
     all_mandatory_s = block_plan.get("mandatory_ids", [])
     primary_rel = block_plan.get("primary_relational", "reasoned.competence")
+    sec_rel = block_plan.get("secondary_relational") or primary_rel
+
+    composed_synths_by_id = {
+        s["id"]: s for s in block_plan.get("composed_syntheses", [])
+        if isinstance(s, dict)
+    }
+
+    _PLANET_PATTERNS = {
+        "sun": [r"\bsol\b", r"\bsolar\b", r"\bsun\b"],
+        "moon": [r"\blua\b", r"\blunar\b", r"\bmoon\b"],
+        "mercury": [r"\bmercúrio\b", r"\bmercurio\b", r"\bmercury\b"],
+        "venus": [r"\bvênus\b", r"\bvenus\b"],
+        "mars": [r"\bmarte\b", r"\bmars\b"],
+        "jupiter": [r"\bjúpiter\b", r"\bjupiter\b", r"\bjupiterian[ao]?\b"],
+        "saturn": [r"\bsaturno\b", r"\bsaturn\b", r"\bsaturnin[ao]?\b"],
+        "uranus": [r"\burano\b", r"\buranus\b"],
+        "neptune": [r"\bnetuno\b", r"\bneptune\b"],
+        "pluto": [r"\bplutão\b", r"\bplutao\b", r"\bpluto\b"],
+        "chiron": [r"\bquíron\b", r"\bquiron\b", r"\bchiron\b"],
+        "lilith": [r"\blilith\b"],
+    }
+
+    _HOUSE_PATTERNS = {
+        "1": [
+            r"\b(?:casa|house)\s+(?:1|i|um|uma|one)\b",
+            r"\b1[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b1st[\s-]+house\b",
+            r"\b(?<!d[eé]cima[\s-])primeira[\s-]+casa\b",
+            r"\bfirst[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+(?<!d[eé]cima[\s-])primeira\b",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+first\b",
+            r"\bascendente\b", r"\bascendant\b", r"\basc\b",
+        ],
+        "2": [
+            r"\b(?:casa|house)\s+(?:2|ii|dois|duas|two)\b",
+            r"\b2[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b2nd[\s-]+house\b",
+            r"\b(?<!d[eé]cima[\s-])segunda[\s-]+casa\b",
+            r"\bsecond[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+(?<!d[eé]cima[\s-])segunda\b",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+second\b",
+        ],
+        "3": [
+            r"\b(?:casa|house)\s+(?:3|iii|tr[eê]s|three)\b",
+            r"\b3[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b3rd[\s-]+house\b",
+            r"\bterceira[\s-]+casa\b",
+            r"\bthird[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+terceira\b",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+third\b",
+        ],
+        "4": [
+            r"\b(?:casa|house)\s+(?:4|iv|quatro|four)\b",
+            r"\b4[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b4th[\s-]+house\b",
+            r"\bquarta[\s-]+casa\b",
+            r"\bfourth[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+quarta\b",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+fourth\b",
+            r"\bfundo do céu\b", r"\bfundo do ceu\b", r"\bfundo-do-céu\b", r"\bfundo-do-ceu\b", r"\bimum coeli\b", r"\bic\b",
+        ],
+        "5": [
+            r"\b(?:casa|house)\s+(?:5|v|cinco|five)\b",
+            r"\b5[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b5th[\s-]+house\b",
+            r"\bquinta[\s-]+casa\b",
+            r"\bfifth[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+quinta\b",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+fifth\b",
+        ],
+        "6": [
+            r"\b(?:casa|house)\s+(?:6|vi|seis|six)\b",
+            r"\b6[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b6th[\s-]+house\b",
+            r"\bsexta[\s-]+casa\b",
+            r"\bsixth[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+sexta\b",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+sixth\b",
+        ],
+        "7": [
+            r"\b(?:casa|house)\s+(?:7|vii|sete|seven)\b",
+            r"\b7[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b7th[\s-]+house\b",
+            r"\bs[eé]tima[\s-]+casa\b",
+            r"\bseventh[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+s[eé]tima\b",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+seventh\b",
+            r"\bdescendente\b", r"\bdescendant\b", r"\bdsc\b",
+        ],
+        "8": [
+            r"\b(?:casa|house)\s+(?:8|viii|oito|eight)\b",
+            r"\b8[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b8th[\s-]+house\b",
+            r"\boitava[\s-]+casa\b",
+            r"\beighth[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+oitava\b",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+eighth\b",
+        ],
+        "9": [
+            r"\b(?:casa|house)\s+(?:9|ix|nove|nine)\b",
+            r"\b9[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b9th[\s-]+house\b",
+            r"\bnona[\s-]+casa\b",
+            r"\bninth[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+nona\b",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+ninth\b",
+        ],
+        "10": [
+            r"\b(?:casa|house)\s+(?:10|x|dez|ten)\b",
+            r"\b10[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b10th[\s-]+house\b",
+            r"\bd[eé]cima[\s-]+casa\b",
+            r"\btenth[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+d[eé]cima\b(?![\s-](?:primeira|segunda))",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+tenth\b",
+            r"\bmeio do céu\b", r"\bmeio do ceu\b", r"\bmeio-do-céu\b", r"\bmeio-do-ceu\b", r"\bmc\b", r"\bmidheaven\b",
+        ],
+        "11": [
+            r"\b(?:casa|house)\s+(?:11|xi|onze|eleven)\b",
+            r"\b11[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b11th[\s-]+house\b",
+            r"\bd[eé]cima[\s-]primeira[\s-]+casa\b",
+            r"\beleventh[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+d[eé]cima[\s-]primeira\b",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+eleventh\b",
+        ],
+        "12": [
+            r"\b(?:casa|house)\s+(?:12|xii|doze|twelve)\b",
+            r"\b12[ªaºo][\s-]+(?:casa|house)\b",
+            r"\b12th[\s-]+house\b",
+            r"\bd[eé]cima[\s-]segunda[\s-]+casa\b",
+            r"\btwelfth[\s-]+house\b",
+            r"\b(?:regente|regência|regencia|cúspide|cuspide|governança|governanca|da|na|pela|a)\s+d[eé]cima[\s-]segunda\b",
+            r"\b(?:ruler\s+of(?:\s+the)?|cusp\s+of(?:\s+the)?|in(?:\s+the)?)\s+twelfth\b",
+        ],
+    }
+
+    def _extract_synthesis_patterns(synth: Dict[str, object]) -> List[str]:
+        patterns = []
+        sid = str(synth.get("id", ""))
+        factors = [str(f) for f in synth.get("primary_factors", [])]
+        claims = [str(c) for c in synth.get("source_claim_ids", [])]
+        all_tokens = [sid] + factors + claims
+
+        for p, pats in _PLANET_PATTERNS.items():
+            if any(f"position.{p}" in t or f".{p}." in t or t.endswith(f".{p}") or (p == "lilith" and "lilith_mean" in t) for t in all_tokens):
+                patterns.extend(pats)
+
+        for t in all_tokens:
+            for h in re.findall(r"(?:placidus|house)[._](\d+)\b", t):
+                if h in _HOUSE_PATTERNS:
+                    patterns.extend(_HOUSE_PATTERNS[h])
+
+        if any("ascendant" in t or "angle.asc" in t or t.endswith(".asc") for t in all_tokens):
+            patterns.extend([r"\bascendente\b", r"\bascendant\b", r"\basc\b"])
+        if any("midheaven" in t or "angle.mc" in t or t.endswith(".mc") for t in all_tokens):
+            patterns.extend([r"\bmeio do céu\b", r"\bmeio do ceu\b", r"\bmeio-do-céu\b", r"\bmeio-do-ceu\b", r"\bmc\b", r"\bmidheaven\b"])
+        if any("descendant" in t or "angle.dsc" in t or t.endswith(".dsc") for t in all_tokens):
+            patterns.extend([r"\bdescendente\b", r"\bdescendant\b", r"\bdsc\b"])
+        if any("imum_coeli" in t or "angle.ic" in t or t.endswith(".ic") for t in all_tokens):
+            patterns.extend([r"\bfundo do céu\b", r"\bfundo do ceu\b", r"\bfundo-do-céu\b", r"\bfundo-do-ceu\b", r"\bic\b", r"\bimum coeli\b"])
+        if any("chart_ruler" in t for t in all_tokens):
+            patterns.extend([r"\bregente do mapa\b", r"\bregente do ascendente\b", r"\bchart ruler\b"])
+        if any("node" in t for t in all_tokens):
+            patterns.extend([r"\bnodo\b", r"\bnó lunar\b", r"\beixo nodal\b", r"\bnodal axis\b", r"\bnode\b"])
+        if any("stellium" in t for t in all_tokens):
+            patterns.extend([r"\bstellium\b", r"\bconcentração\b", r"\bacumulação\b"])
+
+        return list(set(patterns))
 
     for i, blk in enumerate(opening_blks):
-        p = planned_opening[min(i, len(planned_opening) - 1)] if planned_opening else {"synthesis_ids": [primary_rel, *all_mandatory_s], "claim_ids": [], "timing_ids": []}
-        # In whole-chart opening, attach all mandatory items across the opening blocks
-        s_list = list(dict.fromkeys([*p.get("synthesis_ids", []), *all_mandatory_s]))
+        blk_text = str(blk.get("text", "")).casefold()
+        rel_candidates = [primary_rel, sec_rel] if sec_rel != primary_rel else [primary_rel]
+        rel_synth = rel_candidates[i % len(rel_candidates)]
+        matching_mandatories = []
+        for m_id in all_mandatory_s:
+            s_obj = composed_synths_by_id.get(m_id)
+            if s_obj:
+                pats = _extract_synthesis_patterns(s_obj)
+                if any(re.search(p, blk_text) for p in pats):
+                    matching_mandatories.append(m_id)
+        if not matching_mandatories and planned_opening and i < len(planned_opening):
+            matching_mandatories = [sid for sid in planned_opening[i].get("synthesis_ids", []) if sid in all_mandatory_s]
+
+        s_list = list(dict.fromkeys([rel_synth, *matching_mandatories]))
         sources.append({
             "narrative_block_sha256": str(blk["narrative_block_sha256"]),
             "synthesis_ids": s_list,
-            "claim_ids": list(p.get("claim_ids", [])),
-            "timing_ids": list(p.get("timing_ids", [])),
+            "claim_ids": [],
+            "timing_ids": [],
         })
 
     # Domains
@@ -2932,15 +3270,78 @@ def bind_prospective_plan_to_prose(
             "narrative_block_sha256s": [str(b["narrative_block_sha256"]) for b in dom_blks],
         })
         planned_dom = sections_plan.get(d_id, [])
-        t_ids = list(domain["legal_coverage_paths"][0].get("timing_ids", [])) if domain.get("legal_coverage_paths") else []
-        d_synth = domain_sources_map.get(d_id) or (planned_dom[0].get("synthesis_ids") if planned_dom else [f"reasoned.reader.{d_id}"])
+        all_d_synths = domain_sources_map.get(d_id) or [f"reasoned.reader.{d_id}"]
 
-        for i, blk in enumerate(dom_blks):
+        if d_id == "active_life_chapter":
+            for blk in dom_blks:
+                assigned_synths = planned_dom[0].get("synthesis_ids", all_d_synths) if planned_dom else all_d_synths
+                t_ids = planned_dom[0].get("timing_ids", []) if planned_dom else []
+                sources.append({
+                    "narrative_block_sha256": str(blk["narrative_block_sha256"]),
+                    "synthesis_ids": list(dict.fromkeys(assigned_synths)),
+                    "claim_ids": [],
+                    "timing_ids": t_ids,
+                })
+            continue
+
+        if len(dom_blks) == 1:
+            sources.append({
+                "narrative_block_sha256": str(dom_blks[0]["narrative_block_sha256"]),
+                "synthesis_ids": list(dict.fromkeys(all_d_synths)),
+                "claim_ids": [],
+                "timing_ids": [],
+            })
+            continue
+
+        # Multiple blocks in domain: score each synthesis semantically across blocks
+        scores_by_block: List[Dict[str, int]] = []
+        for blk in dom_blks:
+            blk_text = str(blk.get("text", "")).casefold()
+            blk_scores: Dict[str, int] = {}
+            for sid in all_d_synths:
+                s_obj = composed_synths_by_id.get(sid)
+                if s_obj:
+                    pats = _extract_synthesis_patterns(s_obj)
+                    blk_scores[sid] = sum(1 for p in pats if re.search(p, blk_text))
+                else:
+                    blk_scores[sid] = 0
+            scores_by_block.append(blk_scores)
+
+        # Assign each synthesis to the block(s) where it achieves its highest score,
+        # preventing incidental single-token mentions from cross-polluting dedicated blocks
+        assigned_by_block: List[List[str]] = [[] for _ in range(len(dom_blks))]
+        for sid in all_d_synths:
+            max_score = max(scores_by_block[bi].get(sid, 0) for bi in range(len(dom_blks)))
+            if max_score > 0:
+                for bi in range(len(dom_blks)):
+                    score = scores_by_block[bi].get(sid, 0)
+                    if score == max_score or (score >= 3 and score >= 0.8 * max_score):
+                        assigned_by_block[bi].append(sid)
+
+        # Guarantee exhaustive coverage of all domain syntheses across blocks
+        covered = set().union(*assigned_by_block) if assigned_by_block else set()
+        unassigned = [sid for sid in all_d_synths if sid not in covered]
+        for u_sid in unassigned:
+            best_bi = max(range(len(dom_blks)), key=lambda bi: scores_by_block[bi].get(u_sid, 0))
+            if scores_by_block[best_bi].get(u_sid, 0) == 0:
+                found_pi = next((pi for pi, pb in enumerate(planned_dom) if u_sid in pb.get("synthesis_ids", [])), None)
+                best_bi = min(found_pi, len(dom_blks) - 1) if found_pi is not None else 0
+            assigned_by_block[best_bi].append(u_sid)
+
+        # Fallback for any block that ended up with 0 syntheses
+        for bi in range(len(dom_blks)):
+            if not assigned_by_block[bi]:
+                if planned_dom and bi < len(planned_dom):
+                    assigned_by_block[bi] = list(planned_dom[bi].get("synthesis_ids", all_d_synths))
+                else:
+                    assigned_by_block[bi] = list(all_d_synths)
+
+        for bi, blk in enumerate(dom_blks):
             sources.append({
                 "narrative_block_sha256": str(blk["narrative_block_sha256"]),
-                "synthesis_ids": list(d_synth),
+                "synthesis_ids": list(dict.fromkeys(assigned_by_block[bi])),
                 "claim_ids": [],
-                "timing_ids": t_ids,
+                "timing_ids": [],
             })
 
     # Integration
@@ -3038,17 +3439,21 @@ def build_reviewer_bundle(
     regeneration_request: Optional[Dict[str, object]] = None,
     narrative_block_sources: Optional[List[Dict[str, object]]] = None,
     reader_sections: Optional[Dict[str, object]] = None,
+    block_plan: Optional[Dict[str, object]] = None,
 ) -> Dict[str, object]:
     """Construct a canonical Contract 1.4 ReviewerBundle from author bundle and review results."""
     contract = _premium_handoff_contract()
     report = author_bundle["draft_report"] if final_report is None else final_report
-    sources = author_bundle["narrative_block_sources"] if narrative_block_sources is None else narrative_block_sources
-    sections = author_bundle["reader_sections"] if reader_sections is None else reader_sections
+    manifest = provenance_result.get("reader_domain_manifest") or author_bundle.get("reader_domain_manifest")
 
-    # If the report was edited and sections were not provided, re-parse
-    if final_report is not None and reader_sections is None:
-        manifest = provenance_result.get("reader_domain_manifest") or author_bundle.get("reader_domain_manifest")
-        if manifest:
+    if final_report is not None and narrative_block_sources is None and block_plan is not None and manifest:
+        sources, sections, _ = bind_prospective_plan_to_prose(report, block_plan, manifest)
+    else:
+        sources = author_bundle["narrative_block_sources"] if narrative_block_sources is None else narrative_block_sources
+        sections = author_bundle["reader_sections"] if reader_sections is None else reader_sections
+
+        # If the report was edited and sections were not provided, re-parse
+        if final_report is not None and reader_sections is None and manifest:
             parsed = _parse_premium_narrative(report, manifest)
             if not parsed.get("errors"):
                 sections = {

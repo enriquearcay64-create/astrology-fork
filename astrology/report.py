@@ -859,6 +859,131 @@ def format_orb_degree_minute(orb: float) -> Tuple[str, str]:
     return f"{orb_clean:.2f}°", f"{d:02d}°{m:02d}'"
 
 
+def format_canonical_timing_activation(
+    activation: Dict[str, object],
+    lang: str = "pt",
+) -> Dict[str, str]:
+    """Format a timing activation record into a canonical schema with verified real dates."""
+    is_pt = str(lang).startswith("pt")
+    target_lang = "pt" if is_pt else "en"
+    names_map = CANONICAL_BODIES_NAMES[target_lang]
+    aspect_names = CANONICAL_ASPECTS_NAMES[target_lang]
+    angle_labels_pt = {"asc": "Ascendente (ASC)", "mc": "Meio do Céu (MC)", "dsc": "Descendente (DSC)", "ic": "Fundo do Céu (IC)"}
+    angle_labels_en = {"asc": "Ascendant (ASC)", "mc": "Midheaven (MC)", "dsc": "Descendant (DSC)", "ic": "Imum Coeli (IC)"}
+    active_angles = angle_labels_pt if is_pt else angle_labels_en
+
+    _NORM_BODIES = {
+        "sun": "sun", "sol": "sun",
+        "moon": "moon", "lua": "moon",
+        "mercury": "mercury", "mercúrio": "mercury", "mercurio": "mercury",
+        "venus": "venus", "vênus": "venus",
+        "mars": "mars", "marte": "mars",
+        "jupiter": "jupiter", "júpiter": "jupiter",
+        "saturn": "saturn", "saturno": "saturn",
+        "uranus": "uranus", "urano": "uranus",
+        "neptune": "neptune", "netuno": "neptune",
+        "pluto": "pluto", "plutão": "pluto", "plutao": "pluto",
+        "true_node": "true_node", "node": "true_node", "nodo": "true_node",
+        "nodo norte": "true_node", "north node": "true_node",
+        "nodo norte verdadeiro": "true_node", "true north node": "true_node",
+        "chiron": "chiron", "quíron": "chiron", "quiron": "chiron",
+        "lilith": "lilith_mean", "lilith_mean": "lilith_mean",
+        "lilith (média)": "lilith_mean", "lilith (media)": "lilith_mean",
+        "lilith (mean)": "lilith_mean",
+    }
+
+    _NORM_ASPECTS = {
+        "conjunction": "conjunction", "conjunção": "conjunction", "conjuncao": "conjunction",
+        "sextile": "sextile", "sextil": "sextile",
+        "square": "square", "quadratura": "square",
+        "trine": "trine", "trígono": "trine", "trigono": "trine",
+        "quincunx": "quincunx", "quincúncio": "quincunx", "quincuncio": "quincunx",
+        "inconjunct": "quincunx", "inconjunção": "quincunx", "inconjuncao": "quincunx",
+        "opposition": "opposition", "oposição": "opposition", "oposicao": "opposition",
+    }
+
+    _NORM_ANGLES = {
+        "asc": "asc", "ascendente": "asc", "ascendant": "asc",
+        "ascendente (asc)": "asc", "ascendant (asc)": "asc",
+        "mc": "mc", "meio do céu": "mc", "meio do ceu": "mc", "midheaven": "mc",
+        "meio do céu (mc)": "mc", "midheaven (mc)": "mc",
+        "dsc": "dsc", "descendente": "dsc", "descendant": "dsc",
+        "descendente (dsc)": "dsc", "descendant (dsc)": "dsc",
+        "ic": "ic", "fundo do céu": "ic", "fundo do ceu": "ic", "imum coeli": "ic",
+        "fundo do céu (ic)": "ic", "imum coeli (ic)": "ic",
+    }
+
+    act_id = str(activation.get("id") or activation.get("activation_instance") or "activation")
+    raw_tech = str(activation.get("technique") or "").strip().lower()
+    stream_or_id = (str(activation.get("stream", "")) + " " + act_id).lower()
+
+    if any(k in raw_tech for k in ("transit", "trânsito", "transito")) or any(k in stream_or_id for k in ("transit", "transito")):
+        technique = "Trânsito Maior" if is_pt else "Major Transit"
+    elif any(k in raw_tech for k in ("profection", "profecção", "profeccao")) or "profection" in stream_or_id:
+        technique = "Profecção Anual" if is_pt else "Annual Profection"
+    elif any(k in raw_tech for k in ("progression", "progressão", "progressao")) or "progression" in stream_or_id:
+        technique = "Progressão Secundária" if is_pt else "Secondary Progression"
+    elif any(k in raw_tech for k in ("solar return", "retorno solar", "revolução solar", "revolucao solar")) or "solar_return" in stream_or_id:
+        technique = "Retorno Solar" if is_pt else "Solar Return"
+    elif any(k in raw_tech for k in ("solar arc", "arco solar")) or "solar_arc" in stream_or_id:
+        technique = "Arco Solar" if is_pt else "Solar Arc"
+    elif raw_tech:
+        technique = str(activation.get("technique"))
+    else:
+        technique = "Trânsito Maior" if is_pt else "Major Transit"
+
+    t_body = activation.get("transit_body") or activation.get("body")
+    t_body_str = str(t_body or "").strip()
+    norm_body = _NORM_BODIES.get(t_body_str.lower(), t_body_str.lower())
+    body_name = names_map.get(norm_body) or (t_body_str.title() if t_body_str else "—")
+
+    asp = activation.get("aspect")
+    asp_str = str(asp or "").strip()
+    norm_asp = _NORM_ASPECTS.get(asp_str.lower(), asp_str.lower())
+    asp_name = aspect_names.get(norm_asp) or (asp_str.title() if asp_str else "—")
+
+    tgt = activation.get("target") or activation.get("natal_target") or activation.get("target_body")
+    tgt_str = str(tgt or "").strip()
+    tgt_lower = tgt_str.lower()
+    norm_angle = _NORM_ANGLES.get(tgt_lower)
+    norm_body_tgt = _NORM_BODIES.get(tgt_lower, tgt_lower)
+
+    if norm_angle:
+        tgt_name = active_angles[norm_angle]
+    elif norm_body_tgt in names_map:
+        tgt_name = names_map[norm_body_tgt]
+    elif tgt_lower in ("asc", "mc", "dsc", "ic"):
+        tgt_name = active_angles.get(tgt_lower, tgt_str.upper())
+    elif tgt_str:
+        tgt_name = tgt_str.title()
+    else:
+        tgt_name = "—"
+
+    def _clean_date_str(val: object) -> str:
+        s = str(val or "").strip()
+        if s.lower() in ("none", "n/a", "null", "-", "—"):
+            return ""
+        return s[:10]
+
+    w_start = _clean_date_str(activation.get("window_start") or activation.get("start") or activation.get("orb_entry_at"))
+    w_end = _clean_date_str(activation.get("window_end") or activation.get("end") or activation.get("orb_exit_at"))
+    exact = _clean_date_str(activation.get("exact_at") or activation.get("exact_date") or activation.get("closest_approach_at") or activation.get("closest_approach_date"))
+
+    window_str = f"{w_start} .. {w_end}" if w_start and w_end else (w_start or w_end or "—")
+
+    return {
+        "activation_id": act_id,
+        "technique": technique,
+        "transit_body": body_name,
+        "aspect": asp_name,
+        "target": tgt_name,
+        "window_start": w_start,
+        "exact_peak": exact,
+        "window_end": w_end,
+        "window": window_str,
+    }
+
+
 def render_canonical_technical_appendix(
     chart_or_birth: object,
     profile: Optional[LocalizationProfile] = None,
@@ -995,20 +1120,13 @@ def render_canonical_technical_appendix(
         if transits:
             lines.append("")
             if is_pt:
-                lines.append("| Ativação | Trânsito | Aspecto | Alvo Natal | Janela | Exatidão |")
+                lines.append("| Ativação | Técnica | Trânsito | Aspecto | Alvo Natal | Janela | Exatidão |")
             else:
-                lines.append("| Activation | Transit | Aspect | Natal Target | Window | Exact Date |")
-            lines.append("| :--- | :--- | :--- | :--- | :--- | :--- |")
+                lines.append("| Activation | Technique | Transit | Aspect | Natal Target | Window | Exact Date |")
+            lines.append("| :--- | :--- | :--- | :--- | :--- | :--- | :--- |")
             for tr in transits:
-                body_name = names_map.get(tr.get("body"), str(tr.get("body")).title())
-                asp_name = aspect_names.get(tr.get("aspect"), str(tr.get("aspect")).title())
-                target_name = names_map.get(tr.get("target"), str(tr.get("target")).title())
-                w_start = str(tr.get("start", ""))[:10]
-                w_end = str(tr.get("end", ""))[:10]
-                w_str = f"{w_start} .. {w_end}" if w_start and w_end else "—"
-                exact = str(tr.get("exact_date") or tr.get("closest_approach_date") or "—")[:10]
-                act_id = str(tr.get("id", "activation"))
-                lines.append(f"| {act_id} | {body_name} | {asp_name} | {target_name} | {w_str} | {exact} |")
+                entry = format_canonical_timing_activation(tr, target_lang)
+                lines.append(f"| {entry['activation_id']} | {entry['technique']} | {entry['transit_body']} | {entry['aspect']} | {entry['target']} | {entry['window']} | {entry['exact_peak'] or '—'} |")
 
     return "\n".join(lines)
 
