@@ -1,0 +1,664 @@
+{
+  "version": "1.0",
+  "domains": [
+    {
+      "domain_id": "identity_presence",
+      "paths": [
+        {
+          "path_id": "reader_path.identity_presence.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário ascendant.natal atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.identity_presence.claim_anchored.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário chart_ruler.natal atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.identity_presence.claim_anchored.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário position.sun atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.identity_presence.house_ruler_context.4",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.1.jupiter"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.identity_presence.topical_placidus.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.saturn atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        }
+      ]
+    },
+    {
+      "domain_id": "emotional_security",
+      "paths": [
+        {
+          "path_id": "reader_path.emotional_security.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário position.moon atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.emotional_security.house_ruler_context.2",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.4.mercury"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        }
+      ]
+    },
+    {
+      "domain_id": "mind_learning_communication",
+      "paths": [
+        {
+          "path_id": "reader_path.mind_learning_communication.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário position.mercury atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.house_ruler_context.2",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.3.venus"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.house_ruler_context.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house_ruler.placidus.9, position.mars atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.topical_placidus.4",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.jupiter atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.topical_placidus.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.pluto atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        }
+      ]
+    },
+    {
+      "domain_id": "desire_action_limits",
+      "paths": [
+        {
+          "path_id": "reader_path.desire_action_limits.claim_anchored.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.house_ruler_context.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house_ruler.placidus.1, position.jupiter atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.house_ruler_context.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house_ruler.placidus.6, position.moon atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.house_ruler_context.4",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house_ruler.placidus.8, position.venus atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.topical_placidus.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.mars atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.topical_placidus.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.saturn atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        }
+      ]
+    },
+    {
+      "domain_id": "love_intimacy_relationship",
+      "paths": [
+        {
+          "path_id": "reader_path.love_intimacy_relationship.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário position.venus atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house_ruler.placidus.5, position.moon atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.3",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.7.mercury"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.4",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house_ruler.placidus.8, position.venus atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.mars atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.mercury atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.7",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.sun atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.8",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.venus atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        }
+      ]
+    },
+    {
+      "domain_id": "creativity_pleasure_aliveness",
+      "paths": [
+        {
+          "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+          "decision": "merged_with_represented",
+          "synthesis_ids": [],
+          "merged_with_path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+          "rationale": "A função de Sol converge com o mecanismo estrutural representado, qualificando a manifestação da dinâmica criativa."
+        },
+        {
+          "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+            "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.1"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.creativity_pleasure_aliveness.house_ruler_context.3",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.5.moon"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        }
+      ]
+    },
+    {
+      "domain_id": "work_vocation_visibility",
+      "paths": [
+        {
+          "path_id": "reader_path.work_vocation_visibility.house_ruler_context.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.10.jupiter"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.work_vocation_visibility.house_ruler_context.2",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.6.moon"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        }
+      ]
+    },
+    {
+      "domain_id": "money_resources_value",
+      "paths": [
+        {
+          "path_id": "reader_path.money_resources_value.house_ruler_context.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.2.mars",
+            "reasoned.reader_path.money_resources_value.topical_placidus.3"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.money_resources_value.house_ruler_context.2",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.8.venus"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.money_resources_value.topical_placidus.3",
+          "decision": "merged_with_represented",
+          "synthesis_ids": [],
+          "merged_with_path_id": "reader_path.money_resources_value.house_ruler_context.1",
+          "rationale": "A colocação tópica de Marte ancora diretamente a dinâmica estrutural no domínio, convergindo no mesmo circuito."
+        }
+      ]
+    },
+    {
+      "domain_id": "body_energy_routine",
+      "paths": [
+        {
+          "path_id": "reader_path.body_energy_routine.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário position.mars atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.claim_anchored.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário position.sun atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.house_ruler_context.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house_ruler.placidus.1, position.jupiter atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.house_ruler_context.4",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.6.moon"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.topical_placidus.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.saturn atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        }
+      ]
+    },
+    {
+      "domain_id": "home_roots_private_life",
+      "paths": [
+        {
+          "path_id": "reader_path.home_roots_private_life.house_ruler_context.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.4.mercury"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        }
+      ]
+    },
+    {
+      "domain_id": "friendship_community_belonging",
+      "paths": [
+        {
+          "path_id": "reader_path.friendship_community_belonging.house_ruler_context.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.11.saturn"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.friendship_community_belonging.topical_placidus.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.neptune atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        }
+      ]
+    },
+    {
+      "domain_id": "meaning_beliefs_horizon",
+      "paths": [
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário position.jupiter atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário position.mercury atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house_ruler.placidus.3, position.venus atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.4",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.9.mars"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.jupiter atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.pluto atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        }
+      ]
+    },
+    {
+      "domain_id": "shadow_defenses_patterns",
+      "paths": [
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário aspect.moon_square_jupiter atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário aspect.mars_square_uranus atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário aspect.sun_opposition_moon atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário aspect.sun_opposition_saturn atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário aspect.venus_opposition_saturn atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário aspect.moon_quincunx_mercury atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.7",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.12.saturn"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.8",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house_ruler.placidus.8, position.venus atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.9",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.mars atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.10",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.moon atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.11",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário house.placidus.uranus atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        }
+      ]
+    },
+    {
+      "domain_id": "growth_through_contradiction",
+      "paths": [
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.1"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário aspect.mars_square_uranus atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário aspect.sun_opposition_moon atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.4",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário aspect.sun_opposition_saturn atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário aspect.venus_opposition_saturn atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O fator secundário aspect.moon_quincunx_mercury atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
+        }
+      ]
+    },
+    {
+      "domain_id": "developmental_direction",
+      "paths": [
+        {
+          "path_id": "reader_path.developmental_direction.claim_anchored.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.developmental_direction.claim_anchored.1"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        }
+      ]
+    },
+    {
+      "domain_id": "active_life_chapter",
+      "paths": [
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.1"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação temporal secundária position.mercury, timing.activation.saturn_mercury_opposition_direct_branch_1 atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação temporal secundária position.mercury, timing.profection.2025-09-08 atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.4",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação temporal secundária position.neptune, timing.activation.jupiter_neptune_quincunx_negative_branch_1 atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação temporal secundária position.neptune, timing.secondary_progression.mars.sextile.neptune.3 atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação temporal secundária position.neptune, timing.solar_arc.saturn.square.neptune.3 atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.7",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação temporal secundária position.pluto, timing.secondary_progression.moon.quincunx.pluto.2 atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.8",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação temporal secundária position.saturn, timing.activation.jupiter_saturn_quincunx_positive_branch_1 atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.9",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação temporal secundária position.saturn, timing.secondary_progression.mars.trine.saturn.1 atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.10",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação temporal secundária position.saturn, timing.solar_arc.venus.quincunx.saturn.2 atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.11",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação temporal secundária position.uranus, timing.activation.jupiter_uranus_quincunx_negative_branch_1 atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
+        }
+      ]
+    }
+  ]
+}

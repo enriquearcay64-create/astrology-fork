@@ -28,7 +28,7 @@ from astrology.report import (
     format_canonical_timing_activation,
     render_canonical_technical_appendix,
 )
-from scripts.run_chart3_pipeline import DRAFT_REPORT, CHART_3_BIRTH
+from tests.v221_fixtures import SAMPLE_CHART3_PROSE, CHART_3_BIRTH
 from tests.test_v221_timing_and_selection import sample_birth
 
 
@@ -37,11 +37,11 @@ def test_v222_unmaterialized_planned_synthesis_not_silently_attached():
     profile = LocalizationProfile(preferred_language="pt-BR")
     handoff = prepare_premium_handoff(CHART_3_BIRTH, profile=profile)
     manifest = handoff["reader_domain_manifest"]
-    block_plan = plan_prospective_narrative_blocks(handoff)
+    block_plan = plan_prospective_narrative_blocks(handoff, allow_conservative_fallback=True)
 
-    # In DRAFT_REPORT, desire_action_limits discusses Marte.
+    # In SAMPLE_CHART3_PROSE, desire_action_limits discusses Marte.
     # We create an adversarial report where desire_action_limits discusses completely unrelated topics (no Mars, no ruler).
-    tampered_draft = DRAFT_REPORT.replace(
+    tampered_draft = SAMPLE_CHART3_PROSE.replace(
         "A assertividade opera a partir de Marte domiciliado em Escorpião",
         "A assertividade opera a partir de uma postura calma e reflexiva",
     ).replace(
@@ -89,10 +89,10 @@ def test_v222_missing_domain_provenance_causes_fail_closed_rejection():
     profile = LocalizationProfile(preferred_language="pt-BR")
     handoff = prepare_premium_handoff(CHART_3_BIRTH, profile=profile)
     manifest = handoff["reader_domain_manifest"]
-    block_plan = plan_prospective_narrative_blocks(handoff)
+    block_plan = plan_prospective_narrative_blocks(handoff, allow_conservative_fallback=True)
 
     # Empty out astrological content in emotional_security
-    tampered_draft = DRAFT_REPORT.replace(
+    tampered_draft = SAMPLE_CHART3_PROSE.replace(
         "A segurança emocional reside na décima segunda casa, onde a Lua em Peixes demanda espaços regulares",
         "A segurança interior reside na calma pessoal, onde a vivência diária demanda espaços regulares",
     ).replace(
@@ -134,7 +134,7 @@ def test_v222_opening_mandatory_sources_not_backfilled_when_unmentioned():
     profile = LocalizationProfile(preferred_language="pt-BR")
     handoff = prepare_premium_handoff(CHART_3_BIRTH, profile=profile)
     manifest = handoff["reader_domain_manifest"]
-    block_plan = plan_prospective_narrative_blocks(handoff)
+    block_plan = plan_prospective_narrative_blocks(handoff, allow_conservative_fallback=True)
 
     # Opening with only Sun and Moon mentioned, omitting Saturn, Mars, Jupiter, Stellium etc.
     minimal_opening = (
@@ -143,7 +143,7 @@ def test_v222_opening_mandatory_sources_not_backfilled_when_unmentioned():
         "Esta síntese fundamental orienta toda a leitura integrativa de forma relacional e equilibrada."
     )
     # Splice into report
-    parts = DRAFT_REPORT.split("## Arquitetura do mapa")
+    parts = SAMPLE_CHART3_PROSE.split("## Arquitetura do mapa")
     rest = parts[1].split("## Identidade central e presença")[1]
     tampered = parts[0] + minimal_opening + "\n\n## Identidade central e presença" + rest
 
@@ -219,8 +219,8 @@ def test_v222_validate_author_selection_plan_legality_and_rejection():
     handoff = prepare_premium_handoff(CHART_3_BIRTH)
     manifest = handoff["reader_domain_manifest"]
 
-    # 1. Valid plan built by build_canonical_selection_plan
-    valid_plan = build_canonical_selection_plan(manifest)
+    # 1. Valid plan built by build_canonical_selection_plan with conservative fallback
+    valid_plan = build_canonical_selection_plan(manifest, allow_conservative_fallback=True)
     is_valid, errors = validate_author_selection_plan(valid_plan, manifest)
     assert is_valid is True
     assert errors == []
@@ -254,16 +254,9 @@ def test_v222_validate_author_selection_plan_legality_and_rejection():
 
     # 5. Rejection: omitted path with empty rationale
     bad_plan_empty_rationale = copy.deepcopy(valid_plan)
-    found_omit = False
-    for d in bad_plan_empty_rationale["domains"]:
-        for p in d["paths"]:
-            if p["decision"] == "omitted_no_distinct_reader_value":
-                p["rationale"] = "   "
-                found_omit = True
-                break
-        if found_omit:
-            break
-    assert found_omit
+    bad_plan_empty_rationale["domains"][0]["paths"][0]["decision"] = "omitted_no_distinct_reader_value"
+    bad_plan_empty_rationale["domains"][0]["paths"][0]["synthesis_ids"] = []
+    bad_plan_empty_rationale["domains"][0]["paths"][0]["rationale"] = "   "
     valid_res, errors = validate_author_selection_plan(bad_plan_empty_rationale, manifest)
     assert valid_res is False
     assert any("missing_omission_rationale" in e for e in errors)

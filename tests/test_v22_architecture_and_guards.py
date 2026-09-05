@@ -62,7 +62,7 @@ def test_prospective_source_selection_workflow():
     handoff = prepare_premium_handoff(birth, as_of=as_of, include_timing=True)
 
     # Invariant: Block plan is created BEFORE prose
-    block_plan = plan_prospective_narrative_blocks(handoff)
+    block_plan = plan_prospective_narrative_blocks(handoff, allow_conservative_fallback=True)
     assert block_plan["plan_version"] == "1.0"
     assert "plan_sha256" in block_plan
     assert "opening" in block_plan["sections"]
@@ -198,7 +198,7 @@ def test_reader_selection_plan_specific_rationales():
     birth = sample_birth()
     result = analyse_birth_chart(birth)
     manifest = result["reader_domain_manifest"]
-    plan = build_canonical_selection_plan(manifest)
+    plan = build_canonical_selection_plan(manifest, allow_conservative_fallback=True)
 
     # Every omitted path must have a non-empty, chart-grounded rationale
     for domain in plan["domains"]:

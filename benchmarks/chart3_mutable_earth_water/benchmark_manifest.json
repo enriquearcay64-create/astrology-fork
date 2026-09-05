@@ -1,0 +1,49 @@
+{
+  "benchmark_id": "chart3_mutable_earth_water",
+  "description": "Chart 3 (Synthetic Mutable Earth/Water) Canonical Blind Benchmark Execution",
+  "birth_data": {
+    "iso_time": "1995-09-08T19:45:00",
+    "timezone": "Europe/Paris",
+    "latitude": 48.8566,
+    "longitude": 2.3522,
+    "birth_time_known": true
+  },
+  "git_commit_sha": "e856398d1e56e7ff92a905ba5a9bb92913872c19",
+  "pipeline_version": "v2.3",
+  "evaluation_scores": {
+    "candidate_v23_report_beta": {
+      "total_score": 159,
+      "max_score": 170,
+      "mean_score": 9.35,
+      "hard_checks_status": "PASSED (0 errors)"
+    },
+    "champion_baseline_report_alpha": {
+      "total_score": 127,
+      "max_score": 170,
+      "mean_score": 7.47,
+      "hard_checks_status": "PASSED (0 errors)"
+    },
+    "delta": "+32 points (+1.88 mean difference to Candidate)",
+    "auditor_verdict": "CANDIDATE SUPERIOR — READY FOR BROADER BENCHMARK (Salto Geracional Homologado)"
+  },
+  "models": {
+    "author_model": "gemini-2.5-pro (subagent inherit)",
+    "reviewer_model": "gemini-2.5-pro (subagent inherit)",
+    "blind_evaluator_model": "gemini-2.5-pro (subagent inherit)"
+  },
+  "artifacts_sha256": {
+    "01-author-selection-plan.json": "f4d11fe678a8e970e155c1bfa765e281aeeea1f81d9bc8b88950895971df570e",
+    "01-handoff.json": "94822bf11bdf31623feb44812b4db5660941b5b97da5dad5bd54f4f1d46887c8",
+    "01-prospective-block-plan.json": "66e315538bd975f510ccff640afce29403c8a56d86987753c30bacfedf60cc7b",
+    "Report_Alpha.md": "81a9b1736bda87487b8e245ae83b73a688ba7402dc47e652b9160fb82b628f57",
+    "Report_Beta.md": "5fbc96d51d6bf68422f828d0bad25bc2a1d9503e025093f0c084a300158967fe",
+    "author_draft.md": "606db71bda95cf06e87fe5238f078faefc21b4b207d1416b319df2a9abfc0db7",
+    "author_prompt.txt": "6c5ce7552c8989ae0808ed4d49749115b6cf320a22b6a49f29a2b27609d5814f",
+    "canonical_technical_appendix.md": "2537398e2fc0e195d8db06d8db57f6ef06944f005610dd47c27c15c5c8b21390",
+    "evaluation_final.md": "982ff06836fd8006aa6b9a7cdb5bb4c0f91d8ed51769cb04a3579ef301f86f02",
+    "evaluator_prompt.txt": "61f59a49bef5897e08247b544b4c5a1af0730f1c8ccbdf7bdc3fbc2bbe27b9d6",
+    "final_reviewed_report.md": "5fbc96d51d6bf68422f828d0bad25bc2a1d9503e025093f0c084a300158967fe",
+    "guards_validation.json": "bc88d8bd2b663446c3d6dbab57639a9f04a952073fff73d29fdfe559f062580b",
+    "reviewer_prompt.txt": "6f6e76dc3e581d83aae7416d50165eb58e497b782d12c0f6aeec7cac05638f75"
+  }
+}

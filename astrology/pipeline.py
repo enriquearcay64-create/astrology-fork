@@ -2731,8 +2731,10 @@ def compose_canonical_domain_syntheses(
 def validate_author_selection_plan(
     plan: Dict[str, object],
     manifest: Dict[str, object],
+    approved_syntheses: Optional[Iterable[Dict[str, object]]] = None,
+    handoff: Optional[Dict[str, object]] = None,
 ) -> Tuple[bool, List[str]]:
-    """Validate the structural legality and completeness of an author selection plan."""
+    """Validate the structural legality, completeness, and synthesis ancestry of an author selection plan."""
     errors: List[str] = []
     if not isinstance(plan, dict):
         return False, ["missing_plan_dict"]
@@ -2747,6 +2749,32 @@ def validate_author_selection_plan(
         return False, ["invalid_domains_list"]
     domain_entry_map = {str(e.get("domain_id")): e for e in plan_domains if isinstance(e, dict)}
 
+    # Extract approved syntheses if handoff provided
+    if approved_syntheses is None and handoff is not None:
+        if handoff.get("approved_reasoned_syntheses"):
+            approved_syntheses = handoff["approved_reasoned_syntheses"]
+        else:
+            facts = handoff.get("reasoning_packet", {}).get("facts", {})
+            claims_list = (
+                facts.get("allowed_claims")
+                or handoff.get("allowed_claims")
+                or handoff.get("reasoning_packet", {}).get("claims")
+                or []
+            )
+            claims_dict = {str(item["id"]): item for item in claims_list if isinstance(item, dict)}
+            coverage = facts.get("coverage", {})
+            composed, _, _ = compose_canonical_domain_syntheses(claims_dict, manifest, coverage)
+            for c in composed:
+                if isinstance(c, dict):
+                    c["status"] = "allowed"
+            sig_synths = handoff.get("prepared_signature_syntheses", [])
+            approved_syntheses = [*composed, *sig_synths]
+    approved = {
+        str(item.get("id")): item
+        for item in (approved_syntheses or [])
+        if isinstance(item, dict) and item.get("status") == "allowed"
+    }
+
     for d in available:
         d_id = str(d["id"])
         if d_id not in domain_entry_map:
@@ -2755,6 +2783,7 @@ def validate_author_selection_plan(
         d_entry = domain_entry_map[d_id]
         legal_paths = d.get("legal_coverage_paths", [])
         expected_ids = [str(p["id"]) for p in legal_paths]
+        path_by_id = {str(p["id"]): p for p in legal_paths}
         path_entries = d_entry.get("paths", [])
         if not isinstance(path_entries, list):
             errors.append(f"invalid_paths_list:{d_id}")
@@ -2770,8 +2799,16 @@ def validate_author_selection_plan(
             if decision not in {"represented", "merged_with_represented", "omitted_no_distinct_reader_value"}:
                 errors.append(f"invalid_decision:{pid}:{decision}")
             if decision == "represented":
-                if not pe.get("synthesis_ids"):
+                s_ids = pe.get("synthesis_ids")
+                if not s_ids or not isinstance(s_ids, list):
                     errors.append(f"represented_path_missing_synthesis_ids:{pid}")
+                else:
+                    if len(s_ids) != len(set(s_ids)):
+                        errors.append(f"duplicate_synthesis_ids:{pid}")
+                    if approved:
+                        for s_id in s_ids:
+                            if str(s_id) not in approved:
+                                errors.append(f"unknown_synthesis_id:{pid}:{s_id}")
                 if pe.get("merged_with_path_id") is not None:
                     errors.append(f"represented_path_cannot_have_merge_target:{pid}")
                 if pe.get("rationale") is not None:
@@ -2794,41 +2831,66 @@ def validate_author_selection_plan(
                 if pe.get("synthesis_ids"):
                     errors.append(f"omitted_path_cannot_have_synthesis_ids:{pid}")
 
+        # Deep Ancestry and Cluster Validation when approved syntheses are available
+        if approved:
+            for target_id, target in path_map.items():
+                if not isinstance(target, dict) or target.get("decision") != "represented" or target_id not in path_by_id:
+                    continue
+                cluster_ids = [target_id, *[
+                    pid for pid, item in path_map.items()
+                    if isinstance(item, dict) and item.get("decision") == "merged_with_represented" and str(item.get("merged_with_path_id")) == target_id
+                ]]
+                synthesis_ids = target.get("synthesis_ids", [])
+                members = [approved[item] for item in synthesis_ids if item in approved]
+                contributing: set[str] = set()
+                for cluster_path_id in cluster_ids:
+                    if cluster_path_id not in path_by_id:
+                        continue
+                    matched, contributors = _selection_synthesis_set_matches_path(members, path_by_id[cluster_path_id])
+                    if not matched:
+                        errors.append(f"reader_selection_insufficient_set_ancestry:{cluster_path_id}")
+                    contributing.update(contributors)
+                if set(synthesis_ids) - contributing:
+                    errors.append(f"reader_selection_noncontributing_synthesis_padding:{target_id}")
+                if d_id == "active_life_chapter":
+                    synthesis_timing = {
+                        str(factor) for member in members for factor in member.get("primary_factors", []) if str(factor).startswith("timing.")
+                    }
+                    path_timing = {
+                        str(timing_id) for cluster_path_id in cluster_ids
+                        for timing_id in path_by_id[cluster_path_id].get("timing_ids", [])
+                    }
+                    if synthesis_timing != path_timing:
+                        errors.append(f"reader_selection_timing_cluster_mismatch:{target_id}")
+
     return (len(errors) == 0, errors)
-
-
-_DOMAIN_PRIMARY_HOUSES = {
-    "identity_presence": {"1"},
-    "emotional_security": {"4"},
-    "mind_learning_communication": {"3"},
-    "desire_action_limits": {"1"},
-    "love_intimacy_relationship": {"7"},
-    "creativity_pleasure_aliveness": {"5"},
-    "work_vocation_visibility": {"10", "6"},
-    "money_resources_value": {"2", "8"},
-    "body_energy_routine": {"6"},
-    "home_roots_private_life": {"4"},
-    "friendship_community_belonging": {"11"},
-    "meaning_beliefs_horizon": {"9"},
-    "shadow_defenses_patterns": {"8", "12"},
-}
 
 
 def build_canonical_selection_plan(
     manifest: Dict[str, object],
     domain_sources: Optional[Dict[str, List[str]]] = None,
     author_selection_plan: Optional[Dict[str, object]] = None,
+    *,
+    allow_conservative_fallback: bool = False,
+    approved_syntheses: Optional[Iterable[Dict[str, object]]] = None,
+    handoff: Optional[Dict[str, object]] = None,
 ) -> Dict[str, object]:
-    """Build an order-agnostic ReaderSelectionPlan with multi-path representation.
+    """Validate an Author-owned ReaderSelectionPlan, or build a conservative fallback for test/headless use.
 
-    If author_selection_plan is provided, validates and returns it.
-    Otherwise, builds a structural baseline without domain-specific heuristics.
+    In production, author_selection_plan is required (fails closed).
+    The conservative test fallback marks ALL legal paths as represented with no merges
+    and no omissions, eliminating all Python-level editorial or ranking decisions.
     """
     if author_selection_plan is not None:
-        valid, errors = validate_author_selection_plan(author_selection_plan, manifest)
+        valid, errors = validate_author_selection_plan(
+            author_selection_plan, manifest, approved_syntheses=approved_syntheses, handoff=handoff
+        )
         if not valid:
             raise ValueError("Invalid author selection plan: " + ", ".join(errors[:5]))
         return author_selection_plan
+
+    if not allow_conservative_fallback:
+        raise ValueError("author_selection_plan is required: Premium Complete fails closed without an Author-owned selection plan.")
 
     domains_out: List[Dict[str, object]] = []
     for domain in manifest.get("domains", []):
@@ -2850,134 +2912,16 @@ def build_canonical_selection_plan(
             pid = str(p["id"])
             return f"reasoned.{pid}"
 
-        classified: Dict[str, Dict[str, object]] = {}
-        # Deterministically order candidate paths so the evaluation is 100% invariant to input list ordering
+        path_entries: List[Dict[str, object]] = []
         for p in sorted(paths, key=lambda item: str(item.get("id"))):
             p_id = str(p["id"])
-            p_factors = [str(f) for f in p.get("primary_factor_ids", [])]
-            p_claims = [str(c) for c in p.get("source_claim_ids", [])]
-            ruler_f = next((f for f in p_factors if f.startswith("house_ruler.placidus.")), None) or next((c for c in p_claims if "house_ruler.placidus." in c), None)
-            topical_f = next((f for f in p_factors if f.startswith("house.placidus.")), None)
-            pos_f = next((f for f in p_factors if f.startswith("position.")), None)
-            aspect_f = next((f for f in p_factors if f.startswith("aspect.")), None)
-            angle_f = next((f for f in p_factors if any(k in f for k in ("ascendant", "chart_ruler", "midheaven", "angle."))), None)
-            is_timing = bool(p.get("timing_ids")) or any(f.startswith("timing.") for f in p_factors)
-
-            classified[p_id] = {
-                "path": p,
-                "synth_id": _path_synth_id(p),
-                "ruler_house": str(ruler_f).rsplit(".", 1)[-1] if ruler_f else None,
-                "topical_planet": str(topical_f).rsplit(".", 1)[-1] if topical_f else None,
-                "planet": str(pos_f).rsplit(".", 1)[-1] if pos_f else None,
-                "aspect": str(aspect_f).split(".", 1)[-1] if aspect_f else None,
-                "angle": str(angle_f) if angle_f else None,
-                "is_timing": is_timing,
-                "factors_str": ", ".join(p_factors) if p_factors else p_id,
-            }
-
-        represented_path_ids: List[str] = []
-        merges: Dict[str, Tuple[str, str]] = {}
-        omissions: Dict[str, str] = {}
-
-        if domain_id == "work_vocation_visibility":
-            # Both Casa 10 ruler and Casa 6 ruler represented
-            for p_id, info in classified.items():
-                if info["ruler_house"] in ("10", "6") and p_id not in represented_path_ids:
-                    represented_path_ids.append(p_id)
-        elif domain_id == "money_resources_value":
-            # Casa 2 and Casa 8 rulers represented, topical Mars merged
-            for p_id, info in classified.items():
-                if info["ruler_house"] in ("2", "8") and p_id not in represented_path_ids:
-                    represented_path_ids.append(p_id)
-            top_mars = next((p_id for p_id, info in classified.items() if info["topical_planet"] == "mars"), None)
-            if top_mars and represented_path_ids:
-                merges[top_mars] = (
-                    represented_path_ids[0],
-                    "A colocação tópica de Marte ancora diretamente a dinâmica estrutural no domínio, convergindo no mesmo circuito."
-                )
-        elif domain_id == "creativity_pleasure_aliveness":
-            # Sun merged, Venus represented, Moon/Casa 5 represented
-            sun_p = next((p_id for p_id, info in classified.items() if info["planet"] == "sun" and not info["ruler_house"]), None)
-            ven_p = next((p_id for p_id, info in classified.items() if info["planet"] == "venus" and not info["ruler_house"]), None)
-            moon_ruler = next((p_id for p_id, info in classified.items() if info["ruler_house"] == "5"), None)
-            if ven_p:
-                represented_path_ids.append(ven_p)
-            if moon_ruler:
-                represented_path_ids.append(moon_ruler)
-            if sun_p and represented_path_ids:
-                merges[sun_p] = (
-                    represented_path_ids[0],
-                    "A função de Sol converge com o mecanismo estrutural representado, qualificando a manifestação da dinâmica criativa."
-                )
-        elif domain_id == "desire_action_limits":
-            mars_p = next((p_id for p_id, info in classified.items() if info["planet"] == "mars" or "mars" in info["factors_str"]), None)
-            if mars_p:
-                represented_path_ids = [mars_p]
-            else:
-                represented_path_ids = [list(classified.keys())[0]]
-        elif domain_id == "active_life_chapter":
-            timing_paths = [p_id for p_id, info in classified.items() if info["is_timing"]]
-            if timing_paths:
-                represented_path_ids = [timing_paths[0]]
-        else:
-            allowed_houses = _DOMAIN_PRIMARY_HOUSES.get(domain_id, set())
-            for p_id, info in classified.items():
-                if info["ruler_house"] in allowed_houses and not represented_path_ids:
-                    represented_path_ids.append(p_id)
-                    break
-            if not represented_path_ids:
-                aspect_p = next((p_id for p_id, info in classified.items() if info["aspect"]), None)
-                if aspect_p:
-                    represented_path_ids.append(aspect_p)
-                else:
-                    best = sorted(classified.keys(), key=lambda pid: (
-                        0 if classified[pid]["ruler_house"] else
-                        1 if classified[pid]["aspect"] else
-                        2 if classified[pid]["planet"] else 3
-                    ))[0]
-                    represented_path_ids.append(best)
-
-        for p_id, info in classified.items():
-            if p_id in represented_path_ids or p_id in merges:
-                continue
-            if info["is_timing"]:
-                f_str = info["factors_str"]
-                omissions[p_id] = f"A ativação temporal secundária {f_str} atua no horizonte de longo prazo, sem constituir o limiar temporal primário focado neste capítulo de vida."
-            else:
-                f_str = info["factors_str"]
-                omissions[p_id] = f"O fator secundário {f_str} atua como tonalidade de suporte geral, não introduzindo eixo dinâmico autônomo."
-
-        path_entries: List[Dict[str, object]] = []
-        for p in paths:
-            p_id = str(p["id"])
-            if p_id in represented_path_ids:
-                merged_children = [child_id for child_id, (tgt, _) in merges.items() if tgt == p_id]
-                s_ids = [classified[p_id]["synth_id"], *[classified[cid]["synth_id"] for cid in merged_children]]
-                path_entries.append({
-                    "path_id": p_id,
-                    "decision": "represented",
-                    "synthesis_ids": list(dict.fromkeys(s_ids)),
-                    "merged_with_path_id": None,
-                    "rationale": None,
-                })
-            elif p_id in merges:
-                tgt, rat = merges[p_id]
-                path_entries.append({
-                    "path_id": p_id,
-                    "decision": "merged_with_represented",
-                    "synthesis_ids": [],
-                    "merged_with_path_id": tgt,
-                    "rationale": rat,
-                })
-            else:
-                rat = omissions.get(p_id, "O mecanismo secundário converge sem acrescentar consequência autônoma.")
-                path_entries.append({
-                    "path_id": p_id,
-                    "decision": "omitted_no_distinct_reader_value",
-                    "synthesis_ids": [],
-                    "merged_with_path_id": None,
-                    "rationale": rat,
-                })
+            path_entries.append({
+                "path_id": p_id,
+                "decision": "represented",
+                "synthesis_ids": [_path_synth_id(p)],
+                "merged_with_path_id": None,
+                "rationale": None,
+            })
 
         domains_out.append({"domain_id": domain_id, "paths": path_entries})
 
@@ -2988,27 +2932,64 @@ def plan_prospective_narrative_blocks(
     handoff: Dict[str, object],
     selection_plan: Optional[Dict[str, object]] = None,
     author_selection_plan: Optional[Dict[str, object]] = None,
+    *,
+    allow_conservative_fallback: bool = False,
 ) -> Dict[str, object]:
     """Create a prospective block plan establishing source selection before prose generation.
 
     Enforces the invariant: Source selection precedes prose generation.
+    In production, a validated author_selection_plan is mandatory (fails closed).
     """
     manifest = handoff["reader_domain_manifest"]
     if not isinstance(manifest, dict):
         raise ValueError("Invalid reader_domain_manifest in handoff")
 
     facts = handoff.get("reasoning_packet", {}).get("facts", {})
-    claims_list = facts.get("allowed_claims", [])
+    claims_list = (
+        facts.get("allowed_claims")
+        or handoff.get("allowed_claims")
+        or handoff.get("reasoning_packet", {}).get("claims")
+        or []
+    )
     claims_dict = {str(item["id"]): item for item in claims_list if isinstance(item, dict)}
     coverage = facts.get("coverage", {})
 
     composed_synths, domain_sources, mandatory_ids = compose_canonical_domain_syntheses(claims_dict, manifest, coverage)
+    for c in composed_synths:
+        if isinstance(c, dict):
+            c["status"] = "allowed"
 
     available_domains = [d for d in manifest.get("domains", []) if isinstance(d, dict) and d.get("availability") == "available"]
 
     # Identify primary domain syntheses from selection plan or manifest defaults
     effective_selection = author_selection_plan or selection_plan
-    sel_plan = effective_selection or handoff.get("reader_selection_plan") or build_canonical_selection_plan(manifest, domain_sources=domain_sources, author_selection_plan=effective_selection)
+    approved_synths = (
+        handoff.get("approved_reasoned_syntheses")
+        or [*composed_synths, *handoff.get("prepared_signature_syntheses", [])]
+    )
+    if effective_selection is None and not handoff.get("reader_selection_plan"):
+        if not allow_conservative_fallback:
+            raise ValueError(
+                "author_selection_plan is required for prospective narrative block planning; "
+                "production pipeline fails closed without validated author selection."
+            )
+        sel_plan = build_canonical_selection_plan(
+            manifest,
+            domain_sources=domain_sources,
+            allow_conservative_fallback=True,
+            approved_syntheses=approved_synths,
+            handoff=handoff,
+        )
+    else:
+        sel_plan = effective_selection or handoff.get("reader_selection_plan")
+        valid, errors = validate_author_selection_plan(
+            sel_plan,
+            manifest,
+            approved_syntheses=approved_synths,
+            handoff=handoff,
+        )
+        if not valid:
+            raise ValueError("Invalid reader selection plan: " + ", ".join(errors[:5]))
     plan_by_domain: Dict[str, Dict[str, object]] = {}
 
     for d_entry in sel_plan.get("domains", []):
@@ -3562,7 +3543,30 @@ def build_author_bundle(
     selection_plan_hash = _canonical_hash(reader_selection_plan)
 
     if reasoned_syntheses is None:
-        reasoned_syntheses = handoff.get("prepared_signature_syntheses") or []
+        if handoff.get("approved_reasoned_syntheses"):
+            reasoned_syntheses = handoff["approved_reasoned_syntheses"]
+        else:
+            facts = handoff.get("reasoning_packet", {}).get("facts", {})
+            claims_list = (
+                facts.get("allowed_claims")
+                or handoff.get("allowed_claims")
+                or handoff.get("reasoning_packet", {}).get("claims")
+                or []
+            )
+            claims_dict = {str(item["id"]): item for item in claims_list if isinstance(item, dict)}
+            coverage = facts.get("coverage", {})
+            composed, _, _ = compose_canonical_domain_syntheses(claims_dict, manifest, coverage)
+            for c in composed:
+                if isinstance(c, dict):
+                    c["status"] = "allowed"
+            sig_synths = handoff.get("prepared_signature_syntheses", [])
+            seen_ids = set()
+            combined = []
+            for item in [*composed, *sig_synths]:
+                if isinstance(item, dict) and item.get("id") not in seen_ids:
+                    seen_ids.add(item.get("id"))
+                    combined.append(item)
+            reasoned_syntheses = combined
 
     allowed_syntheses = [s for s in reasoned_syntheses if isinstance(s, dict) and s.get("status", "allowed") == "allowed"]
     synth_hash = synthesis_bundle_sha256 or handoff.get("synthesis_bundle_sha256") or _canonical_hash(allowed_syntheses)

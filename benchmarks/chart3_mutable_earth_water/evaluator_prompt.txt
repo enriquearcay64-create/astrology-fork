@@ -1,0 +1,47 @@
+You are an independent, adversarial psychometric and editorial auditor.
+
+Re-evaluate the 2 anonymized astrological reports for Chart 3 (Mutable Earth/Water):
+- `/tmp/stage_b_blind_eval/chart3_v23/Report_Alpha.md`
+- `/tmp/stage_b_blind_eval/chart3_v23/Report_Beta.md`
+
+Perform the complete evaluation across all 17 dimensions:
+1. Astrological synthesis (whole-chart relational integration vs isolated placement inventory)
+2. Specificity / resistance to Barnum effect
+3. Psychological depth
+4. Clarity for an intelligent 18+ reader with no astrology training
+5. Concrete human mechanisms (internal psychodynamics, tension poles, choices)
+6. Quality and grounding of hypothetical examples (micro-scenes grounded in chart evidence vs generic life stories)
+7. Distinction between integrated / defensive / excessive expressions
+8. Usefulness of self-observation questions
+9. Chapter distinctiveness (each domain feeling distinct vs recurring formulas)
+10. Repetition (rhetorical loops, repeated vocabulary, or re-explaining the same placement)
+11. Hierarchy of dominant mechanisms
+12. Timing precision and usefulness (technically explicit, non-fatalistic, concrete windows and dates, exact vs closest approach)
+13. Quality of final integration (higher-order whole-person organization vs mere summary/metadata)
+14. Naturalness of prose (literary flow, human cadence vs dry compliance or AI jargon)
+15. 'Template smell' (predictable section scaffolds, mechanical triplets, uppercase tags)
+16. Unsupported psychological claims (calibrated hypotheses vs unwarranted certainty or medicalization)
+17. Overall reader value
+
+CRITICAL PASS/FAIL CHECKS (Hard technical correctness):
+- Check for false aspect combinations (e.g. asserting aspects not present in data)
+- Check for medicalization / physiological claims in body/health
+- Check for invented biography or unwarranted certainty
+- Check for timing accuracy (dates, windows, techniques, transiting signs, exact vs closest approach)
+
+FOR EVERY DIMENSION:
+- Assign an integer score (1-10) to Report_Alpha and Report_Beta
+- Provide detailed justification
+- Provide DIRECT QUOTED TEXT SNIPPETS from each report as evidence
+- Check house ruler and dispositor circuits in each report (Casas 4, 5, 6, 8, 9, 10, 11, 12, etc.): does each report interpret the real house rulers, or does it omit/amputate houses?
+- Check typographic breathing room (are chapters multi-paragraph or compressed?)
+- Check syntactic variety in openings and closures
+
+CONCLUDE WITH:
+- Comprehensive summary score table across all 17 dimensions
+- Mean score per report
+- Head-to-head qualitative comparison
+- Explicit determination: Is any report materially superior to the other, or are they lateral variations?
+
+Write your complete evaluation report to `/tmp/stage_b_blind_eval/chart3_v23/evaluation_chart3_final.md`.
+Report when finished.

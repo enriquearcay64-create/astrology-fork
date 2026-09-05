@@ -52,12 +52,33 @@ from astrology.reasoning import (
 )
 
 
+def build_author_selection_prompt(handoff: Dict[str, object], lang: str = "pt-BR") -> str:
+    """Generate prompt instructing the Author to build the ReaderSelectionPlan."""
+    manifest = handoff["reader_domain_manifest"]
+    return (
+        f"=== AUTHOR SELECTION INSTRUCTIONS ===\n"
+        f"You are the Premium Astrological Author. Before drafting prose, you must evaluate all candidate legal coverage paths\n"
+        f"in the Reader Domain Manifest and produce the Author Selection Plan (ReaderSelectionPlan v1.0).\n\n"
+        f"For each available domain in the manifest:\n"
+        f"- Classify each legal path as: 'represented', 'merged_with_represented', or 'omitted_no_distinct_reader_value'.\n"
+        f"- For 'represented': assign the approved synthesis ID(s) that materialize this path's distinct human mechanism.\n"
+        f"- For 'merged_with_represented': specify the 'merged_with_path_id' (must be a represented path in the same domain) and a non-empty rationale explaining how the mechanisms converge.\n"
+        f"- For 'omitted_no_distinct_reader_value': specify a non-empty rationale explaining why this path provides no distinct reader value.\n"
+        f"- Output strictly valid JSON matching the ReaderSelectionPlan v1.0 schema.\n\n"
+        f"=== READER DOMAIN MANIFEST ===\n{json.dumps(manifest, ensure_ascii=False, indent=2)}\n\n"
+        f"=== APPROVED SYNTHESES ===\n{json.dumps(handoff.get('prepared_signature_syntheses', []), ensure_ascii=False, indent=2)}\n"
+    )
+
+
 def prepare_audit_run(
     birth: BirthData,
     profile: LocalizationProfile,
     output_dir: Path,
     as_of: Optional[datetime] = None,
     horizon_days: int = 366,
+    author_selection_plan: Optional[Dict[str, object]] = None,
+    *,
+    allow_conservative_fallback: bool = False,
 ) -> Dict[str, object]:
     """Prepares deterministic handoff, prospective block plan, and agent prompts."""
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -77,9 +98,26 @@ def prepare_audit_run(
     (output_dir / "01-handoff.json").write_text(json.dumps(handoff, ensure_ascii=False, indent=2), encoding="utf-8")
     (output_dir / "01-analysis.json").write_text(json.dumps(analysis, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    # Generate selection prompt in case selection plan is not yet created
+    selection_prompt = build_author_selection_prompt(handoff, lang)
+    (output_dir / "author_selection_prompt.txt").write_text(selection_prompt, encoding="utf-8")
+
     # Stage 2: Prospective Block Plan (Source selection precedes prose generation)
     print("==> [Stage 2] Generating Prospective Source-Aware Block Plan...")
-    block_plan = plan_prospective_narrative_blocks(handoff)
+    if author_selection_plan is not None:
+        (output_dir / "01-author-selection-plan.json").write_text(
+            json.dumps(author_selection_plan, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        block_plan = plan_prospective_narrative_blocks(handoff, author_selection_plan=author_selection_plan)
+    elif allow_conservative_fallback:
+        block_plan = plan_prospective_narrative_blocks(handoff, allow_conservative_fallback=True)
+    else:
+        # Fails closed in production if AuthorSelectionPlan is missing
+        raise ValueError(
+            "author_selection_plan is required: Premium Complete fails closed without an Author-owned selection plan. "
+            "Prompt the Author using author_selection_prompt.txt before block plan generation."
+        )
+
     (output_dir / "01-prospective-block-plan.json").write_text(json.dumps(block_plan, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # Generate Prompts

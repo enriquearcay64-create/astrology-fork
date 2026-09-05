@@ -1017,7 +1017,7 @@ def format_canonical_timing_activation(
         "aspect": asp_name,
         "target": tgt_name,
         "window_start": w_start,
-        "exact_peak": exact_at or peak_date,
+        "exact_peak": exact_at,
         "exact_at": exact_at,
         "closest_approach_at": closest_approach_at,
         "perfected": is_exact,
