@@ -1,0 +1,4103 @@
+{
+  "plan_version": "1.0",
+  "packet_id": "3fd3322a7055d282f61bb3a1e4f934f4ae3fc76d4e3ab41178688ea22e81350a",
+  "sections": {
+    "opening": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.spirituality",
+          "coverage.mandatory.1",
+          "coverage.mandatory.2",
+          "coverage.mandatory.3",
+          "coverage.mandatory.4",
+          "coverage.mandatory.5",
+          "coverage.mandatory.6",
+          "coverage.mandatory.7"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Síntese relacional de ordem superior dos centros de gravidade do mapa e eixos estruturantes"
+      },
+      {
+        "block_index": 1,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.stability_change",
+          "coverage.mandatory.8",
+          "coverage.mandatory.9",
+          "coverage.mandatory.10",
+          "coverage.mandatory.11",
+          "coverage.mandatory.12",
+          "coverage.mandatory.13",
+          "coverage.mandatory.14"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Tensões dinâmicas fundamentais, polaridades e integração dos recursos vitais"
+      }
+    ],
+    "identity_presence": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.1.jupiter"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.identity_presence.house_ruler_context.4 no domínio identity_presence"
+      }
+    ],
+    "emotional_security": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.4.mercury"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.emotional_security.house_ruler_context.2 no domínio emotional_security"
+      }
+    ],
+    "mind_learning_communication": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.3.venus"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.mind_learning_communication.house_ruler_context.2 no domínio mind_learning_communication"
+      }
+    ],
+    "desire_action_limits": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.desire_action_limits.claim_anchored.1 no domínio desire_action_limits"
+      }
+    ],
+    "love_intimacy_relationship": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.7.mercury"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.love_intimacy_relationship.house_ruler_context.3 no domínio love_intimacy_relationship"
+      }
+    ],
+    "creativity_pleasure_aliveness": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+          "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.1"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.creativity_pleasure_aliveness.claim_anchored.2 no domínio creativity_pleasure_aliveness"
+      },
+      {
+        "block_index": 1,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.5.moon"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.creativity_pleasure_aliveness.house_ruler_context.3 no domínio creativity_pleasure_aliveness"
+      }
+    ],
+    "work_vocation_visibility": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.10.jupiter"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.work_vocation_visibility.house_ruler_context.1 no domínio work_vocation_visibility"
+      },
+      {
+        "block_index": 1,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.6.moon"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.work_vocation_visibility.house_ruler_context.2 no domínio work_vocation_visibility"
+      }
+    ],
+    "money_resources_value": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.2.mars",
+          "reasoned.reader_path.money_resources_value.topical_placidus.3"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.money_resources_value.house_ruler_context.1 no domínio money_resources_value"
+      },
+      {
+        "block_index": 1,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.8.venus"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.money_resources_value.house_ruler_context.2 no domínio money_resources_value"
+      }
+    ],
+    "body_energy_routine": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.6.moon"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.body_energy_routine.house_ruler_context.4 no domínio body_energy_routine"
+      }
+    ],
+    "home_roots_private_life": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.4.mercury"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.home_roots_private_life.house_ruler_context.1 no domínio home_roots_private_life"
+      }
+    ],
+    "friendship_community_belonging": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.11.saturn"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.friendship_community_belonging.house_ruler_context.1 no domínio friendship_community_belonging"
+      }
+    ],
+    "meaning_beliefs_horizon": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.9.mars"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.meaning_beliefs_horizon.house_ruler_context.4 no domínio meaning_beliefs_horizon"
+      },
+      {
+        "block_index": 1,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.5",
+          "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.1"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.meaning_beliefs_horizon.topical_placidus.5 no domínio meaning_beliefs_horizon"
+      }
+    ],
+    "shadow_defenses_patterns": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4",
+          "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.3",
+          "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.5"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.shadow_defenses_patterns.claim_anchored.4 no domínio shadow_defenses_patterns"
+      },
+      {
+        "block_index": 1,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.house_ruler_context.placidus.12.saturn"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.shadow_defenses_patterns.house_ruler_context.7 no domínio shadow_defenses_patterns"
+      }
+    ],
+    "growth_through_contradiction": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.reader_path.growth_through_contradiction.claim_anchored.1"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.growth_through_contradiction.claim_anchored.1 no domínio growth_through_contradiction"
+      }
+    ],
+    "developmental_direction": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.reader_path.developmental_direction.claim_anchored.1"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Mecanismo de reader_path.developmental_direction.claim_anchored.1 no domínio developmental_direction"
+      }
+    ],
+    "active_life_chapter": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.reader_path.active_life_chapter.timing_natal.1"
+        ],
+        "claim_ids": [],
+        "timing_ids": [
+          "timing.secondary_progression.mercury.sextile.jupiter.4"
+        ],
+        "intended_mechanism": "Mecanismo de reader_path.active_life_chapter.timing_natal.1 no domínio active_life_chapter"
+      }
+    ],
+    "integration": [
+      {
+        "block_index": 0,
+        "kind": "paragraph",
+        "synthesis_ids": [
+          "reasoned.spirituality"
+        ],
+        "claim_ids": [],
+        "timing_ids": [],
+        "intended_mechanism": "Síntese de ordem superior organizando a pessoa como um todo e pergunta reflexiva final"
+      }
+    ]
+  },
+  "composed_syntheses": [
+    {
+      "id": "reasoned.reader_path.identity_presence.claim_anchored.1",
+      "observation": "O Ascendente em Pisces descreve uma porta de entrada simbólica para presença e início de experiências.",
+      "primary_factors": [
+        "ascendant.natal"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "O Ascendente em Pisces descreve uma porta de entrada simbólica para presença e início de experiências."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.ascendant.1"
+      ],
+      "source_motif_ids": [
+        "ascendant_presence"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "O Ascendente em Pisces descreve uma porta de entrada simbólica para presença e início de experiências.",
+          "sources": [
+            "claim.ascendant.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.identity_presence.claim_anchored.2",
+      "observation": "Júpiter, regente do Ascendente em Pisces, organiza uma função recorrente na forma de iniciar e orientar-se.",
+      "primary_factors": [
+        "chart_ruler.natal"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Júpiter, regente do Ascendente em Pisces, organiza uma função recorrente na forma de iniciar e orientar-se."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.chart_ruler.1"
+      ],
+      "source_motif_ids": [
+        "chart_ruler_orientation"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Júpiter, regente do Ascendente em Pisces, organiza uma função recorrente na forma de iniciar e orientar-se.",
+          "sources": [
+            "claim.chart_ruler.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.identity_presence.claim_anchored.3",
+      "observation": "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.sun"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.sun.1"
+      ],
+      "source_motif_ids": [
+        "sun_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.sun.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.1.jupiter",
+      "observation": "A casa Placidus 1, ligada a identidade e presença, tem cúspide em Pisces e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "house_ruler.placidus.1",
+        "position.jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 1, ligada a identidade e presença, tem cúspide em Pisces e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.1",
+        "claim.position.jupiter.6"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "jupiter_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 1, ligada a identidade e presença, tem cúspide em Pisces e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.house_ruler.placidus.1",
+            "claim.position.jupiter.6"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.identity_presence.topical_placidus.5",
+      "observation": "Saturno encontra contexto psicológico em identidade e presença pela casa Placidus 1.",
+      "primary_factors": [
+        "house.placidus.saturn"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Saturno encontra contexto psicológico em identidade e presença pela casa Placidus 1."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.saturn.4"
+      ],
+      "source_motif_ids": [
+        "placidus_house_1_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Saturno encontra contexto psicológico em identidade e presença pela casa Placidus 1.",
+          "sources": [
+            "claim.house.saturn.4"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.emotional_security.claim_anchored.1",
+      "observation": "Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.moon"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.moon.2"
+      ],
+      "source_motif_ids": [
+        "moon_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.moon.2"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.4.mercury",
+      "observation": "A casa Placidus 4, ligada a raízes e vida privada, tem cúspide em Gemini e é regida por Mercúrio; isso apenas encaminha esse campo ao contexto natal já autorizado de Mercúrio. Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "house_ruler.placidus.4",
+        "position.mercury"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 4, ligada a raízes e vida privada, tem cúspide em Gemini e é regida por Mercúrio; isso apenas encaminha esse campo ao contexto natal já autorizado de Mercúrio. Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.4",
+        "claim.position.mercury.3"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "mercury_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 4, ligada a raízes e vida privada, tem cúspide em Gemini e é regida por Mercúrio; isso apenas encaminha esse campo ao contexto natal já autorizado de Mercúrio. Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.house_ruler.placidus.4",
+            "claim.position.mercury.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.mind_learning_communication.claim_anchored.1",
+      "observation": "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.mercury"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mercury.3"
+      ],
+      "source_motif_ids": [
+        "mercury_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.mercury.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.3.venus",
+      "observation": "A casa Placidus 3, ligada a aprendizado e comunicação, tem cúspide em Taurus e é regida por Vênus; isso apenas encaminha esse campo ao contexto natal já autorizado de Vênus. Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "house_ruler.placidus.3",
+        "position.venus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 3, ligada a aprendizado e comunicação, tem cúspide em Taurus e é regida por Vênus; isso apenas encaminha esse campo ao contexto natal já autorizado de Vênus. Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.3",
+        "claim.position.venus.4"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "venus_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 3, ligada a aprendizado e comunicação, tem cúspide em Taurus e é regida por Vênus; isso apenas encaminha esse campo ao contexto natal já autorizado de Vênus. Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.house_ruler.placidus.3",
+            "claim.position.venus.4"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.9.mars",
+      "observation": "A casa Placidus 9, ligada a sentido, estudo e horizontes, tem cúspide em Scorpio e é regida por Marte; isso apenas encaminha esse campo ao contexto natal já autorizado de Marte. Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "house_ruler.placidus.9",
+        "position.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 9, ligada a sentido, estudo e horizontes, tem cúspide em Scorpio e é regida por Marte; isso apenas encaminha esse campo ao contexto natal já autorizado de Marte. Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.9",
+        "claim.position.mars.5"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "mars_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 9, ligada a sentido, estudo e horizontes, tem cúspide em Scorpio e é regida por Marte; isso apenas encaminha esse campo ao contexto natal já autorizado de Marte. Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.house_ruler.placidus.9",
+            "claim.position.mars.5"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.mind_learning_communication.topical_placidus.4",
+      "observation": "Júpiter encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9.",
+      "primary_factors": [
+        "house.placidus.jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Júpiter encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.jupiter.2"
+      ],
+      "source_motif_ids": [
+        "placidus_house_9_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Júpiter encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9.",
+          "sources": [
+            "claim.house.jupiter.2"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.mind_learning_communication.topical_placidus.5",
+      "observation": "Plutão encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9.",
+      "primary_factors": [
+        "house.placidus.pluto"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Plutão encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.pluto.3"
+      ],
+      "source_motif_ids": [
+        "placidus_house_9_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Plutão encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9.",
+          "sources": [
+            "claim.house.pluto.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.desire_action_limits.claim_anchored.1",
+      "observation": "Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "position.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mars.5"
+      ],
+      "source_motif_ids": [
+        "mars_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.position.mars.5"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.6.moon",
+      "observation": "A casa Placidus 6, ligada a rotina, serviço e cuidado prático, tem cúspide em Cancer e é regida por Lua; isso apenas encaminha esse campo ao contexto natal já autorizado de Lua. Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "house_ruler.placidus.6",
+        "position.moon"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 6, ligada a rotina, serviço e cuidado prático, tem cúspide em Cancer e é regida por Lua; isso apenas encaminha esse campo ao contexto natal já autorizado de Lua. Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.6",
+        "claim.position.moon.2"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "moon_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 6, ligada a rotina, serviço e cuidado prático, tem cúspide em Cancer e é regida por Lua; isso apenas encaminha esse campo ao contexto natal já autorizado de Lua. Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.house_ruler.placidus.6",
+            "claim.position.moon.2"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.8.venus",
+      "observation": "A casa Placidus 8, ligada a intimidade, recursos compartilhados e transformação, tem cúspide em Libra e é regida por Vênus; isso apenas encaminha esse campo ao contexto natal já autorizado de Vênus. Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "house_ruler.placidus.8",
+        "position.venus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 8, ligada a intimidade, recursos compartilhados e transformação, tem cúspide em Libra e é regida por Vênus; isso apenas encaminha esse campo ao contexto natal já autorizado de Vênus. Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.8",
+        "claim.position.venus.4"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "venus_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 8, ligada a intimidade, recursos compartilhados e transformação, tem cúspide em Libra e é regida por Vênus; isso apenas encaminha esse campo ao contexto natal já autorizado de Vênus. Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.house_ruler.placidus.8",
+            "claim.position.venus.4"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.desire_action_limits.topical_placidus.5",
+      "observation": "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8.",
+      "primary_factors": [
+        "house.placidus.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.mars.9"
+      ],
+      "source_motif_ids": [
+        "placidus_house_8_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8.",
+          "sources": [
+            "claim.house.mars.9"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.desire_action_limits.topical_placidus.6",
+      "observation": "Saturno encontra contexto psicológico em identidade e presença pela casa Placidus 1.",
+      "primary_factors": [
+        "house.placidus.saturn"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Saturno encontra contexto psicológico em identidade e presença pela casa Placidus 1."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.saturn.4"
+      ],
+      "source_motif_ids": [
+        "placidus_house_1_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Saturno encontra contexto psicológico em identidade e presença pela casa Placidus 1.",
+          "sources": [
+            "claim.house.saturn.4"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.love_intimacy_relationship.claim_anchored.1",
+      "observation": "Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.venus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.venus.4"
+      ],
+      "source_motif_ids": [
+        "venus_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.venus.4"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.5.moon",
+      "observation": "A casa Placidus 5, ligada a expressão, prazer e criação, tem cúspide em Cancer e é regida por Lua; isso apenas encaminha esse campo ao contexto natal já autorizado de Lua. Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "house_ruler.placidus.5",
+        "position.moon"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 5, ligada a expressão, prazer e criação, tem cúspide em Cancer e é regida por Lua; isso apenas encaminha esse campo ao contexto natal já autorizado de Lua. Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.5",
+        "claim.position.moon.2"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "moon_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 5, ligada a expressão, prazer e criação, tem cúspide em Cancer e é regida por Lua; isso apenas encaminha esse campo ao contexto natal já autorizado de Lua. Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.house_ruler.placidus.5",
+            "claim.position.moon.2"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.7.mercury",
+      "observation": "A casa Placidus 7, ligada a parcerias e reciprocidade, tem cúspide em Virgo e é regida por Mercúrio; isso apenas encaminha esse campo ao contexto natal já autorizado de Mercúrio. Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "house_ruler.placidus.7",
+        "position.mercury"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 7, ligada a parcerias e reciprocidade, tem cúspide em Virgo e é regida por Mercúrio; isso apenas encaminha esse campo ao contexto natal já autorizado de Mercúrio. Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.7",
+        "claim.position.mercury.3"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "mercury_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 7, ligada a parcerias e reciprocidade, tem cúspide em Virgo e é regida por Mercúrio; isso apenas encaminha esse campo ao contexto natal já autorizado de Mercúrio. Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.house_ruler.placidus.7",
+            "claim.position.mercury.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.love_intimacy_relationship.topical_placidus.5",
+      "observation": "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8.",
+      "primary_factors": [
+        "house.placidus.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.mars.9"
+      ],
+      "source_motif_ids": [
+        "placidus_house_8_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8.",
+          "sources": [
+            "claim.house.mars.9"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.love_intimacy_relationship.topical_placidus.6",
+      "observation": "Mercúrio encontra contexto psicológico em parcerias e reciprocidade pela casa Placidus 7.",
+      "primary_factors": [
+        "house.placidus.mercury"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Mercúrio encontra contexto psicológico em parcerias e reciprocidade pela casa Placidus 7."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.mercury.10"
+      ],
+      "source_motif_ids": [
+        "placidus_house_7_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Mercúrio encontra contexto psicológico em parcerias e reciprocidade pela casa Placidus 7.",
+          "sources": [
+            "claim.house.mercury.10"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.love_intimacy_relationship.topical_placidus.7",
+      "observation": "Sol encontra contexto psicológico em parcerias e reciprocidade pela casa Placidus 7.",
+      "primary_factors": [
+        "house.placidus.sun"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Sol encontra contexto psicológico em parcerias e reciprocidade pela casa Placidus 7."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.sun.6"
+      ],
+      "source_motif_ids": [
+        "placidus_house_7_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Sol encontra contexto psicológico em parcerias e reciprocidade pela casa Placidus 7.",
+          "sources": [
+            "claim.house.sun.6"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.love_intimacy_relationship.topical_placidus.8",
+      "observation": "Vênus encontra contexto psicológico em parcerias e reciprocidade pela casa Placidus 7.",
+      "primary_factors": [
+        "house.placidus.venus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Vênus encontra contexto psicológico em parcerias e reciprocidade pela casa Placidus 7."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.venus.8"
+      ],
+      "source_motif_ids": [
+        "placidus_house_7_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Vênus encontra contexto psicológico em parcerias e reciprocidade pela casa Placidus 7.",
+          "sources": [
+            "claim.house.venus.8"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+      "observation": "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.sun"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.sun.1"
+      ],
+      "source_motif_ids": [
+        "sun_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.sun.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+      "observation": "Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.venus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.venus.4"
+      ],
+      "source_motif_ids": [
+        "venus_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.venus.4"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.10.jupiter",
+      "observation": "A casa Placidus 10, ligada a vocação, contribuição e visibilidade, tem cúspide em Sagittarius e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "house_ruler.placidus.10",
+        "position.jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 10, ligada a vocação, contribuição e visibilidade, tem cúspide em Sagittarius e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.10",
+        "claim.position.jupiter.6"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "jupiter_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 10, ligada a vocação, contribuição e visibilidade, tem cúspide em Sagittarius e é regida por Júpiter; isso apenas encaminha esse campo ao contexto natal já autorizado de Júpiter. Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.house_ruler.placidus.10",
+            "claim.position.jupiter.6"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.2.mars",
+      "observation": "A casa Placidus 2, ligada a recursos e segurança, tem cúspide em Aries e é regida por Marte; isso apenas encaminha esse campo ao contexto natal já autorizado de Marte. Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "house_ruler.placidus.2",
+        "position.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 2, ligada a recursos e segurança, tem cúspide em Aries e é regida por Marte; isso apenas encaminha esse campo ao contexto natal já autorizado de Marte. Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.2",
+        "claim.position.mars.5"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "mars_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 2, ligada a recursos e segurança, tem cúspide em Aries e é regida por Marte; isso apenas encaminha esse campo ao contexto natal já autorizado de Marte. Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.house_ruler.placidus.2",
+            "claim.position.mars.5"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.money_resources_value.topical_placidus.3",
+      "observation": "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8.",
+      "primary_factors": [
+        "house.placidus.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.mars.9"
+      ],
+      "source_motif_ids": [
+        "placidus_house_8_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8.",
+          "sources": [
+            "claim.house.mars.9"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.body_energy_routine.claim_anchored.1",
+      "observation": "Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "position.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mars.5"
+      ],
+      "source_motif_ids": [
+        "mars_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.position.mars.5"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.body_energy_routine.claim_anchored.2",
+      "observation": "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.sun"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.sun.1"
+      ],
+      "source_motif_ids": [
+        "sun_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.sun.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.body_energy_routine.topical_placidus.5",
+      "observation": "Saturno encontra contexto psicológico em identidade e presença pela casa Placidus 1.",
+      "primary_factors": [
+        "house.placidus.saturn"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Saturno encontra contexto psicológico em identidade e presença pela casa Placidus 1."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.saturn.4"
+      ],
+      "source_motif_ids": [
+        "placidus_house_1_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Saturno encontra contexto psicológico em identidade e presença pela casa Placidus 1.",
+          "sources": [
+            "claim.house.saturn.4"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.11.saturn",
+      "observation": "A casa Placidus 11, ligada a redes, futuro e pertencimento, tem cúspide em Capricorn e é regida por Saturno; isso apenas encaminha esse campo ao contexto natal já autorizado de Saturno. Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "house_ruler.placidus.11",
+        "position.saturn"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 11, ligada a redes, futuro e pertencimento, tem cúspide em Capricorn e é regida por Saturno; isso apenas encaminha esse campo ao contexto natal já autorizado de Saturno. Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.11",
+        "claim.position.saturn.7"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "saturn_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 11, ligada a redes, futuro e pertencimento, tem cúspide em Capricorn e é regida por Saturno; isso apenas encaminha esse campo ao contexto natal já autorizado de Saturno. Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.house_ruler.placidus.11",
+            "claim.position.saturn.7"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.friendship_community_belonging.topical_placidus.2",
+      "observation": "Netuno encontra contexto psicológico em redes, futuro e pertencimento pela casa Placidus 11.",
+      "primary_factors": [
+        "house.placidus.neptune"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Netuno encontra contexto psicológico em redes, futuro e pertencimento pela casa Placidus 11."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.neptune.7"
+      ],
+      "source_motif_ids": [
+        "placidus_house_11_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Netuno encontra contexto psicológico em redes, futuro e pertencimento pela casa Placidus 11.",
+          "sources": [
+            "claim.house.neptune.7"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.1",
+      "observation": "Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.jupiter.6"
+      ],
+      "source_motif_ids": [
+        "jupiter_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.jupiter.6"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.2",
+      "observation": "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.mercury"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mercury.3"
+      ],
+      "source_motif_ids": [
+        "mercury_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.mercury.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.5",
+      "observation": "Júpiter encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9.",
+      "primary_factors": [
+        "house.placidus.jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Júpiter encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.jupiter.2"
+      ],
+      "source_motif_ids": [
+        "placidus_house_9_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Júpiter encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9.",
+          "sources": [
+            "claim.house.jupiter.2"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.6",
+      "observation": "Plutão encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9.",
+      "primary_factors": [
+        "house.placidus.pluto"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Plutão encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.pluto.3"
+      ],
+      "source_motif_ids": [
+        "placidus_house_9_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Plutão encontra contexto psicológico em sentido, estudo e horizontes pela casa Placidus 9.",
+          "sources": [
+            "claim.house.pluto.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.1",
+      "observation": "Coordenação entre ampliação, sentido de Júpiter e necessidade, regulação de Lua pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.moon_square_jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre ampliação, sentido de Júpiter e necessidade, regulação de Lua pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.12"
+      ],
+      "source_motif_ids": [
+        "security_exploration_square_coordination"
+      ],
+      "composition_operations": [
+        "friction"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre ampliação, sentido de Júpiter e necessidade, regulação de Lua pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.12"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.2",
+      "observation": "Coordenação entre ação, impulso de Marte e autonomia, novidade de Urano pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.mars_square_uranus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre ação, impulso de Marte e autonomia, novidade de Urano pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.17"
+      ],
+      "source_motif_ids": [
+        "stability_change_square_coordination"
+      ],
+      "composition_operations": [
+        "friction"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre ação, impulso de Marte e autonomia, novidade de Urano pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.17"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.3",
+      "observation": "Coordenação entre necessidade, regulação de Lua e direção, expressão de Sol pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.sun_opposition_moon"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre necessidade, regulação de Lua e direção, expressão de Sol pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.21"
+      ],
+      "source_motif_ids": [
+        "care_opposition_coordination"
+      ],
+      "composition_operations": [
+        "polarity"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre necessidade, regulação de Lua e direção, expressão de Sol pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.21"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4",
+      "observation": "Tensão entre expressão pessoal e exigência/estrutura pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.sun_opposition_saturn"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Tensão entre expressão pessoal e exigência/estrutura pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.23"
+      ],
+      "source_motif_ids": [
+        "earned_competence",
+        "self_defined_standards"
+      ],
+      "composition_operations": [
+        "polarity"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Tensão entre expressão pessoal e exigência/estrutura pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.23"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.5",
+      "observation": "Coordenação entre estrutura, critério de Saturno e vínculo, valor de Vênus pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.venus_opposition_saturn"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre estrutura, critério de Saturno e vínculo, valor de Vênus pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.5"
+      ],
+      "source_motif_ids": [
+        "competence_opposition_coordination"
+      ],
+      "composition_operations": [
+        "polarity"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre estrutura, critério de Saturno e vínculo, valor de Vênus pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.5"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.6",
+      "observation": "Coordenação entre cognição, linguagem de Mercúrio e necessidade, regulação de Lua pode aparecer como ajuste contínuo; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.moon_quincunx_mercury"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre cognição, linguagem de Mercúrio e necessidade, regulação de Lua pode aparecer como ajuste contínuo; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.9"
+      ],
+      "source_motif_ids": [
+        "reason_feeling_quincunx_coordination"
+      ],
+      "composition_operations": [
+        "adjustment"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre cognição, linguagem de Mercúrio e necessidade, regulação de Lua pode aparecer como ajuste contínuo; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.9"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.house_ruler_context.placidus.12.saturn",
+      "observation": "A casa Placidus 12, ligada a retirada, imaginação e processos de fundo, tem cúspide em Capricorn e é regida por Saturno; isso apenas encaminha esse campo ao contexto natal já autorizado de Saturno. Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "house_ruler.placidus.12",
+        "position.saturn"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A casa Placidus 12, ligada a retirada, imaginação e processos de fundo, tem cúspide em Capricorn e é regida por Saturno; isso apenas encaminha esse campo ao contexto natal já autorizado de Saturno. Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house_ruler.placidus.12",
+        "claim.position.saturn.7"
+      ],
+      "source_motif_ids": [
+        "placidus_house_ruler_routing",
+        "saturn_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A casa Placidus 12, ligada a retirada, imaginação e processos de fundo, tem cúspide em Capricorn e é regida por Saturno; isso apenas encaminha esse campo ao contexto natal já autorizado de Saturno. Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.house_ruler.placidus.12",
+            "claim.position.saturn.7"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.shadow_defenses_patterns.topical_placidus.9",
+      "observation": "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8.",
+      "primary_factors": [
+        "house.placidus.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.mars.9"
+      ],
+      "source_motif_ids": [
+        "placidus_house_8_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Marte encontra contexto psicológico em intimidade, recursos compartilhados e transformação pela casa Placidus 8.",
+          "sources": [
+            "claim.house.mars.9"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.shadow_defenses_patterns.topical_placidus.10",
+      "observation": "Lua encontra contexto psicológico em retirada, imaginação e processos de fundo pela casa Placidus 12.",
+      "primary_factors": [
+        "house.placidus.moon"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Lua encontra contexto psicológico em retirada, imaginação e processos de fundo pela casa Placidus 12."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.moon.5"
+      ],
+      "source_motif_ids": [
+        "placidus_house_12_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Lua encontra contexto psicológico em retirada, imaginação e processos de fundo pela casa Placidus 12.",
+          "sources": [
+            "claim.house.moon.5"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.shadow_defenses_patterns.topical_placidus.11",
+      "observation": "Urano encontra contexto psicológico em retirada, imaginação e processos de fundo pela casa Placidus 12.",
+      "primary_factors": [
+        "house.placidus.uranus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Urano encontra contexto psicológico em retirada, imaginação e processos de fundo pela casa Placidus 12."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.house.uranus.1"
+      ],
+      "source_motif_ids": [
+        "placidus_house_12_topic"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Urano encontra contexto psicológico em retirada, imaginação e processos de fundo pela casa Placidus 12.",
+          "sources": [
+            "claim.house.uranus.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.growth_through_contradiction.claim_anchored.1",
+      "observation": "Coordenação entre ampliação, sentido de Júpiter e necessidade, regulação de Lua pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.moon_square_jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre ampliação, sentido de Júpiter e necessidade, regulação de Lua pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.12"
+      ],
+      "source_motif_ids": [
+        "security_exploration_square_coordination"
+      ],
+      "composition_operations": [
+        "friction"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre ampliação, sentido de Júpiter e necessidade, regulação de Lua pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.12"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.growth_through_contradiction.claim_anchored.2",
+      "observation": "Coordenação entre ação, impulso de Marte e autonomia, novidade de Urano pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.mars_square_uranus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre ação, impulso de Marte e autonomia, novidade de Urano pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.17"
+      ],
+      "source_motif_ids": [
+        "stability_change_square_coordination"
+      ],
+      "composition_operations": [
+        "friction"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre ação, impulso de Marte e autonomia, novidade de Urano pode aparecer sob pressão; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.17"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.growth_through_contradiction.claim_anchored.3",
+      "observation": "Coordenação entre necessidade, regulação de Lua e direção, expressão de Sol pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.sun_opposition_moon"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre necessidade, regulação de Lua e direção, expressão de Sol pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.21"
+      ],
+      "source_motif_ids": [
+        "care_opposition_coordination"
+      ],
+      "composition_operations": [
+        "polarity"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre necessidade, regulação de Lua e direção, expressão de Sol pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.21"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.growth_through_contradiction.claim_anchored.4",
+      "observation": "Tensão entre expressão pessoal e exigência/estrutura pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.sun_opposition_saturn"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Tensão entre expressão pessoal e exigência/estrutura pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.23"
+      ],
+      "source_motif_ids": [
+        "earned_competence",
+        "self_defined_standards"
+      ],
+      "composition_operations": [
+        "polarity"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Tensão entre expressão pessoal e exigência/estrutura pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.23"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.growth_through_contradiction.claim_anchored.5",
+      "observation": "Coordenação entre estrutura, critério de Saturno e vínculo, valor de Vênus pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.venus_opposition_saturn"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre estrutura, critério de Saturno e vínculo, valor de Vênus pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.5"
+      ],
+      "source_motif_ids": [
+        "competence_opposition_coordination"
+      ],
+      "composition_operations": [
+        "polarity"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre estrutura, critério de Saturno e vínculo, valor de Vênus pode aparecer em polaridade; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.5"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.growth_through_contradiction.claim_anchored.6",
+      "observation": "Coordenação entre cognição, linguagem de Mercúrio e necessidade, regulação de Lua pode aparecer como ajuste contínuo; é uma possibilidade simbólica, não um fato biográfico.",
+      "primary_factors": [
+        "aspect.moon_quincunx_mercury"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "integrated_pattern",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Coordenação entre cognição, linguagem de Mercúrio e necessidade, regulação de Lua pode aparecer como ajuste contínuo; é uma possibilidade simbólica, não um fato biográfico."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.aspect.9"
+      ],
+      "source_motif_ids": [
+        "reason_feeling_quincunx_coordination"
+      ],
+      "composition_operations": [
+        "adjustment"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Coordenação entre cognição, linguagem de Mercúrio e necessidade, regulação de Lua pode aparecer como ajuste contínuo; é uma possibilidade simbólica, não um fato biográfico.",
+          "sources": [
+            "claim.aspect.9"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.developmental_direction.claim_anchored.1",
+      "observation": "O eixo nodal liga Nodo Norte em Libra e Nodo Sul em Aries; casas Placidus 8 e 2: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte.",
+      "primary_factors": [
+        "node_axis.natal"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "O eixo nodal liga Nodo Norte em Libra e Nodo Sul em Aries; casas Placidus 8 e 2: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.node_axis.1"
+      ],
+      "source_motif_ids": [
+        "natal_node_axis_developmental_direction",
+        "nodal_axis_square_contact",
+        "stability_change_square_coordination",
+        "nodal_axis_trine_contact",
+        "control_spontaneity_trine_coordination",
+        "nodal_axis_conjunction_contact",
+        "purpose_conjunction_coordination",
+        "nodal_axis_square_contact",
+        "spirituality_square_coordination"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "O eixo nodal liga Nodo Norte em Libra e Nodo Sul em Aries; casas Placidus 8 e 2: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte.",
+          "sources": [
+            "claim.node_axis.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.active_life_chapter.timing_natal.1",
+      "observation": "Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.jupiter",
+        "timing.secondary_progression.mercury.sextile.jupiter.4"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.jupiter.6"
+      ],
+      "source_motif_ids": [
+        "jupiter_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.jupiter.6"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.active_life_chapter.timing_natal.2",
+      "observation": "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.mercury",
+        "timing.activation.saturn_mercury_opposition_direct_branch_1"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mercury.3"
+      ],
+      "source_motif_ids": [
+        "mercury_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.mercury.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.active_life_chapter.timing_natal.3",
+      "observation": "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.mercury",
+        "timing.profection.2025-09-08"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mercury.3"
+      ],
+      "source_motif_ids": [
+        "mercury_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.mercury.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.active_life_chapter.timing_natal.4",
+      "observation": "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.neptune",
+        "timing.activation.jupiter_neptune_quincunx_negative_branch_1"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.neptune.9"
+      ],
+      "source_motif_ids": [
+        "neptune_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.neptune.9"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.active_life_chapter.timing_natal.5",
+      "observation": "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.neptune",
+        "timing.secondary_progression.mars.sextile.neptune.3"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.neptune.9"
+      ],
+      "source_motif_ids": [
+        "neptune_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.neptune.9"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.active_life_chapter.timing_natal.6",
+      "observation": "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.neptune",
+        "timing.solar_arc.saturn.square.neptune.3"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.neptune.9"
+      ],
+      "source_motif_ids": [
+        "neptune_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.neptune.9"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.active_life_chapter.timing_natal.7",
+      "observation": "Plutão em Scorpio colore intensidade, poder e transformação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "position.pluto",
+        "timing.secondary_progression.moon.quincunx.pluto.2"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Plutão em Scorpio colore intensidade, poder e transformação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.pluto.10"
+      ],
+      "source_motif_ids": [
+        "pluto_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Plutão em Scorpio colore intensidade, poder e transformação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.position.pluto.10"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.active_life_chapter.timing_natal.8",
+      "observation": "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.saturn",
+        "timing.activation.jupiter_saturn_quincunx_positive_branch_1"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.saturn.7"
+      ],
+      "source_motif_ids": [
+        "saturn_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.saturn.7"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.active_life_chapter.timing_natal.9",
+      "observation": "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.saturn",
+        "timing.secondary_progression.mars.trine.saturn.1"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.saturn.7"
+      ],
+      "source_motif_ids": [
+        "saturn_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.saturn.7"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.active_life_chapter.timing_natal.10",
+      "observation": "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.saturn",
+        "timing.solar_arc.venus.quincunx.saturn.2"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.saturn.7"
+      ],
+      "source_motif_ids": [
+        "saturn_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.saturn.7"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "reasoned.reader_path.active_life_chapter.timing_natal.11",
+      "observation": "Urano em Capricorn colore autonomia, mudança e ruptura de padrões com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.uranus",
+        "timing.activation.jupiter_uranus_quincunx_negative_branch_1"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "natal_timing_interaction",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Urano em Capricorn colore autonomia, mudança e ruptura de padrões com concretização e continuidade; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.uranus.8"
+      ],
+      "source_motif_ids": [
+        "uranus_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization",
+        "timing_activation"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Urano em Capricorn colore autonomia, mudança e ruptura de padrões com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.uranus.8"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.1",
+      "observation": "O Ascendente em Pisces descreve uma porta de entrada simbólica para presença e início de experiências.",
+      "primary_factors": [
+        "ascendant.natal"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "O Ascendente em Pisces descreve uma porta de entrada simbólica para presença e início de experiências."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.ascendant.1"
+      ],
+      "source_motif_ids": [
+        "ascendant_presence"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "O Ascendente em Pisces descreve uma porta de entrada simbólica para presença e início de experiências.",
+          "sources": [
+            "claim.ascendant.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.2",
+      "observation": "Júpiter, regente do Ascendente em Pisces, organiza uma função recorrente na forma de iniciar e orientar-se.",
+      "primary_factors": [
+        "chart_ruler.natal"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Júpiter, regente do Ascendente em Pisces, organiza uma função recorrente na forma de iniciar e orientar-se."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.chart_ruler.1"
+      ],
+      "source_motif_ids": [
+        "chart_ruler_orientation"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Júpiter, regente do Ascendente em Pisces, organiza uma função recorrente na forma de iniciar e orientar-se.",
+          "sources": [
+            "claim.chart_ruler.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.3",
+      "observation": "A estrutura stellium_placidus_house em 7 reúne sun, mercury, venus como um padrão integrado, a ser explicado uma vez antes de observar o papel de cada corpo.",
+      "primary_factors": [
+        "configuration.stellium_placidus_house.7.mercury.sun.venus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "A estrutura stellium_placidus_house em 7 reúne sun, mercury, venus como um padrão integrado, a ser explicado uma vez antes de observar o papel de cada corpo."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.configuration.1"
+      ],
+      "source_motif_ids": [
+        "stellium_placidus_house_integrated_structure"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "A estrutura stellium_placidus_house em 7 reúne sun, mercury, venus como um padrão integrado, a ser explicado uma vez antes de observar o papel de cada corpo.",
+          "sources": [
+            "claim.configuration.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.4",
+      "observation": "O eixo nodal liga Nodo Norte em Libra e Nodo Sul em Aries; casas Placidus 8 e 2: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte.",
+      "primary_factors": [
+        "node_axis.natal"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "O eixo nodal liga Nodo Norte em Libra e Nodo Sul em Aries; casas Placidus 8 e 2: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.node_axis.1"
+      ],
+      "source_motif_ids": [
+        "natal_node_axis_developmental_direction",
+        "nodal_axis_square_contact",
+        "stability_change_square_coordination",
+        "nodal_axis_trine_contact",
+        "control_spontaneity_trine_coordination",
+        "nodal_axis_conjunction_contact",
+        "purpose_conjunction_coordination",
+        "nodal_axis_square_contact",
+        "spirituality_square_coordination"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "O eixo nodal liga Nodo Norte em Libra e Nodo Sul em Aries; casas Placidus 8 e 2: direção de desenvolvimento e padrões familiares já disponíveis, sem transformar nenhum polo em destino ou descarte.",
+          "sources": [
+            "claim.node_axis.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.5",
+      "observation": "Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.jupiter"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.jupiter.6"
+      ],
+      "source_motif_ids": [
+        "jupiter_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Júpiter em Sagittarius colore crescimento, sentido e exploração com iniciativa e vitalidade; adapta e ajusta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.jupiter.6"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.6",
+      "observation": "Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "position.mars"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mars.5"
+      ],
+      "source_motif_ids": [
+        "mars_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Marte em Scorpio colore ação, desejo e limites com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.position.mars.5"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.7",
+      "observation": "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+      "primary_factors": [
+        "position.mercury"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.mercury.3"
+      ],
+      "source_motif_ids": [
+        "mercury_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Mercúrio em Libra colore pensamento e comunicação com troca e elaboração; inicia e movimenta; de forma mais exteriorizada.",
+          "sources": [
+            "claim.position.mercury.3"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.8",
+      "observation": "Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.moon"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.moon.2"
+      ],
+      "source_motif_ids": [
+        "moon_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Lua em Pisces colore necessidades e regulação emocional com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.moon.2"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.9",
+      "observation": "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.neptune"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.neptune.9"
+      ],
+      "source_motif_ids": [
+        "neptune_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Netuno em Capricorn colore imaginação, sensibilidade e transcendência com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.neptune.9"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.10",
+      "observation": "Plutão em Scorpio colore intensidade, poder e transformação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+      "primary_factors": [
+        "position.pluto"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Plutão em Scorpio colore intensidade, poder e transformação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.pluto.10"
+      ],
+      "source_motif_ids": [
+        "pluto_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Plutão em Scorpio colore intensidade, poder e transformação com sensibilidade e ligação emocional; sustenta e aprofunda; de forma mais receptiva.",
+          "sources": [
+            "claim.position.pluto.10"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.11",
+      "observation": "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.saturn"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.saturn.7"
+      ],
+      "source_motif_ids": [
+        "saturn_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Saturno em Pisces colore estrutura, responsabilidade e limites com sensibilidade e ligação emocional; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.saturn.7"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.12",
+      "observation": "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.sun"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.sun.1"
+      ],
+      "source_motif_ids": [
+        "sun_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Sol em Virgo colore identidade, vitalidade e direção com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.sun.1"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.13",
+      "observation": "Urano em Capricorn colore autonomia, mudança e ruptura de padrões com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.uranus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Urano em Capricorn colore autonomia, mudança e ruptura de padrões com concretização e continuidade; inicia e movimenta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.uranus.8"
+      ],
+      "source_motif_ids": [
+        "uranus_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Urano em Capricorn colore autonomia, mudança e ruptura de padrões com concretização e continuidade; inicia e movimenta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.uranus.8"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    },
+    {
+      "id": "coverage.mandatory.14",
+      "observation": "Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+      "primary_factors": [
+        "position.venus"
+      ],
+      "modifiers": [],
+      "counterweights": [],
+      "reasoning_class": "single_structural_factor",
+      "confidence_within_astrological_model": "light",
+      "possible_expressions": [
+        "Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva."
+      ],
+      "alternative_reading": "",
+      "prohibited_extensions": [],
+      "source_claim_ids": [
+        "claim.position.venus.4"
+      ],
+      "source_motif_ids": [
+        "venus_function_in_sign"
+      ],
+      "composition_operations": [
+        "contextualization"
+      ],
+      "derived_propositions": [
+        {
+          "text": "Vênus em Virgo colore vínculo, prazer e valores com concretização e continuidade; adapta e ajusta; de forma mais receptiva.",
+          "sources": [
+            "claim.position.venus.4"
+          ]
+        }
+      ],
+      "narrative_moves": {},
+      "derived_claim": true,
+      "verification_errors": [],
+      "status": "allowed"
+    }
+  ],
+  "domain_sources": {
+    "identity_presence": [
+      "reasoned.house_ruler_context.placidus.1.jupiter"
+    ],
+    "emotional_security": [
+      "reasoned.house_ruler_context.placidus.4.mercury"
+    ],
+    "mind_learning_communication": [
+      "reasoned.house_ruler_context.placidus.3.venus"
+    ],
+    "desire_action_limits": [
+      "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+    ],
+    "love_intimacy_relationship": [
+      "reasoned.house_ruler_context.placidus.7.mercury"
+    ],
+    "creativity_pleasure_aliveness": [
+      "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+      "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+      "reasoned.house_ruler_context.placidus.5.moon"
+    ],
+    "work_vocation_visibility": [
+      "reasoned.house_ruler_context.placidus.10.jupiter",
+      "reasoned.house_ruler_context.placidus.6.moon"
+    ],
+    "money_resources_value": [
+      "reasoned.house_ruler_context.placidus.2.mars",
+      "reasoned.reader_path.money_resources_value.topical_placidus.3",
+      "reasoned.house_ruler_context.placidus.8.venus"
+    ],
+    "body_energy_routine": [
+      "reasoned.house_ruler_context.placidus.6.moon"
+    ],
+    "home_roots_private_life": [
+      "reasoned.house_ruler_context.placidus.4.mercury"
+    ],
+    "friendship_community_belonging": [
+      "reasoned.house_ruler_context.placidus.11.saturn"
+    ],
+    "meaning_beliefs_horizon": [
+      "reasoned.house_ruler_context.placidus.9.mars",
+      "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.5",
+      "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.1"
+    ],
+    "shadow_defenses_patterns": [
+      "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4",
+      "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.3",
+      "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.5",
+      "reasoned.house_ruler_context.placidus.12.saturn"
+    ],
+    "growth_through_contradiction": [
+      "reasoned.reader_path.growth_through_contradiction.claim_anchored.1"
+    ],
+    "developmental_direction": [
+      "reasoned.reader_path.developmental_direction.claim_anchored.1"
+    ],
+    "active_life_chapter": [
+      "reasoned.reader_path.active_life_chapter.timing_natal.1"
+    ]
+  },
+  "mandatory_ids": [
+    "coverage.mandatory.1",
+    "coverage.mandatory.2",
+    "coverage.mandatory.3",
+    "coverage.mandatory.4",
+    "coverage.mandatory.5",
+    "coverage.mandatory.6",
+    "coverage.mandatory.7",
+    "coverage.mandatory.8",
+    "coverage.mandatory.9",
+    "coverage.mandatory.10",
+    "coverage.mandatory.11",
+    "coverage.mandatory.12",
+    "coverage.mandatory.13",
+    "coverage.mandatory.14"
+  ],
+  "primary_relational": "reasoned.spirituality",
+  "selection_plan": {
+    "version": "1.0",
+    "packet_id": "3fd3322a7055d282f61bb3a1e4f934f4ae3fc76d4e3ab41178688ea22e81350a",
+    "domains": [
+      {
+        "domain_id": "identity_presence",
+        "paths": [
+          {
+            "path_id": "reader_path.identity_presence.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A tonalidade receptiva e difusa do Ascendente em Peixes atua como atmosfera perceptiva geral, sendo plenamente articulada através da condição e dignidade do regente do mapa."
+          },
+          {
+            "path_id": "reader_path.identity_presence.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A função de regente do mapa por Júpiter converge diretamente com o circuito de regência da casa 1, não demandando desenvolvimento isolado da sua governança angular."
+          },
+          {
+            "path_id": "reader_path.identity_presence.claim_anchored.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A posição solar em Virgem na casa 7 é reservada para a dinâmica de discernimento relacional e oposição estrutural, evitando redundância na identidade de abertura."
+          },
+          {
+            "path_id": "reader_path.identity_presence.house_ruler_context.4",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.1.jupiter"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.identity_presence.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença de Saturno em Peixes opera como contenção estrutural e defesa inconsciente, sendo tratada no domínio de padrões defensivos e sombra."
+          }
+        ]
+      },
+      {
+        "domain_id": "emotional_security",
+        "paths": [
+          {
+            "path_id": "reader_path.emotional_security.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A vulnerabilidade psíquica da Lua em Peixes na casa 12 encontra sua ancoragem protetiva e tradução prática através do dispositor da casa 4."
+          },
+          {
+            "path_id": "reader_path.emotional_security.house_ruler_context.2",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.4.mercury"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "mind_learning_communication",
+        "paths": [
+          {
+            "path_id": "reader_path.mind_learning_communication.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A acuidade mental de Mercúrio em Libra é integralmente mobilizada pelo circuito da casa 3 governada por Vênus, sem justificar duplicação cognitiva."
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.house_ruler_context.2",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.3.venus"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A governança da casa 9 por Marte pertence primordialmente ao eixo de cosmovisão e crenças amplas, diferindo do processamento comunicativo local."
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.topical_placidus.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença de Júpiter na nona casa amplia a busca de horizontes e filosofia de vida, tratada no domínio de crenças e significado."
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O trânsito e colocação de Plutão na nona casa desconstroem paradigmas conceituais, sem alterar o mecanismo cotidiano de comunicação."
+          }
+        ]
+      },
+      {
+        "domain_id": "desire_action_limits",
+        "paths": [
+          {
+            "path_id": "reader_path.desire_action_limits.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.house_ruler_context.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A regência da casa 1 por Júpiter estabelece a bússola ética global, diferindo do vetor específico de ação assertiva e limites de Marte."
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A regência da casa 6 pela Lua pertence à ritmicidade do cuidado diário, não definindo a estratégia de confronto e desejo."
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.house_ruler_context.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A governança da casa 8 por Vênus foca na intimidade compartilhada, convergindo com os domínios de vínculos e valores relacionais."
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A colocação tópica de Marte em Escorpião reforça sua dignidade essencial, plenamente expressa na rota principal da ação."
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.topical_placidus.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A exigência saturnina atua na autocrítica e defesas, não no impulso direto de volição e iniciativa pessoal."
+          }
+        ]
+      },
+      {
+        "domain_id": "love_intimacy_relationship",
+        "paths": [
+          {
+            "path_id": "reader_path.love_intimacy_relationship.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O magnetismo e estilo afetivo de Vênus em Virgem na casa 7 são mobilizados pelo regente da parceria e pela polaridade com Saturno."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O circuito da casa 5 regido pela Lua expressa espontaneidade e prazer lúdico, diferindo do compromisso relacional da casa 7."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.3",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.7.mercury"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A governança da casa 8 por Vênus aborda a partilha e fusão material, desenvolvida no domínio de recursos e vulnerabilidade."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença de Marte na oitava casa dinamiza a intensidade instintiva, sendo tratada sob a perspectiva da soberania e limites."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.topical_placidus.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A colocação tópica de Mercúrio na sétima casa reforça o canal dialógico do regente, sem criar mecanismo relacional separado."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.topical_placidus.7",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença do Sol na casa 7 ilumina o espelhamento da individualidade nas parcerias, integrada na dinâmica do regente relacional."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.topical_placidus.8",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A posição tópica de Vênus na sétima casa sustenta o valor atribuído ao vínculo, convergindo com o contexto relacional de Mercúrio."
+          }
+        ]
+      },
+      {
+        "domain_id": "creativity_pleasure_aliveness",
+        "paths": [
+          {
+            "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+            "decision": "merged_with_represented",
+            "synthesis_ids": [],
+            "merged_with_path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+            "rationale": "A vitalidade expressiva do Sol converge diretamente com a busca de prazer, fruição e valores autênticos de Vênus na dinamização criativa da vida."
+          },
+          {
+            "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+              "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.creativity_pleasure_aliveness.house_ruler_context.3",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.5.moon"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "work_vocation_visibility",
+        "paths": [
+          {
+            "path_id": "reader_path.work_vocation_visibility.house_ruler_context.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.10.jupiter"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.work_vocation_visibility.house_ruler_context.2",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.6.moon"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "money_resources_value",
+        "paths": [
+          {
+            "path_id": "reader_path.money_resources_value.house_ruler_context.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.2.mars",
+              "reasoned.reader_path.money_resources_value.topical_placidus.3"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.money_resources_value.house_ruler_context.2",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.8.venus"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.money_resources_value.topical_placidus.3",
+            "decision": "merged_with_represented",
+            "synthesis_ids": [],
+            "merged_with_path_id": "reader_path.money_resources_value.house_ruler_context.1",
+            "rationale": "A colocação tópica de Marte na casa 8 ancora concretamente o vetor de governança financeira e circulação de recursos da casa 2."
+          }
+        ]
+      },
+      {
+        "domain_id": "body_energy_routine",
+        "paths": [
+          {
+            "path_id": "reader_path.body_energy_routine.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O esforço e gasto energético de Marte em Escorpião são canalizados pela disciplina somática e regência da casa 6."
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A vitalidade solar sustenta a presença geral, não configurando a rotina de recuperação e sustentabilidade corporal."
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O regente da casa 1 por Júpiter confere vigor constitucional, subordinando os hábitos cotidianos à organização da casa 6."
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.house_ruler_context.4",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.6.moon"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença de Saturno atua na exigência de limites e fadiga psíquica, melhor compreendida no capítulo de defesas e sombra."
+          }
+        ]
+      },
+      {
+        "domain_id": "home_roots_private_life",
+        "paths": [
+          {
+            "path_id": "reader_path.home_roots_private_life.house_ruler_context.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.4.mercury"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "friendship_community_belonging",
+        "paths": [
+          {
+            "path_id": "reader_path.friendship_community_belonging.house_ruler_context.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.11.saturn"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.friendship_community_belonging.topical_placidus.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença de Netuno na casa 11 expressa idealismo comunitário difuso, sem definir os critérios reais de fidelidade estruturados por Saturno."
+          }
+        ]
+      },
+      {
+        "domain_id": "meaning_beliefs_horizon",
+        "paths": [
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.1",
+            "decision": "merged_with_represented",
+            "synthesis_ids": [],
+            "merged_with_path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.5",
+            "rationale": "A dignidade e vocação expansiva de Júpiter convergem diretamente com sua presença tópica na casa 9, fundamentando a cosmovisão e a busca de sentido."
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A função analítica de Mercúrio em Libra pertence ao intercâmbio relacional, não estruturando o horizonte metafísico da casa 9."
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O circuito de aprendizado imediato da casa 3 pertence ao domínio comunicativo, não competindo com a arquitetura ética da casa 9."
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.4",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.9.mars"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.5",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.5",
+              "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A intensidade plutoniana na nona casa atua como força subterrânea de crise de fé, subordinada à regência primária de Marte e à presença culminante de Júpiter."
+          }
+        ]
+      },
+      {
+        "domain_id": "shadow_defenses_patterns",
+        "paths": [
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A quadratura Lua-Júpiter opera como oscilação entre recolhimento e euforia expansiva, desenvolvida no domínio de crescimento por contradição."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A fricção Marte-Urano mobiliza respostas abruptas de independência, tratada na polaridade dinâmica de ação e limites."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.3",
+            "decision": "merged_with_represented",
+            "synthesis_ids": [],
+            "merged_with_path_id": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+            "rationale": "A oposição Sol-Lua converge diretamente com a oposição Sol-Saturno no eixo Virgem-Peixes, integrando a dinâmica central de cisão defensiva entre exigência de competência e vulnerabilidade emocional recolhida."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4",
+              "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.3",
+              "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.5"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.5",
+            "decision": "merged_with_represented",
+            "synthesis_ids": [],
+            "merged_with_path_id": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+            "rationale": "A oposição Vênus-Saturno complementa a oposição Sol-Saturno ao traduzir o padrão de autocrítica e contenção para a esfera relacional e afetiva, participando do mesmo núcleo reativo de defesa."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O quincúncio Lua-Mercúrio introduz hesitações entre sentimento e expressão verbal, tendo impacto subordinado perante o eixo de oposições estruturantes."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.7",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.12.saturn"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.8",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A regência da casa 8 por Vênus foca na partilha de intimidade e regeneração de confiança, tratada no domínio de recursos compartilhados."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.9",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A colocação de Marte na oitava casa ancora intensidade instintiva, já plenamente desdobrada na dinâmica de volição e soberania material."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.10",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A posição da Lua na casa 12 participa do recolhimento somático, canalizada na regência da casa 5 e na oposição ao Sol."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.11",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "Urano na décima segunda casa opera como descondicionamento transpessoal pontual, sem fixar um padrão defensivo repetitivo do ego."
+          }
+        ]
+      },
+      {
+        "domain_id": "growth_through_contradiction",
+        "paths": [
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.growth_through_contradiction.claim_anchored.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A quadratura Marte-Urano mobiliza prontidão para ruptura, atuando como subfator subordinado à tensão integradora entre anseio de expansão e segurança."
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A polaridade Sol-Lua é desenvolvida como eixo estruturante de defesa e discernimento em outros domínios, evitando repetição na contradição dinâmica."
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A oposição Sol-Saturno sintetiza o núcleo de exigência de competência e limites, tratada na arquitetura de defesas e padrões."
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A oposição Vênus-Saturno qualifica o rigor nos afetos e valores, desdobrada como nuance defensiva no domínio de sombra."
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O quincúncio Lua-Mercúrio introduz discrepâncias sutis entre razão e afeto, sem a magnitude mobilizadora da quadratura angular."
+          }
+        ]
+      },
+      {
+        "domain_id": "developmental_direction",
+        "paths": [
+          {
+            "path_id": "reader_path.developmental_direction.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.developmental_direction.claim_anchored.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "active_life_chapter",
+        "paths": [
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.active_life_chapter.timing_natal.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A ativação temporal secundária de Mercúrio com Saturno oferece reforço de foco analítico subordinado à profecção ativa."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A profecção anual de Mercúrio estabelece o pano de fundo temporal geral, já articulado na ativação direta da progressão."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O quincúncio Júpiter-Netuno atua como oscilação sutil de expectativas, sem demarcar janela decisiva de acontecimentos."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O sextil progredido Marte-Netuno modula suavemente o direcionamento de esforço, sem constituir o foco primário do período."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O arco solar Saturno-Netuno indica processo gradual de desilusão criativa, operando em segundo plano diante da progressão exata."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.7",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O quincúncio progredido Lua-Plutão exige reajustes emocionais sutis, sem a clareza orientadora da ativação jupiteriana."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.8",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O aspecto Júpiter-Saturno introduz calibragem entre pragmatismo e crescimento, secundário à dinâmica angular vigente."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.9",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O trígono progredido Marte-Saturno confere resiliência estável de fundo, dispensando destaque como virada biográfica."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.10",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O arco solar Vênus-Saturno reforça a maturidade relacional de longo prazo, já contemplada na base estrutural natal."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.11",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A ativação Júpiter-Urano estimula inquietação por renovação, subordinada à maturação do ciclo principal."
+          }
+        ]
+      }
+    ]
+  },
+  "plan_sha256": "3f6da3915cd37c32c67a38559c532ef85ad5a4f7be61e9b89746e962463b9f87"
+}

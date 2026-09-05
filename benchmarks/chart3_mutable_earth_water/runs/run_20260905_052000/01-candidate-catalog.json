@@ -1,0 +1,1409 @@
+{
+  "catalog_version": "1.0",
+  "packet_id": "3fd3322a7055d282f61bb3a1e4f934f4ae3fc76d4e3ab41178688ea22e81350a",
+  "domains": [
+    {
+      "domain_id": "identity_presence",
+      "domain_heading": "Identidade central e presença",
+      "paths": [
+        {
+          "path_id": "reader_path.identity_presence.claim_anchored.1",
+          "label": "reader_path.identity_presence.claim_anchored.1",
+          "primary_factor_ids": [
+            "ascendant.natal"
+          ],
+          "source_claim_ids": [
+            "claim.ascendant.1"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.identity_presence.claim_anchored.1",
+            "coverage.mandatory.1"
+          ]
+        },
+        {
+          "path_id": "reader_path.identity_presence.claim_anchored.2",
+          "label": "reader_path.identity_presence.claim_anchored.2",
+          "primary_factor_ids": [
+            "chart_ruler.natal"
+          ],
+          "source_claim_ids": [
+            "claim.chart_ruler.1"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.identity_presence.claim_anchored.2",
+            "coverage.mandatory.2"
+          ]
+        },
+        {
+          "path_id": "reader_path.identity_presence.claim_anchored.3",
+          "label": "reader_path.identity_presence.claim_anchored.3",
+          "primary_factor_ids": [
+            "position.sun"
+          ],
+          "source_claim_ids": [
+            "claim.position.sun.1"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.identity_presence.claim_anchored.3",
+            "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+            "reasoned.reader_path.body_energy_routine.claim_anchored.2",
+            "coverage.mandatory.12"
+          ]
+        },
+        {
+          "path_id": "reader_path.identity_presence.house_ruler_context.4",
+          "label": "reader_path.identity_presence.house_ruler_context.4",
+          "primary_factor_ids": [
+            "house_ruler.placidus.1",
+            "position.jupiter"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.1",
+            "claim.position.jupiter.6"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.1.jupiter"
+          ]
+        },
+        {
+          "path_id": "reader_path.identity_presence.topical_placidus.5",
+          "label": "reader_path.identity_presence.topical_placidus.5",
+          "primary_factor_ids": [
+            "house.placidus.saturn"
+          ],
+          "source_claim_ids": [
+            "claim.house.saturn.4"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.identity_presence.topical_placidus.5",
+            "reasoned.reader_path.desire_action_limits.topical_placidus.6",
+            "reasoned.reader_path.body_energy_routine.topical_placidus.5"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "emotional_security",
+      "domain_heading": "Mundo emocional e segurança interna",
+      "paths": [
+        {
+          "path_id": "reader_path.emotional_security.claim_anchored.1",
+          "label": "reader_path.emotional_security.claim_anchored.1",
+          "primary_factor_ids": [
+            "position.moon"
+          ],
+          "source_claim_ids": [
+            "claim.position.moon.2"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.emotional_security.claim_anchored.1",
+            "coverage.mandatory.8"
+          ]
+        },
+        {
+          "path_id": "reader_path.emotional_security.house_ruler_context.2",
+          "label": "reader_path.emotional_security.house_ruler_context.2",
+          "primary_factor_ids": [
+            "house_ruler.placidus.4",
+            "position.mercury"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.4",
+            "claim.position.mercury.3"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.4.mercury"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "mind_learning_communication",
+      "domain_heading": "Mente, aprendizagem, decisões e comunicação",
+      "paths": [
+        {
+          "path_id": "reader_path.mind_learning_communication.claim_anchored.1",
+          "label": "reader_path.mind_learning_communication.claim_anchored.1",
+          "primary_factor_ids": [
+            "position.mercury"
+          ],
+          "source_claim_ids": [
+            "claim.position.mercury.3"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.mind_learning_communication.claim_anchored.1",
+            "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.2",
+            "coverage.mandatory.7"
+          ]
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.house_ruler_context.2",
+          "label": "reader_path.mind_learning_communication.house_ruler_context.2",
+          "primary_factor_ids": [
+            "house_ruler.placidus.3",
+            "position.venus"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.3",
+            "claim.position.venus.4"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.3.venus"
+          ]
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.house_ruler_context.3",
+          "label": "reader_path.mind_learning_communication.house_ruler_context.3",
+          "primary_factor_ids": [
+            "house_ruler.placidus.9",
+            "position.mars"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.9",
+            "claim.position.mars.5"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.9.mars"
+          ]
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.topical_placidus.4",
+          "label": "reader_path.mind_learning_communication.topical_placidus.4",
+          "primary_factor_ids": [
+            "house.placidus.jupiter"
+          ],
+          "source_claim_ids": [
+            "claim.house.jupiter.2"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.mind_learning_communication.topical_placidus.4",
+            "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.5"
+          ]
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.topical_placidus.5",
+          "label": "reader_path.mind_learning_communication.topical_placidus.5",
+          "primary_factor_ids": [
+            "house.placidus.pluto"
+          ],
+          "source_claim_ids": [
+            "claim.house.pluto.3"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.mind_learning_communication.topical_placidus.5",
+            "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.6"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "desire_action_limits",
+      "domain_heading": "Desejo, ação, assertividade e limites",
+      "paths": [
+        {
+          "path_id": "reader_path.desire_action_limits.claim_anchored.1",
+          "label": "reader_path.desire_action_limits.claim_anchored.1",
+          "primary_factor_ids": [
+            "position.mars"
+          ],
+          "source_claim_ids": [
+            "claim.position.mars.5"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.desire_action_limits.claim_anchored.1",
+            "reasoned.reader_path.body_energy_routine.claim_anchored.1",
+            "coverage.mandatory.6"
+          ]
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.house_ruler_context.2",
+          "label": "reader_path.desire_action_limits.house_ruler_context.2",
+          "primary_factor_ids": [
+            "house_ruler.placidus.1",
+            "position.jupiter"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.1",
+            "claim.position.jupiter.6"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.1.jupiter"
+          ]
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.house_ruler_context.3",
+          "label": "reader_path.desire_action_limits.house_ruler_context.3",
+          "primary_factor_ids": [
+            "house_ruler.placidus.6",
+            "position.moon"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.6",
+            "claim.position.moon.2"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.6.moon"
+          ]
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.house_ruler_context.4",
+          "label": "reader_path.desire_action_limits.house_ruler_context.4",
+          "primary_factor_ids": [
+            "house_ruler.placidus.8",
+            "position.venus"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.8",
+            "claim.position.venus.4"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.8.venus"
+          ]
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.topical_placidus.5",
+          "label": "reader_path.desire_action_limits.topical_placidus.5",
+          "primary_factor_ids": [
+            "house.placidus.mars"
+          ],
+          "source_claim_ids": [
+            "claim.house.mars.9"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.desire_action_limits.topical_placidus.5",
+            "reasoned.reader_path.love_intimacy_relationship.topical_placidus.5",
+            "reasoned.reader_path.money_resources_value.topical_placidus.3",
+            "reasoned.reader_path.shadow_defenses_patterns.topical_placidus.9",
+            "reasoned.transformation"
+          ]
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.topical_placidus.6",
+          "label": "reader_path.desire_action_limits.topical_placidus.6",
+          "primary_factor_ids": [
+            "house.placidus.saturn"
+          ],
+          "source_claim_ids": [
+            "claim.house.saturn.4"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.identity_presence.topical_placidus.5",
+            "reasoned.reader_path.desire_action_limits.topical_placidus.6",
+            "reasoned.reader_path.body_energy_routine.topical_placidus.5"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "love_intimacy_relationship",
+      "domain_heading": "Amor, atração, intimidade e relacionamentos",
+      "paths": [
+        {
+          "path_id": "reader_path.love_intimacy_relationship.claim_anchored.1",
+          "label": "reader_path.love_intimacy_relationship.claim_anchored.1",
+          "primary_factor_ids": [
+            "position.venus"
+          ],
+          "source_claim_ids": [
+            "claim.position.venus.4"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.love_intimacy_relationship.claim_anchored.1",
+            "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+            "coverage.mandatory.14"
+          ]
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.2",
+          "label": "reader_path.love_intimacy_relationship.house_ruler_context.2",
+          "primary_factor_ids": [
+            "house_ruler.placidus.5",
+            "position.moon"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.5",
+            "claim.position.moon.2"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.5.moon"
+          ]
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.3",
+          "label": "reader_path.love_intimacy_relationship.house_ruler_context.3",
+          "primary_factor_ids": [
+            "house_ruler.placidus.7",
+            "position.mercury"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.7",
+            "claim.position.mercury.3"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.7.mercury"
+          ]
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.4",
+          "label": "reader_path.love_intimacy_relationship.house_ruler_context.4",
+          "primary_factor_ids": [
+            "house_ruler.placidus.8",
+            "position.venus"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.8",
+            "claim.position.venus.4"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.8.venus"
+          ]
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.5",
+          "label": "reader_path.love_intimacy_relationship.topical_placidus.5",
+          "primary_factor_ids": [
+            "house.placidus.mars"
+          ],
+          "source_claim_ids": [
+            "claim.house.mars.9"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.desire_action_limits.topical_placidus.5",
+            "reasoned.reader_path.love_intimacy_relationship.topical_placidus.5",
+            "reasoned.reader_path.money_resources_value.topical_placidus.3",
+            "reasoned.reader_path.shadow_defenses_patterns.topical_placidus.9",
+            "reasoned.transformation"
+          ]
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.6",
+          "label": "reader_path.love_intimacy_relationship.topical_placidus.6",
+          "primary_factor_ids": [
+            "house.placidus.mercury"
+          ],
+          "source_claim_ids": [
+            "claim.house.mercury.10"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.love_intimacy_relationship.topical_placidus.6"
+          ]
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.7",
+          "label": "reader_path.love_intimacy_relationship.topical_placidus.7",
+          "primary_factor_ids": [
+            "house.placidus.sun"
+          ],
+          "source_claim_ids": [
+            "claim.house.sun.6"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.love_intimacy_relationship.topical_placidus.7"
+          ]
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.8",
+          "label": "reader_path.love_intimacy_relationship.topical_placidus.8",
+          "primary_factor_ids": [
+            "house.placidus.venus"
+          ],
+          "source_claim_ids": [
+            "claim.house.venus.8"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.love_intimacy_relationship.topical_placidus.8"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "creativity_pleasure_aliveness",
+      "domain_heading": "Criatividade, prazer, brincadeira e vitalidade",
+      "paths": [
+        {
+          "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+          "label": "reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+          "primary_factor_ids": [
+            "position.sun"
+          ],
+          "source_claim_ids": [
+            "claim.position.sun.1"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.identity_presence.claim_anchored.3",
+            "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+            "reasoned.reader_path.body_energy_routine.claim_anchored.2",
+            "coverage.mandatory.12"
+          ]
+        },
+        {
+          "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+          "label": "reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+          "primary_factor_ids": [
+            "position.venus"
+          ],
+          "source_claim_ids": [
+            "claim.position.venus.4"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.love_intimacy_relationship.claim_anchored.1",
+            "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+            "coverage.mandatory.14"
+          ]
+        },
+        {
+          "path_id": "reader_path.creativity_pleasure_aliveness.house_ruler_context.3",
+          "label": "reader_path.creativity_pleasure_aliveness.house_ruler_context.3",
+          "primary_factor_ids": [
+            "house_ruler.placidus.5",
+            "position.moon"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.5",
+            "claim.position.moon.2"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.5.moon"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "work_vocation_visibility",
+      "domain_heading": "Trabalho, vocação, contribuição e visibilidade",
+      "paths": [
+        {
+          "path_id": "reader_path.work_vocation_visibility.house_ruler_context.1",
+          "label": "reader_path.work_vocation_visibility.house_ruler_context.1",
+          "primary_factor_ids": [
+            "house_ruler.placidus.10",
+            "position.jupiter"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.10",
+            "claim.position.jupiter.6"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.10.jupiter"
+          ]
+        },
+        {
+          "path_id": "reader_path.work_vocation_visibility.house_ruler_context.2",
+          "label": "reader_path.work_vocation_visibility.house_ruler_context.2",
+          "primary_factor_ids": [
+            "house_ruler.placidus.6",
+            "position.moon"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.6",
+            "claim.position.moon.2"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.6.moon"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "money_resources_value",
+      "domain_heading": "Dinheiro, recursos, valor e segurança material",
+      "paths": [
+        {
+          "path_id": "reader_path.money_resources_value.house_ruler_context.1",
+          "label": "reader_path.money_resources_value.house_ruler_context.1",
+          "primary_factor_ids": [
+            "house_ruler.placidus.2",
+            "position.mars"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.2",
+            "claim.position.mars.5"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.2.mars"
+          ]
+        },
+        {
+          "path_id": "reader_path.money_resources_value.house_ruler_context.2",
+          "label": "reader_path.money_resources_value.house_ruler_context.2",
+          "primary_factor_ids": [
+            "house_ruler.placidus.8",
+            "position.venus"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.8",
+            "claim.position.venus.4"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.8.venus"
+          ]
+        },
+        {
+          "path_id": "reader_path.money_resources_value.topical_placidus.3",
+          "label": "reader_path.money_resources_value.topical_placidus.3",
+          "primary_factor_ids": [
+            "house.placidus.mars"
+          ],
+          "source_claim_ids": [
+            "claim.house.mars.9"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.desire_action_limits.topical_placidus.5",
+            "reasoned.reader_path.love_intimacy_relationship.topical_placidus.5",
+            "reasoned.reader_path.money_resources_value.topical_placidus.3",
+            "reasoned.reader_path.shadow_defenses_patterns.topical_placidus.9",
+            "reasoned.transformation"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "body_energy_routine",
+      "domain_heading": "Corpo, energia, rotina e sustentabilidade",
+      "paths": [
+        {
+          "path_id": "reader_path.body_energy_routine.claim_anchored.1",
+          "label": "reader_path.body_energy_routine.claim_anchored.1",
+          "primary_factor_ids": [
+            "position.mars"
+          ],
+          "source_claim_ids": [
+            "claim.position.mars.5"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.desire_action_limits.claim_anchored.1",
+            "reasoned.reader_path.body_energy_routine.claim_anchored.1",
+            "coverage.mandatory.6"
+          ]
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.claim_anchored.2",
+          "label": "reader_path.body_energy_routine.claim_anchored.2",
+          "primary_factor_ids": [
+            "position.sun"
+          ],
+          "source_claim_ids": [
+            "claim.position.sun.1"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.identity_presence.claim_anchored.3",
+            "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+            "reasoned.reader_path.body_energy_routine.claim_anchored.2",
+            "coverage.mandatory.12"
+          ]
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.house_ruler_context.3",
+          "label": "reader_path.body_energy_routine.house_ruler_context.3",
+          "primary_factor_ids": [
+            "house_ruler.placidus.1",
+            "position.jupiter"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.1",
+            "claim.position.jupiter.6"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.1.jupiter"
+          ]
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.house_ruler_context.4",
+          "label": "reader_path.body_energy_routine.house_ruler_context.4",
+          "primary_factor_ids": [
+            "house_ruler.placidus.6",
+            "position.moon"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.6",
+            "claim.position.moon.2"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.6.moon"
+          ]
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.topical_placidus.5",
+          "label": "reader_path.body_energy_routine.topical_placidus.5",
+          "primary_factor_ids": [
+            "house.placidus.saturn"
+          ],
+          "source_claim_ids": [
+            "claim.house.saturn.4"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.identity_presence.topical_placidus.5",
+            "reasoned.reader_path.desire_action_limits.topical_placidus.6",
+            "reasoned.reader_path.body_energy_routine.topical_placidus.5"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "home_roots_private_life",
+      "domain_heading": "Lar, raízes, família e vida privada",
+      "paths": [
+        {
+          "path_id": "reader_path.home_roots_private_life.house_ruler_context.1",
+          "label": "reader_path.home_roots_private_life.house_ruler_context.1",
+          "primary_factor_ids": [
+            "house_ruler.placidus.4",
+            "position.mercury"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.4",
+            "claim.position.mercury.3"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.4.mercury"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "friendship_community_belonging",
+      "domain_heading": "Amizade, comunidade e pertencimento",
+      "paths": [
+        {
+          "path_id": "reader_path.friendship_community_belonging.house_ruler_context.1",
+          "label": "reader_path.friendship_community_belonging.house_ruler_context.1",
+          "primary_factor_ids": [
+            "house_ruler.placidus.11",
+            "position.saturn"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.11",
+            "claim.position.saturn.7"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.11.saturn"
+          ]
+        },
+        {
+          "path_id": "reader_path.friendship_community_belonging.topical_placidus.2",
+          "label": "reader_path.friendship_community_belonging.topical_placidus.2",
+          "primary_factor_ids": [
+            "house.placidus.neptune"
+          ],
+          "source_claim_ids": [
+            "claim.house.neptune.7"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.friendship_community_belonging.topical_placidus.2"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "meaning_beliefs_horizon",
+      "domain_heading": "Sentido, crenças, estudo e horizonte",
+      "paths": [
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.1",
+          "label": "reader_path.meaning_beliefs_horizon.claim_anchored.1",
+          "primary_factor_ids": [
+            "position.jupiter"
+          ],
+          "source_claim_ids": [
+            "claim.position.jupiter.6"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.1",
+            "coverage.mandatory.5"
+          ]
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.2",
+          "label": "reader_path.meaning_beliefs_horizon.claim_anchored.2",
+          "primary_factor_ids": [
+            "position.mercury"
+          ],
+          "source_claim_ids": [
+            "claim.position.mercury.3"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.mind_learning_communication.claim_anchored.1",
+            "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.2",
+            "coverage.mandatory.7"
+          ]
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.3",
+          "label": "reader_path.meaning_beliefs_horizon.house_ruler_context.3",
+          "primary_factor_ids": [
+            "house_ruler.placidus.3",
+            "position.venus"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.3",
+            "claim.position.venus.4"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.3.venus"
+          ]
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.4",
+          "label": "reader_path.meaning_beliefs_horizon.house_ruler_context.4",
+          "primary_factor_ids": [
+            "house_ruler.placidus.9",
+            "position.mars"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.9",
+            "claim.position.mars.5"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.9.mars"
+          ]
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.5",
+          "label": "reader_path.meaning_beliefs_horizon.topical_placidus.5",
+          "primary_factor_ids": [
+            "house.placidus.jupiter"
+          ],
+          "source_claim_ids": [
+            "claim.house.jupiter.2"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.mind_learning_communication.topical_placidus.4",
+            "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.5"
+          ]
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.6",
+          "label": "reader_path.meaning_beliefs_horizon.topical_placidus.6",
+          "primary_factor_ids": [
+            "house.placidus.pluto"
+          ],
+          "source_claim_ids": [
+            "claim.house.pluto.3"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.mind_learning_communication.topical_placidus.5",
+            "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.6"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "shadow_defenses_patterns",
+      "domain_heading": "Sombra, defesas, poder e padrões repetitivos",
+      "paths": [
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.1",
+          "label": "reader_path.shadow_defenses_patterns.claim_anchored.1",
+          "primary_factor_ids": [
+            "aspect.moon_square_jupiter"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.12"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.1",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.1",
+            "reasoned.security_exploration"
+          ]
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.2",
+          "label": "reader_path.shadow_defenses_patterns.claim_anchored.2",
+          "primary_factor_ids": [
+            "aspect.mars_square_uranus"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.17"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.2",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.2",
+            "reasoned.stability_change"
+          ]
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.3",
+          "label": "reader_path.shadow_defenses_patterns.claim_anchored.3",
+          "primary_factor_ids": [
+            "aspect.sun_opposition_moon"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.21"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.3",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.3"
+          ]
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+          "label": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+          "primary_factor_ids": [
+            "aspect.sun_opposition_saturn"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.23"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.4",
+            "reasoned.competence"
+          ]
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.5",
+          "label": "reader_path.shadow_defenses_patterns.claim_anchored.5",
+          "primary_factor_ids": [
+            "aspect.venus_opposition_saturn"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.5"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.5",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.5",
+            "reasoned.competence"
+          ]
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.6",
+          "label": "reader_path.shadow_defenses_patterns.claim_anchored.6",
+          "primary_factor_ids": [
+            "aspect.moon_quincunx_mercury"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.9"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.6",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.6"
+          ]
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.7",
+          "label": "reader_path.shadow_defenses_patterns.house_ruler_context.7",
+          "primary_factor_ids": [
+            "house_ruler.placidus.12",
+            "position.saturn"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.12",
+            "claim.position.saturn.7"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.12.saturn"
+          ]
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.8",
+          "label": "reader_path.shadow_defenses_patterns.house_ruler_context.8",
+          "primary_factor_ids": [
+            "house_ruler.placidus.8",
+            "position.venus"
+          ],
+          "source_claim_ids": [
+            "claim.house_ruler.placidus.8",
+            "claim.position.venus.4"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.8.venus"
+          ]
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.9",
+          "label": "reader_path.shadow_defenses_patterns.topical_placidus.9",
+          "primary_factor_ids": [
+            "house.placidus.mars"
+          ],
+          "source_claim_ids": [
+            "claim.house.mars.9"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.desire_action_limits.topical_placidus.5",
+            "reasoned.reader_path.love_intimacy_relationship.topical_placidus.5",
+            "reasoned.reader_path.money_resources_value.topical_placidus.3",
+            "reasoned.reader_path.shadow_defenses_patterns.topical_placidus.9",
+            "reasoned.transformation"
+          ]
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.10",
+          "label": "reader_path.shadow_defenses_patterns.topical_placidus.10",
+          "primary_factor_ids": [
+            "house.placidus.moon"
+          ],
+          "source_claim_ids": [
+            "claim.house.moon.5"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.topical_placidus.10"
+          ]
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.11",
+          "label": "reader_path.shadow_defenses_patterns.topical_placidus.11",
+          "primary_factor_ids": [
+            "house.placidus.uranus"
+          ],
+          "source_claim_ids": [
+            "claim.house.uranus.1"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.topical_placidus.11"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "growth_through_contradiction",
+      "domain_heading": "Crescimento através da contradição",
+      "paths": [
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.1",
+          "label": "reader_path.growth_through_contradiction.claim_anchored.1",
+          "primary_factor_ids": [
+            "aspect.moon_square_jupiter"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.12"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.1",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.1",
+            "reasoned.security_exploration"
+          ]
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.2",
+          "label": "reader_path.growth_through_contradiction.claim_anchored.2",
+          "primary_factor_ids": [
+            "aspect.mars_square_uranus"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.17"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.2",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.2",
+            "reasoned.stability_change"
+          ]
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.3",
+          "label": "reader_path.growth_through_contradiction.claim_anchored.3",
+          "primary_factor_ids": [
+            "aspect.sun_opposition_moon"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.21"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.3",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.3"
+          ]
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.4",
+          "label": "reader_path.growth_through_contradiction.claim_anchored.4",
+          "primary_factor_ids": [
+            "aspect.sun_opposition_saturn"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.23"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.4",
+            "reasoned.competence"
+          ]
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.5",
+          "label": "reader_path.growth_through_contradiction.claim_anchored.5",
+          "primary_factor_ids": [
+            "aspect.venus_opposition_saturn"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.5"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.5",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.5",
+            "reasoned.competence"
+          ]
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.6",
+          "label": "reader_path.growth_through_contradiction.claim_anchored.6",
+          "primary_factor_ids": [
+            "aspect.moon_quincunx_mercury"
+          ],
+          "source_claim_ids": [
+            "claim.aspect.9"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "integrated_pattern",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.6",
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.6"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "developmental_direction",
+      "domain_heading": "Direção de desenvolvimento",
+      "paths": [
+        {
+          "path_id": "reader_path.developmental_direction.claim_anchored.1",
+          "label": "reader_path.developmental_direction.claim_anchored.1",
+          "primary_factor_ids": [
+            "node_axis.natal"
+          ],
+          "source_claim_ids": [
+            "claim.node_axis.1"
+          ],
+          "timing_ids": [],
+          "reasoning_class": "single_structural_factor",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.developmental_direction.claim_anchored.1",
+            "coverage.mandatory.4"
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "active_life_chapter",
+      "domain_heading": "O capítulo de vida ativo agora",
+      "paths": [
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.1",
+          "label": "reader_path.active_life_chapter.timing_natal.1",
+          "primary_factor_ids": [
+            "position.jupiter",
+            "timing.secondary_progression.mercury.sextile.jupiter.4"
+          ],
+          "source_claim_ids": [
+            "claim.position.jupiter.6"
+          ],
+          "timing_ids": [
+            "timing.secondary_progression.mercury.sextile.jupiter.4"
+          ],
+          "reasoning_class": "natal_timing_interaction",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.1"
+          ]
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.2",
+          "label": "reader_path.active_life_chapter.timing_natal.2",
+          "primary_factor_ids": [
+            "position.mercury",
+            "timing.activation.saturn_mercury_opposition_direct_branch_1"
+          ],
+          "source_claim_ids": [
+            "claim.position.mercury.3"
+          ],
+          "timing_ids": [
+            "timing.activation.saturn_mercury_opposition_direct_branch_1"
+          ],
+          "reasoning_class": "natal_timing_interaction",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.2"
+          ]
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.3",
+          "label": "reader_path.active_life_chapter.timing_natal.3",
+          "primary_factor_ids": [
+            "position.mercury",
+            "timing.profection.2025-09-08"
+          ],
+          "source_claim_ids": [
+            "claim.position.mercury.3"
+          ],
+          "timing_ids": [
+            "timing.profection.2025-09-08"
+          ],
+          "reasoning_class": "natal_timing_interaction",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.3"
+          ]
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.4",
+          "label": "reader_path.active_life_chapter.timing_natal.4",
+          "primary_factor_ids": [
+            "position.neptune",
+            "timing.activation.jupiter_neptune_quincunx_negative_branch_1"
+          ],
+          "source_claim_ids": [
+            "claim.position.neptune.9"
+          ],
+          "timing_ids": [
+            "timing.activation.jupiter_neptune_quincunx_negative_branch_1"
+          ],
+          "reasoning_class": "natal_timing_interaction",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.4"
+          ]
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.5",
+          "label": "reader_path.active_life_chapter.timing_natal.5",
+          "primary_factor_ids": [
+            "position.neptune",
+            "timing.secondary_progression.mars.sextile.neptune.3"
+          ],
+          "source_claim_ids": [
+            "claim.position.neptune.9"
+          ],
+          "timing_ids": [
+            "timing.secondary_progression.mars.sextile.neptune.3"
+          ],
+          "reasoning_class": "natal_timing_interaction",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.5"
+          ]
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.6",
+          "label": "reader_path.active_life_chapter.timing_natal.6",
+          "primary_factor_ids": [
+            "position.neptune",
+            "timing.solar_arc.saturn.square.neptune.3"
+          ],
+          "source_claim_ids": [
+            "claim.position.neptune.9"
+          ],
+          "timing_ids": [
+            "timing.solar_arc.saturn.square.neptune.3"
+          ],
+          "reasoning_class": "natal_timing_interaction",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.6"
+          ]
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.7",
+          "label": "reader_path.active_life_chapter.timing_natal.7",
+          "primary_factor_ids": [
+            "position.pluto",
+            "timing.secondary_progression.moon.quincunx.pluto.2"
+          ],
+          "source_claim_ids": [
+            "claim.position.pluto.10"
+          ],
+          "timing_ids": [
+            "timing.secondary_progression.moon.quincunx.pluto.2"
+          ],
+          "reasoning_class": "natal_timing_interaction",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.7"
+          ]
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.8",
+          "label": "reader_path.active_life_chapter.timing_natal.8",
+          "primary_factor_ids": [
+            "position.saturn",
+            "timing.activation.jupiter_saturn_quincunx_positive_branch_1"
+          ],
+          "source_claim_ids": [
+            "claim.position.saturn.7"
+          ],
+          "timing_ids": [
+            "timing.activation.jupiter_saturn_quincunx_positive_branch_1"
+          ],
+          "reasoning_class": "natal_timing_interaction",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.8"
+          ]
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.9",
+          "label": "reader_path.active_life_chapter.timing_natal.9",
+          "primary_factor_ids": [
+            "position.saturn",
+            "timing.secondary_progression.mars.trine.saturn.1"
+          ],
+          "source_claim_ids": [
+            "claim.position.saturn.7"
+          ],
+          "timing_ids": [
+            "timing.secondary_progression.mars.trine.saturn.1"
+          ],
+          "reasoning_class": "natal_timing_interaction",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.9"
+          ]
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.10",
+          "label": "reader_path.active_life_chapter.timing_natal.10",
+          "primary_factor_ids": [
+            "position.saturn",
+            "timing.solar_arc.venus.quincunx.saturn.2"
+          ],
+          "source_claim_ids": [
+            "claim.position.saturn.7"
+          ],
+          "timing_ids": [
+            "timing.solar_arc.venus.quincunx.saturn.2"
+          ],
+          "reasoning_class": "natal_timing_interaction",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.10"
+          ]
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.11",
+          "label": "reader_path.active_life_chapter.timing_natal.11",
+          "primary_factor_ids": [
+            "position.uranus",
+            "timing.activation.jupiter_uranus_quincunx_negative_branch_1"
+          ],
+          "source_claim_ids": [
+            "claim.position.uranus.8"
+          ],
+          "timing_ids": [
+            "timing.activation.jupiter_uranus_quincunx_negative_branch_1"
+          ],
+          "reasoning_class": "natal_timing_interaction",
+          "candidate_synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.11"
+          ]
+        }
+      ]
+    }
+  ],
+  "catalog_sha256": "3c14ec7e2e078ee5abe8efda6c39e0ea82f91c598390762ae9bf96ba60583185"
+}

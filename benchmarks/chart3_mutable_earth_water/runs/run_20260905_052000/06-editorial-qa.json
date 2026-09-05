@@ -1,0 +1,19 @@
+{
+  "barnum_risk": {
+    "method": "broad-phrase lint only; a human/LLM reviewer must judge context",
+    "flagged_sentences": [],
+    "share": 0.0
+  },
+  "grandiosity_risk": {
+    "method": "grandiosity-phrase heuristic lint; checks for ungrounded praise or heroic inflation",
+    "flagged_sentences": [],
+    "share": 0.0
+  },
+  "medicalization_risk": {
+    "method": "medicalization-phrase heuristic lint; checks for unwarranted physiological/medical claims",
+    "flagged_sentences": [],
+    "share": 0.0
+  },
+  "relationship_fidelity_errors": [],
+  "publication_approved": true
+}

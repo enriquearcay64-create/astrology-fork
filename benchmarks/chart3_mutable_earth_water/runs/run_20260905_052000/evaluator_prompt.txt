@@ -1,0 +1,48 @@
+=== INDEPENDENT ADVERSARIAL BLIND EVALUATION PROTOCOL ===
+You are an independent, adversarial psychometric and editorial auditor.
+You have been given two anonymized astrological reports for the same birth chart (Chart 3: Synthetic Mutable Earth/Water, born 1995-09-08T19:45:00 Europe/Paris):
+- Report_Terra: benchmarks/chart3_mutable_earth_water/runs/run_20260905_052000/Report_Terra.md
+- Report_Aqua: benchmarks/chart3_mutable_earth_water/runs/run_20260905_052000/Report_Aqua.md
+
+You do not know which report corresponds to which system version. You must evaluate them with total impartiality, strict adversarial scrutiny, and rigorous psychometric standards.
+
+=== 17 EVALUATION DIMENSIONS ===
+1. Astrological synthesis (whole-chart relational integration vs isolated placement inventory)
+2. Specificity / resistance to Barnum effect (unique individual mechanisms vs vague generalities)
+3. Psychological depth (authentic internal dilemmas, defenses, and motivations)
+4. Clarity for an intelligent 18+ reader with no astrology training
+5. Concrete human mechanisms (internal psychodynamics, tension poles, choices)
+6. Quality and grounding of hypothetical examples (micro-scenes grounded in chart evidence vs generic life stories)
+7. Distinction between integrated / defensive / excessive expressions
+8. Usefulness of self-observation questions (active reflection vs rhetorical dead-ends)
+9. Chapter distinctiveness (each domain feeling distinct vs recurring formulas)
+10. Repetition (rhetorical loops, repeated vocabulary, or re-explaining the same placement)
+11. Hierarchy of dominant mechanisms (weight given to Ascendant ruler, stelliums, angularity vs flat democracy)
+12. Timing precision and usefulness (technically explicit, non-fatalistic, concrete windows, peak vs window distinction)
+13. Quality of final integration (higher-order whole-person organization vs mere summary/metadata)
+14. Naturalness of prose (literary flow, human cadence vs dry compliance or AI jargon)
+15. Template smell (predictable section scaffolds, mechanical triplets, uppercase tags)
+16. Unsupported psychological claims (calibrated hypotheses vs unwarranted certainty or medicalization)
+17. Overall reader value
+
+=== EVALUATION METHODOLOGY ===
+FOR EVERY DIMENSION:
+1. Assign an integer score (1-10) to Report_Terra and Report_Aqua.
+2. Provide a rigorous, detailed justification for the score of each report.
+3. Provide DIRECT QUOTED TEXT SNIPPETS from each report as empirical evidence.
+4. Highlight concrete weaknesses, formulaic patterns, or structural shortcomings.
+
+ADVERSARIAL FALSIFICATION CHECKS:
+- Check the opening ("## Arquitetura do mapa"): does each report synthesize relational axes or inventory planets one by one?
+- Check house ruler circuits (Casas 4, 5, 6, 8, 9, 10, 11, 12): does each report actively articulate dispositors and house rulers?
+- Check body/routine (Casa 6 & Ascendente): is it strictly rhythm/sustainability or does it make physiological/medical claims?
+- Check timing: are dates, windows, and techniques accurate, non-fatalistic, and mathematically grounded?
+- Check for template smell: are chapters trapped in rigid triplets, identical opening formulas, or monotonous paragraph counts?
+
+CONCLUDE WITH:
+- Comprehensive summary score table across all 17 dimensions (including Total /170 and Mean /10).
+- Direct head-to-head qualitative comparison.
+- Explicit determination: Is any report materially superior to the other, or are they lateral variations?
+
+Write your complete evaluation report to:
+benchmarks/chart3_mutable_earth_water/runs/run_20260905_052000/evaluation_final.md

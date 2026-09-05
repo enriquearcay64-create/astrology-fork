@@ -1,0 +1,1608 @@
+{
+  "packet_id": "3fd3322a7055d282f61bb3a1e4f934f4ae3fc76d4e3ab41178688ea22e81350a",
+  "premium_handoff_contract_version": "1.4",
+  "premium_handoff_contract": {
+    "version": "1.4",
+    "author_bundle_required_fields": [
+      "packet_id",
+      "premium_handoff_contract_version",
+      "premium_handoff_contract",
+      "premium_handoff_contract_sha256",
+      "prepared_chart_signature_sha256",
+      "prepared_signature_synthesis_sha256",
+      "reader_domain_manifest_sha256",
+      "reasoned_syntheses",
+      "draft_report",
+      "narrative_block_sources",
+      "reader_sections",
+      "reader_selection_plan",
+      "reader_selection_plan_sha256",
+      "synthesis_bundle_sha256",
+      "draft_report_sha256"
+    ],
+    "reviewer_bundle_required_fields": [
+      "packet_id",
+      "premium_handoff_contract_version",
+      "premium_handoff_contract",
+      "premium_handoff_contract_sha256",
+      "prepared_chart_signature_sha256",
+      "prepared_signature_synthesis_sha256",
+      "reader_domain_manifest_sha256",
+      "synthesis_bundle_sha256",
+      "reviewed_draft_sha256",
+      "verdict",
+      "corrections_made",
+      "remaining_warnings",
+      "final_report",
+      "final_report_sha256",
+      "narrative_block_sources",
+      "reader_sections",
+      "reader_selection_plan",
+      "reader_selection_plan_sha256",
+      "regeneration_request"
+    ],
+    "author_bundle_exact_shape": true,
+    "reviewer_bundle_exact_shape": true,
+    "source_row_required_fields": [
+      "narrative_block_sha256",
+      "synthesis_ids",
+      "claim_ids",
+      "timing_ids"
+    ],
+    "paragraph_source_fields": "legacy_replay_only",
+    "narrative_block_source_rules": {
+      "paragraph": "one source row; direct Claim or synthesis mode; coverage-eligible",
+      "list_item": "one source row; ordered or unordered; direct Claim or synthesis mode; coverage-eligible",
+      "subheading": "one approved synthesis-only source row; timing IDs must belong to cited syntheses; coverage-ineligible"
+    },
+    "reader_block_parser": {
+      "recognised": [
+        "paragraph",
+        "list_item",
+        "subheading",
+        "canonical_h2",
+        "unavailable_notice"
+      ],
+      "list_styles": [
+        "ordered",
+        "unordered"
+      ],
+      "forbidden": [
+        "nested_list",
+        "table",
+        "blockquote",
+        "html_block",
+        "code_fence",
+        "separator",
+        "metadata",
+        "h4_plus"
+      ],
+      "attached_bullets": "split into independent list_item blocks"
+    },
+    "reasoned_synthesis_fields": [
+      "id",
+      "observation",
+      "primary_factors",
+      "modifiers",
+      "counterweights",
+      "reasoning_class",
+      "confidence_within_astrological_model",
+      "possible_expressions",
+      "alternative_reading",
+      "prohibited_extensions",
+      "source_claim_ids",
+      "source_motif_ids",
+      "composition_operations",
+      "derived_propositions",
+      "narrative_moves",
+      "derived_claim",
+      "verification_errors",
+      "status"
+    ],
+    "reader_section_rules": {
+      "shape": "opening_plus_exactly_16_canonical_domains_plus_integration",
+      "ownership": "every authored paragraph, list item and subheading hash belongs to exactly one section in physical order",
+      "opening_and_integration_fields": [
+        "narrative_block_sha256s"
+      ],
+      "domain_fields": [
+        "domain_id",
+        "narrative_block_sha256s"
+      ],
+      "unavailable": "exact_deterministic_notice and no authored blocks or source rows",
+      "non_prose": "headings, unavailable notices, tables, metadata and separators never satisfy coverage",
+      "fixed_reader_introduction": {
+        "sha256_by_language": {
+          "pt": "6ca69979ad28d1b47feccac52f3b0c1fda5805a6d745d5accf77ad49ee276c98",
+          "en": "7f8ce3f467e49b00cae9928ba7200086e5c2cfaf7688a5e6b371e7e0749b97fe"
+        },
+        "selection": "reader_domain_manifest_locale",
+        "location": "after_an_optional_single_document_title_and_before_the_canonical_opening",
+        "provenance": "fixed_product_copy_excluded_from_narrative_block_sources_and_reader_section_ownership"
+      }
+    },
+    "timing_domain_rule": "paragraph_and_list_item timing_ids equal the cited timing synthesis IDs and each ID matches a satisfied timing_natal path; subheading timing IDs belong to cited syntheses",
+    "reader_selection_rule": "every_available_legal_path_is_accounted_once_by_represented_merged_with_represented_or_omitted_no_distinct_reader_value; only paragraph and list_item provenance participates",
+    "reader_selection_plan_version": "1.0",
+    "prepared_signature_rule": "pre_domain_chart_signature_and_its_deterministic_synthesis_basis_are_frozen",
+    "publication_authority_rule": "original_prepared_handoff_binds_packet_signature_synthesis_basis_manifest_and_materialized_timing_parameters"
+  },
+  "premium_handoff_contract_sha256": "1cabf661698e2fc608d3f8ddfbb49e4b7826d7071d092f2aea4be130613e1e79",
+  "prepared_chart_signature_sha256": "5ea49d6d1f882ae0e6a25129df896f91125e7dc372cfaf905918913bf94996ac",
+  "prepared_signature_synthesis_sha256": "69b93354b1b31ae0273392b4333ef94c874aa4313c21f47b0e74a1afed291fa8",
+  "reader_domain_manifest_sha256": "5b403bea71167c4d04052d4542936c192c55a9cf85a19688c46dd4bd70a987d2",
+  "synthesis_bundle_sha256": "456697da8a53c6b6c830cd4ee09027ad6eae89e607bddf51307bf506217d18b0",
+  "reviewed_draft_sha256": "1c94169d9f746f83fbba344a09f7ab978acda2f58f4b179973e5822f011262db",
+  "verdict": "approved",
+  "corrections_made": [
+    "Audited technical precision and affirmative multi-paragraph cadence."
+  ],
+  "remaining_warnings": [],
+  "final_report": "### Como entrar nesta leitura\n\nAntes de começar, talvez valha deixar uma coisa de lado: a ideia de que este relatório precisa dizer exatamente quem você é.\n\nUm mapa natal não é uma definição. Ele é mais parecido com um espelho — um jeito de observar algumas das forças, necessidades e contradições que podem existir dentro de você e perceber como elas se encontram na sua forma particular de viver.\n\nAo longo destas páginas, algumas coisas talvez tragam uma sensação imediata de reconhecimento. Outras podem tocar um lugar que você ainda não tinha colocado em palavras. E algumas simplesmente podem não fazer sentido agora. Não há nada de errado nisso. Você não precisa se encaixar na leitura; é a leitura que precisa encontrar alguma verdade na sua experiência.\n\nTambém é natural encontrar aparentes contradições. Podemos querer proximidade e liberdade, segurança e movimento, reconhecimento e silêncio. Essas partes não precisam se anular. Muitas vezes, conhecer-se melhor começa justamente quando deixamos de tentar escolher qual delas é a “verdadeira” e começamos a perceber como todas encontram espaço dentro da mesma pessoa.\n\nPor isso, tente não ler este relatório com a sensação de que precisa entender, concordar ou resolver tudo de uma vez. Dê um pouco de espaço às palavras. Perceba onde algo desperta curiosidade, onde existe identificação, onde surge resistência ou até onde você sente vontade de parar por um momento.\n\nÀ medida que avançar, talvez alguns temas comecem a aparecer de formas diferentes em áreas diferentes da sua vida. É aí que esta leitura ganha profundidade. Mais do que uma coleção de características, o objetivo é ajudar você a perceber os fios que conectam sua maneira de sentir, pensar, amar, escolher, criar, trabalhar e encontrar direção.\n\nE, acima de tudo, lembre-se de que nenhuma interpretação conhece sua história melhor do que você.\n\nA astrologia pode oferecer uma linguagem para enxergar algo por outro ângulo, mas você continua sendo a pessoa que sabe o que viveu, o que sente e o que faz sentido para a sua vida.\n\nLeia com abertura, mas também com liberdade.\n\nFique com aquilo que ilumina alguma coisa em você. O restante pode simplesmente permanecer como uma pergunta.\n\n## Arquitetura do mapa\n\nA arquitetura deste mapa se organiza a partir de uma dinâmica relacional viva entre a sensibilidade permeável da água e o apuro discriminativo da terra mutável. O Ascendente em Peixes delineia uma porta de entrada sutil e receptiva para a presença, orientada simbolicamente por Júpiter, regente do mapa e regente do ascendente, domiciliado em Sagitário na nona casa, próximo ao Meio do Céu, o que introduz um vetor de busca por horizonte ético, estudo aprofundado e perspectiva filosófica. Em contraponto a essa dispersão de longo alcance, um expressivo stellium na sétima casa concentra o Sol em Virgem, Mercúrio em Libra e Vênus em Virgem, ancorando a vitalidade na clareza dos acordos interpessoais, na cooperação cotidiana e na escuta dialógica. O eixo nodal articula o Nodo Norte em Libra na oitava casa ao Nodo Sul em Áries na segunda casa, apontando para o amadurecimento que substitui o impulso defensivo de autossuficiência isolada pela coragem de pactuar cumplicidades profundas. Fornecendo consistência e determinação anímica a essa estrutura, Marte em Escorpião na oitava casa atua como uma âncora de reserva estratégica, resiliência psicológica e firmeza silenciosa diante das oscilações das circunstâncias externas.\n\nEssa ordenação ganha tensão estrutural na oposição que atravessa o eixo relacional e existencial entre o dia e a noite anímica. O Sol em Virgem na sétima casa se opõe à Lua em Peixes na décima segunda casa, equilibrando a exigência de método prático no contato com o outro e a necessidade imperiosa de refúgio interior, imaginação silenciosa e decantação emocional. Essa polaridade se intensifica com a presença de Saturno em Peixes na primeira casa, que forma oposição a Vênus em Virgem na sétima casa, inserindo um filtro de sobriedade, prudência e discernimento maduro nos afetos. Ao mesmo tempo, Saturno em Peixes estabelece um sextil com Netuno em Capricórnio na décima primeira casa, e Vênus estabelece um trígono com Netuno, permitindo que a delicadeza empática encontre canais estáveis de materialização e responsabilidade compartilhada. Com Urano em Capricórnio na décima segunda casa e Netuno em Capricórnio na décima primeira casa em aspecto de sextil com Plutão em Escorpião na nona casa, e Marte em quadratura com Urano, as transformações de cosmovisão se processam de forma contínua, fazendo com que o discernimento minucioso e a compaixão silenciosa coexistam em equilíbrio dinâmico.\n\n## Identidade central e presença\n\nEntrar em um ambiente novo raramente envolve impor uma marca ruidosa ou disputar o centro das atenções. O modo de chegada ao mundo é marcado por uma percepção quase atmosférica: antes de dar o primeiro passo ou articular uma opinião enfática, você tende a absorver a temperatura emocional da sala, notando as correntes invisíveis que circulam entre as pessoas. Essa permeabilidade sutil é informada pelo Ascendente em Peixes na primeira casa, que atua como uma porta de entrada porosa e empática. No entanto, essa maleabilidade não significa ausência de contorno: seu regente tradicional, Júpiter, encontra-se domiciliado em Sagitário na nona casa, próximo ao Meio do Céu, o que ancora a sua forma de se orientar em princípios éticos firmes, numa sede genuína de conhecimento e numa constante busca por horizontes mais amplos.\n\nA vivência dessa presença ganha densidade realista com a presença de Saturno em Peixes na primeira casa. Essa influência introduz uma sobriedade silenciosa, um filtro protetor que impede que a sua sensibilidade se desmanche na convivência cotidiana. Em momentos de tensão ou cobrança repentina, a reação defensiva pode despontar como um retraimento cauteloso ou uma hesitação reflexiva em sustentar o próprio espaço perante o grupo, como se recuar para a neutralidade parecesse o caminho mais seguro para evitar atritos. A falsa solução reside muitas vezes em assumir uma postura complacente demais, adaptando-se às conveniências alheias enquanto guarda para si as próprias convicções. O risco sob estresse é permitir que a prudência saturnina se converta em uma barreira de timidez que esconde o seu verdadeiro valor.\n\nUma hipótese fecunda para auto-observação se manifesta em reuniões de trabalho ou círculos sociais desconhecidos: você consegue distinguir quando o seu silêncio inicial decorre de uma escuta verdadeiramente atenta e quando ele se torna uma hesitação defensiva em expressar a sua autoridade pessoal? Reconhecer que a sua generosidade receptiva ganha verdadeiro respeito quando acompanhada pela clareza de propósito de Júpiter permite que a contenção cautelosa se transforme em uma presença tranquila, segura e autêntica. De que modo você pode permitir que a sua voz seja ouvida sem perder a gentileza que lhe é própria?\n\n## Mundo emocional e segurança interna\n\nA digestão das experiências cotidianas não ocorre de forma mecânica nem responde a comandos lógicos imediatos; ela segue um ritmo de maré que exige recolhimento e decantação silenciosa. Com a Lua em Peixes acolhida na décima segunda casa, a regulação do seu bem-estar depende fundamentalmente de intervalos em que seja possível despressurizar o excesso de estímulos acumulados no contato com o mundo exterior. Esse território anímico profundo dialoga com a quarta casa em Gêmeos, cujo regente Mercúrio em Libra se localiza na sétima casa: a estabilidade emocional ganha sustentação quando impressões difusas e sentimentos sutis encontram canais de diálogo respeitoso, onde colocar em palavras claras o que se passa por dentro atua como uma ponte tranquilizadora entre o refúgio íntimo e a convivência.\n\nNo entanto, o equilíbrio desse mundo privado é desafiado pela oposição que a Lua em Peixes forma com o Sol em Virgem na sétima casa, bem como pela quadratura com Júpiter em Sagitário na nona casa e pelo quincúncio com Mercúrio em Libra. Sob sobrecarga relacional ou quando a rotina externa exige uma atenção excessivamente funcional, pode surgir uma fratura interior entre a cobrança de permanecer prestativo para os outros e a urgência visceral de fugir para o isolamento. Diante de conflitos ou vulnerabilidades expostas, a resposta defensiva tende a oscilar entre o mutismo impenetrável e uma racionalização diplomática rápida, tentando justificar logicamente desconfortos que demandam apenas tempo de descanso e acolhimento silencioso. A fuga para promessas grandiosas ou a busca por justificativas teóricas muitas vezes apenas mascara a necessidade simples de admitir o cansaço.\n\nUma microcena reveladora acontece após um dia intenso de compromissos: você percebe se o seu primeiro movimento é continuar atendendo às demandas dos outros por receio de parecer indisponível, até que a exaustão o obrigue a se fechar bruscamente? Uma pergunta essencial para a sua segurança interna é: que espaços protegidos você tem reservado no seu cotidiano para permitir que as suas águas emocionais se assentem em paz, sem a obrigação de produzir explicações ou atender a expectativas externas? Reconhecer a legitimidade das suas pausas emocionais é a chave para não transformar a empatia em um cativeiro interior.\n\n## Mente, aprendizagem, decisões e comunicação\n\nO pensamento não opera por impulsos precipitados, mas por uma busca paciente de clareza conceitual, elegância expressiva e utilidade prática. Esse estilo cognitivo é ancorado pela terceira casa em Touro, regida por Vênus em Virgem na sétima casa, estabelecendo uma preferência por raciocínios bem fundamentados, passos consistentes e verificação minuciosa dos fatos. Em paralelo, a presença de Mercúrio em Libra na sétima casa, em aspecto de sextil com Júpiter em Sagitário na nona casa, adiciona à mente uma facilidade natural para o diálogo equitativo, para a mediação de disputas e para a síntese entre perspectivas aparentemente divergentes. O intelecto aprecia o método bem estruturado e a beleza da palavra dita com polidez.\n\nEm situações práticas de tomada de decisão compartilhada, esse arranjo reflexivo se desdobra em comportamentos reconhecíveis:\n- Diante de um impasse em um projeto profissional, a sua tendência é analisar cuidadosamente os argumentos de cada parte envolvida antes de formular um parecer definitivo.\n- Ao redigir uma proposta delicada ou responder a uma mensagem controversa, você prefere lapidar a linguagem várias vezes para assegurar que a intenção seja transmitida com exatidão e consideração mútua.\n- A hesitação reflexiva se resolve de modo fecundo quando a visão panorâmica de Júpiter vem em socorro do apuro de detalhes de Mercúrio.\n\nContudo, sob pressão de prazos ou diante do receio de gerar desconforto interpessoal, a atitude defensiva pode se traduzir em procrastinação analítica, adiando definições indispensáveis na esperança de alcançar um consenso perfeito que agrade a todos. Quando isso ocorre, o acúmulo de ponderações pode gerar desgaste e paralisar a ação prática. Uma pista valiosa para a sua auto-observação consiste em notar o momento exato em que a ponderação saudável dá lugar ao receio da divergência: você tem sustentado a sua clareza mental como uma forma genuína de consideração pelo outro, lembrando que dizer o que precisa ser dito com gentileza é o alicerce mais seguro para a confiança recíproca?\n\n## Desejo, ação, assertividade e limites\n\nA força motriz que impulsiona as suas decisões e sustenta os seus contornos não se manifesta por arroubos pirotécnicos ou confrontos ruidosos. Posicionado com firmeza no signo de sua regência tradicional, Marte em Escorpião na oitava casa confere uma assertividade estratégica, silenciosa e dotada de profunda tenacidade anímica. A energia de ação opera como uma corrente de profundidade: em vez de gastar forças em disputas periféricas, você tende a observar a dinâmica das circunstâncias, aguardando com paciência o momento mais oportuno para intervir de forma decisiva e duradoura. Há uma percepção aguçada de onde reside o verdadeiro poder em cada interação.\n\nEssa contenção assertiva se torna visível na forma como limites pessoais são estabelecidos e preservados diante de invasões indevidas:\n- Quando alguém tenta ultrapassar um acordo prévio ou impor uma exigência sem o seu consentimento, a sua reação não costuma ser a exaltação ou o bate-boca imediato.\n- Você tende a sustentar uma pausa sóbria, medir a situação e formular uma recusa firme e serena, que se faz respeitar pela consistência com que é sustentada.\n- Essa demarcação ganha força porque não precisa recorrer ao excesso de palavras para deixar evidente onde o seu espaço começa e termina.\n\nEntretanto, a quadratura entre Marte e Urano em Capricórnio na décima segunda casa, somada à conjunção com o Nodo Norte em Libra na oitava casa, indica que a retenção prolongada de incômodos traz riscos expressivos. Se você engolir frustrações repetidamente para evitar confrontos cotidianos, a pressão acumulada pode culminar em rompimentos súbitos ou em frios distanciamentos que deixam as outras pessoas desorientadas. A falsa solução reside em acreditar que a vigilância desconfiada é a única salvaguarda contra o abuso. Uma pergunta transformadora para esse circuito é: você tem comunicado os seus desacordos e limites enquanto as situações ainda são flexíveis, ou costuma aguardar até que a paciência atinja o ponto de ruptura?\n\n## Amor, atração, intimidade e relacionamentos\n\nO vínculo afetivo e a convivência íntima são vivenciados como uma construção diária de cumplicidade, apoio tangível e aprimoramento recíproco. Com o Descendente em Virgem e a sétima casa acolhendo o Sol em Virgem, Vênus em Virgem e Mercúrio em Libra, o amor se expressa não em promessas pomposas ou arroubos teatrais, mas na consistência dos detalhes: na pontualidade do cuidado, na lealdade prática, no respeito aos acordos pactuados e na capacidade de escutar atentamente as necessidades de quem caminha ao seu lado. O afeto ganha solidez quando há reciprocidade concreta e disposição mútua para tornar a vida diária mais harmoniosa e organizada.\n\nTodavia, a oposição exata entre Vênus em Virgem na sétima casa e Saturno em Peixes na primeira casa introduz um ponto de profunda vulnerabilidade psíquica. O medo silencioso da imperfeição, do desapontamento ou da rejeição pode despertar uma reação defensiva marcada pelo excesso de autossuficiência e pelo escrutínio crítico das menores falhas da parceria, construindo barreiras analíticas para justificar um recuo afetivo preventivo. Outra falsa solução habitual é tentar se tornar indispensável por meio da prestação ininterrupta de serviços e auxílio funcional, nutrindo a fantasia inconsciente de que a utilidade perfeita será uma garantia definitiva contra o abandono. Essa dinâmica pode transformar a convivência em um contrato de deveres onde a espontaneidade se apaga.\n\nA chave de harmonização desse polo emerge através do trígono de Vênus com Netuno em Capricórnio na décima primeira casa, que convida a suavizar o rigor crítico em favor de uma ternura desarmada. Em momentos em que a frustração com o parceiro ameaçar fechar o seu coração, uma reflexão iluminadora é: você está julgando as imperfeições da outra pessoa para se proteger do medo de ser vulnerável? Permitir que o amor seja vivido na sua realidade humana e imperfeita, sem exigir garantias absolutas, pode libertar a parceria da frieza do dever e devolver a ela o calor da generosidade mútua. O que aconteceria se você acolhesse o afeto pelo que ele é, e não pelo que ele produz?\n\n## Criatividade, prazer, brincadeira e vitalidade\n\nA criatividade e o senso de alegria vital bebem de duas fontes complementares neste mapa. Por um lado, o Sol e Vênus em Virgem na sétima casa direcionam o impulso expressivo para o apuro técnico, o refinamento estético e o prazer de conceber soluções funcionais que tragam harmonia e bem-estar à vida das pessoas. Há uma satisfação autêntica em dominar uma prática, resolver enigmas complexos com elegância ou dar forma concreta a algo que antes era apenas uma ideia abstrata. O prazer se conecta ao cuidado e ao sentido de utilidade do que é criado, encontrando alegria no detalhe bem executado.\n\nPor outro lado, a quinta casa tem cúspide em Câncer e é regida pela Lua em Peixes na décima segunda casa, revelando que a nascente mais profunda da imaginação poética e do brincar restaurador mora no silêncio e no contato com o inconsciente. A imaginação não floresce sob cobrança de produtividade; ela exige momentos descompromissados de devaneio, contemplação da natureza, música ou recolhimento sem plateia e sem julgamento de valor. Quando o crivo crítico de Virgem se impõe com severidade excessiva, o risco é subordinar o lazer a metas rígidas ou abandonar projetos artísticos no início pelo receio de que o resultado não corresponda ao padrão idealizado. A alegria corre o risco de ser catalogada como uma perda de tempo produtivo.\n\nUma pergunta viva para devolver leveza ao seu cotidiano: quando foi a última vez em que você se permitiu fazer algo puramente pelo prazer de experimentar, sem qualquer preocupação em ser útil, perfeito ou avaliado por terceiros? Ao autorizar a sensibilidade lúdica da Lua em Peixes a fluir sem a vigilância severa da autocrítica, a sua expressão criativa deixa de ser uma tarefa a cumprir e recupera a sua verdadeira natureza de celebração espontânea da vida. Como seria criar um espaço na sua semana dedicado exclusivamente à gratuidade da brincadeira e da contemplação desarmada?\n\n## Trabalho, vocação, contribuição e visibilidade\n\nA vocação profissional e o impacto público ganham asas com o Meio do Céu em Sagitário na décima casa, regido por Júpiter no próprio signo de Sagitário na nona casa. Essa configuração aponta para uma trajetória em que o trabalho se torna verdadeiramente gratificante quando transcende a mera execução rotineira e se conecta a horizontes amplos de transmissão de conhecimento, assessoria ética, pensamento estratégico e articulação de projetos de longo alcance. Há uma facilidade para orientar diretrizes gerais e inspirar confiança em torno de princípios éticos claros e visões promissoras que ampliem as fronteiras de atuação.\n\nPor sua vez, a sustentação diária dessa vocação depende diretamente da sexta casa em Câncer, cuja regente, a Lua em Peixes na décima segunda casa, vincula a eficiência operacional à qualidade humana do ambiente de trabalho e ao respeito aos limites psíquicos da rotina. Você não consegue produzir com excelência em ambientes emocionalmente hostis ou mecanizados; a produtividade demanda acolhimento, coerência e pausas protegidas para reorganização interna. Sob estresse, o perigo defensivo é se refugiar em planejamentos grandiosos demais enquanto se negligenciam as etapas práticas do dia a dia, ou sobrecarregar a sexta casa assumindo responsabilidades alheias até a beira da exaustão. Quando isso acontece, o entusiasmo inicial é substituído por um desânimo silencioso.\n\nO florescimento profissional acontece quando a visão de horizonte de Júpiter se alia ao cuidado atencioso da sexta casa e ao rigor analítico do stellium na sétima casa. Diante dos seus projetos de carreira atuais, cabe uma auto-observação cuidadosa: você tem dosado a grandeza dos seus objetivos com o cuidado prático que a sua dedicação diária exige? Proteger o equilíbrio do seu ritmo de trabalho é a condição indispensável para que as suas aspirações de longo alcance se materializem com solidez no mundo concreto. De que maneira você pode estruturar sua rotina de modo que sua visão ampla permaneça conectada à execução sustentável?\n\n## Dinheiro, recursos, valor e segurança material\n\nGarantir a própria subsistência carrega, neste mapa, o desafio dinâmico de conciliar uma forte necessidade de autonomia com a inteligência estratégica de negociar em conjunto. A segunda casa em Áries traduz um impulso primário de independência econômica, impulsionando a conquista de rendimentos por meio da iniciativa individual e da coragem de desbravar caminhos materiais por esforço próprio. Contudo, seu regente Marte se localiza em Escorpião na oitava casa, deslocando a solidez patrimonial para a capacidade de gerir alianças estratégicas, investimentos conjuntos, passivos e reservas de segurança com discrição e perspicácia tática.\n\nEsse circuito se completa através da oitava casa em Libra, governada por Vênus em Virgem na sétima casa. Essa regência venusiana em signo de terra exige transparência absoluta em contratos, discriminação detalhada de responsabilidades e reciprocidade estrita em qualquer sociedade comercial ou partilha financeira. Sob estresse ou receio de escassez, a reação defensiva pode se manifestar como um isolamento financeiro radical, recusando sociedades legítimas por medo de perder a soberania, ou como uma fixação excessiva em miudezas orçamentárias que trava a expansão de iniciativas maiores. O medo da dependência material pode se tornar uma armilha que bloqueia oportunidades fecundas de colaboração.\n\nUma cena típica de negociação ilustra essa dinâmica: ao discutir cláusulas de um acordo ou divisão de bens, você percebe se a sua tendência inicial é ocultar as suas intenções por desconfiança preventiva, ou se consegue colocar critérios claros de benefício mútuo sobre a mesa? Uma hipótese fecunda para reflexão é: em que medida a sua prudência com o dinheiro funciona como proteção saudável, e em que ponto ela pode estar se tornando uma barreira que impede a construção de parcerias financeiras prósperas e transformadoras? Como seria construir acordos onde o ganho material caminhe junto com a confiança mútua e a transparência ética?\n\n## Corpo, energia, rotina e sustentabilidade\n\nO ritmo diário e a sustentabilidade da disposição física e mental não funcionam como uma engrenagem linear que responde a cobranças mecânicas de produtividade ininterrupta. A relação com a rotina e o equilíbrio pessoal é guiada pela sexta casa em Câncer, governada pela Lua em Peixes na décima segunda casa, em estreito diálogo com o Ascendente em Peixes e a presença disciplinadora de Saturno em Peixes na primeira casa. Essa conjunção simbólica indica com clareza que a sua disponibilidade para a atividade varia conforme as oscilações de sensibilidade ao ambiente e a quantidade de demandas acumuladas. A sustentabilidade diária depende do cultivo de uma relação lúcida e paciente com os próprios limites de energia.\n\nSob a influência da autocrítica de Virgem e da gravidade de Saturno na primeira casa, uma tentação psicológica recorrente é exigir de si um rendimento constante e sem concessões, ignorando sinais iniciais de cansaço para cumprir compromissos assumidos com terceiros. A reação defensiva sob pressão costuma ser a insistência estoica na sobrecarga, funcionando na base do puro dever até que a dispersão da atenção ou o desânimo forcem uma desaceleração involuntária. Como a Lua rege a sexta casa a partir da décima segunda, a recuperação da clareza e da disposição requer silêncio, desaceleração sensorial e tempo livre de demandas sociais. A tentativa de ignorar essa necessidade gera apenas um esgotamento silencioso da motivação.\n\nAlgumas práticas conscientes de autorregulação favorecem grandemente esse arranjo:\n- Estabelecer pequenas pausas protegidas durante a jornada de trabalho, dedicadas exclusivamente à quietude mental e à respiração tranquila, longe de telas e estímulos sonoros.\n- Reconhecer os períodos do dia em que a concentração atinge o seu pico natural, ajustando a distribuição de tarefas em vez de forçar o foco em momentos de cansaço.\n- Encarar as pausas e o descanso como partes estruturantes do trabalho bem-feito, e não como concessões culposas.\nAo respeitar essa modulação entre empenho e restauração, a sua capacidade de realização se mantém consistente sem cobrar o preço do desgaste silencioso. Como você pode reorganizar a sua agenda para que o repouso preventivo faça parte legítima da sua rotina?\n\n*Esta reflexão simbólica apoia a auto-observação de ritmos diários, pausas e sustentabilidade de esforço, sem finalidade clínica ou prescritiva médica.*\n\n## Lar, raízes, família e vida privada\n\nNem todo refúgio privado se constrói apenas levantando paredes; para você, o sentimento de estar em casa nasce onde o pensamento pode finalmente desacelerar e respirar sem vigilância. O território doméstico e a vida privada representam muito mais do que um abrigo físico contra a agitação externa; constituem um espaço de descompressão intelectual e pacificação interior. Com a quarta casa em Gêmeos, cuja cúspide se alinha ao Fundo do Céu, e seu regente Mercúrio em Libra posicionado na sétima casa, o lar ganha vida através da circulação serena de ideias, de leituras enriquecedoras e de conversas leves e afetuosas. O sentimento de pertencimento íntimo está profundamente atrelado à qualidade da escuta e ao respeito mútuo cultivados entre as paredes da casa.\n\nEm momentos de desajuste ou conflito familiar, contudo, a presença de Lilith em Gêmeos na quarta casa pode evocar uma inquietação silenciosa diante de cobranças emocionais sufocantes ou tradições rígidas que tentam engessar a sua liberdade individual. Sob pressão, a resposta defensiva característica consiste em intelectualizar os desconfortos, recorrendo a análises lógicas ou discussões abstratas para não entrar em contato com mágoas e vulnerabilidades mais profundas. A falsa solução envolve manter as conversas no plano estritamente diplomático, evitando tocar nos pontos sensíveis para não abalar a harmonia externa. Esse distanciamento polido pode gerar a sensação de solidão acompanhada dentro da própria casa.\n\nUma cena cotidiana para observação acontece durante conversas delicadas no ambiente familiar: você consegue acolher os sentimentos alheios e expressar as suas próprias necessidades íntimas com franqueza serena, sem se refugiar em defesas verbais? Quando o discernimento mental de Gêmeos se alia à sensibilidade acolhedora, a sua casa se transforma em um verdadeiro porto de repouso e nutrição anímica para a sua caminhada. O que precisa ser dito com carinho para que o seu espaço doméstico se torne verdadeiramente um santuário de paz?\n\n## Amizade, comunidade e pertencimento\n\nExiste uma seletividade quase instintiva na maneira como você franqueia o acesso ao seu círculo social mais íntimo. A inserção social e a escolha dos laços de amizade são moldadas pela décima primeira casa em Capricórnio, regida por Saturno em Peixes na primeira casa, e marcada pela presença inspiradora de Netuno em Capricórnio. Esse arranjo afasta qualquer interesse por contatos descartáveis, popularidade superficial ou confraternizações vazias. O pertencimento comunitário é encarado com sobriedade, exigindo tempo, coerência de atitudes e lealdade comprovada em momentos difíceis para que a intimidade se estabeleça com segurança e respeito mútuo.\n\nA convivência entre Saturno e Netuno nessa área traduz uma aspiração ética refinada a causas coletivas com propósito humanitário, ao mesmo tempo em que desperta uma prudência protetora contra promessas grupais ingênuas ou dinâmicas que desrespeitem fronteiras individuais. Em caso de desilusão com amigos ou frustração em projetos comunitários, a resposta defensiva costuma ser o fechamento hermético e o isolamento cético, concluindo que é preferível caminhar sozinho a se expor à irresponsabilidade de terceiros. A desconfiança preventiva pode privá-lo de redes legítimas de solidariedade e aprendizado compartilhado, convertendo a prudência em solidão desnecessária.\n\nUma reflexão lúcida sobre a sua vida em grupo envolve examinar a dosagem da sua reserva: em que momentos a sua cautela está protegendo o seu tempo com sabedoria, e quando ela se torna uma desconfiança excessiva que o afasta da partilha afetiva sincera? Cultivar um círculo restrito, porém sólido, de amigos maduros com quem seja possível rir, desabafar e construir projetos comuns permite que a sua vocação para a fraternidade floresça em bases confiáveis. Você tem permitido que amigos leais se aproximem do seu mundo interior nos momentos em que você também precisa de apoio, ou insiste em sustentar sozinho todas as suas incertezas?\n\n## Sentido, crenças, estudo e horizonte\n\nPerguntas sobre o propósito das coisas e a coerência ética da vida não surgem na sua mente como curiosidades passageiras; elas operam como um centro de gravidade indispensável. A busca por significado existencial e a elaboração de uma cosmovisão consistente constituem um eixo pulsante de vitalidade neste mapa. A nona casa tem cúspide em Escorpião, sendo regida por Marte em Escorpião na oitava casa, e acolhe Júpiter domiciliado em Sagitário e Plutão em Escorpião. Essa concentração de profundidade e expansão confere um apetite incansável por compreender a raiz dos fenômenos humanos, rejeitando dogmas pré-fabricados e exigindo que qualquer filosofia de vida passe pelo crivo da experiência real, da transformação psicológica e da integridade moral.\n\nA presença expansiva de Júpiter em Sagitário na nona casa confere uma inclinação espontânea para o estudo aprofundado, viagens culturais, sabedorias tradicionais e a síntese integradora de diversas correntes do pensamento. Contudo, sob tensão ideológica ou quando certezas fundamentais são colocadas em xeque, o influxo escorpiano e plutoniano pode suscitar uma reação defensiva de absolutismo conceitual ou uma defesa intransigente de princípios, utilizando o conhecimento teórico como uma armadura para não lidar com incertezas imediatas. O risco é transformar a busca por verdade em um tribunal inflexível que desqualifica a dúvida sincera alheia para preservar a própria segurança interior.\n\nVale observar o que acontece quando você se depara com visões de mundo radicalmente diferentes das suas: o seu impulso é contrapor imediatamente argumentos teóricos para reafirmar a sua posição, ou você consegue escutar com curiosidade o que aquela perspectiva tem a ensinar? O horizonte de sabedoria se expande verdadeiramente quando a convicção filosófica se mantém humilde e permeável ao diálogo transformador com a vida cotidiana. Como a sua visão de mundo pode se tornar mais acolhedora sem abrir mão do rigor ético que a sustenta? De que maneira a busca por sentido pode iluminar os seus passos práticos sem afastá-lo da beleza simples do presente?\n\n## Sombra, defesas, poder e padrões repetitivos\n\nA armadilha psicológica mais sutil costuma se esconder não naquilo que você faz de forma agressiva, mas na dificuldade silenciosa de pronunciar um 'não' tempestivo quando a empatia fala mais alto que os seus limites. Os nós cegos da psique e os mecanismos automáticos de defesa encontram seu epicentro na décima segunda casa com cúspide em Capricórnio, governada por Saturno em Peixes na primeira casa, e abrigando a Lua em Peixes e Urano em Capricórnio. A fricção se intensifica pelas oposições que Saturno e a Lua formam com o Sol, Mercúrio e Vênus em Virgem e Libra na sétima casa. O dilema inconsciente central gira em torno da dificuldade de admitir e sustentar limites pessoais imediatos perante solicitações externas.\n\nEsse padrão defensivo costuma se desenrolar em um roteiro bastante característico:\n- Diante de um pedido insistente de ajuda ou de uma nova responsabilidade relacional, o seu impulso inicial, motivado pela empatia e pelo desejo de ser útil, é concordar prontamente com generosidade.\n- Conforme o compromisso avança e a rotina fica sobrecarregada, a sensação de aprisionamento e peso silencioso começa a crescer por dentro, despertando o desejo urgente de fugir daquela obrigação.\n- O ciclo se conclui muitas vezes com um recuo desconfortável, um cancelamento em cima da hora ou um ressentimento mudo por ter aceitado condições que violavam a sua própria capacidade de entrega.\n\nA desativação desse circuito exige desmistificar a crença inconsciente de que dizer \"não\" ou manifestar dúvida representaria egoísmo ou abandono do outro. Uma prática concreta de libertação psíquica consiste em conceder a si mesmo uma pausa deliberada antes de responder a pedidos importantes: experimentar dizer frases como \"preciso verificar a minha disponibilidade antes de confirmar\" pode transformar o padrão de fuga tardia em uma demarcação de limites lúcida, serena e respeitosa. O que mudaria na sua paz mental se você acolhesse o seu primeiro sinal de hesitação como um limite legítimo e necessário?\n\n## Crescimento através da contradição\n\nO principal vetor de maturação e sabedoria psicológica reside na polaridade dialética entre a vastidão indiferenciada da água em Peixes e o discernimento rigoroso da terra em Virgem. Enquanto o polo de Peixes — presente no Ascendente, em Saturno e na Lua — aspira à compaixão universal, à permeabilidade empática e à dissolução das fronteiras em favor da totalidade, o polo de Virgem — ancorado no Sol e em Vênus na sétima casa — recorda com insistência que a vida prática demanda limites claros, método, ordem, precisão e verificação de resultados. A quadratura da Lua em Peixes com Júpiter em Sagitário amplifica essa tensão, oscilando por vezes entre a utopia grandiosa e o desencanto com a realidade comezinha.\n\nO erro comum consiste em encarar esses dois impulsos como inimigos irreconciliáveis, forçando-se a escolher entre uma frieza crítica esterilizante e uma entrega compassiva desprovida de critérios. O verdadeiro amadurecimento surge da compreensão de que estabelecer fronteiras conscientes não é o oposto do amor, mas a condição indispensável para que ele permaneça vivo e saudável no tempo. Sem discernimento prático, a compaixão se perde em sobrecarga caótica; sem sensibilidade anímica, o método se transforma em uma couraça de exigências desumanas. O desafio permanente é não permitir que a busca pela perfeição anule a beleza do que é possível realizar hoje.\n\nQuando a capacidade analítica de Virgem deixa de atuar como tribunal de autocensura e se coloca a serviço do cuidado real, e quando a delicadeza empática de Peixes encontra ancoragem em hábitos consistentes e acordos claros, essa contradição estrutural se transmuta em uma lucidez existencial equilibrada: a capacidade de oferecer ajuda prática e eficaz sem jamais desrespeitar o mistério e a vulnerabilidade da alma humana. Como você pode unir a precisão do seu olhar atento à generosidade do seu coração sem exigir de si mesmo o fardo da perfeição absoluta?\n\n## Direção de desenvolvimento\n\nO mapa traça o seu caminho de expansão consciente através da travessia entre o repertório conhecido do Nodo Sul em Áries na segunda casa e o convite evolutivo do Nodo Norte em Libra na oitava casa, em conjunção estreita com Marte em Escorpião. A zona de conforto habitual assenta-se no impulso defensivo de autossuficiência absoluta: resolver tudo com as próprias forças, reter o controle exclusivo dos recursos materiais e emocionais e cultivar uma vigilância constante para não depender de terceiros, temendo que qualquer vulnerabilidade compartilhada comprometa a sua soberania pessoal. Essa couraça precoce protegeu a autonomia, mas pode se tornar uma prisão de isolamento.\n\nA direção de amadurecimento indicada por Libra na oitava casa estimula a coragem de cruzar essa fronteira e experimentar novas modalidades de colaboração e confiança mútua:\n- Permitir-se construir alianças profundas onde recursos intelectuais, afetivos e materiais sejam pactuados com equidade e transparência.\n- Tolerar a incerteza saudável inerente à intimidade genuína, abandonando a ilusão de que a segurança depende de viver dentro de uma fortaleza isolada.\n- Desenvolver a arte de negociar acordos justos e assumir responsabilidades conjuntas, descobrindo que compartilhar poder e apoio mútuo multiplica as forças em vez de subtraí-las.\n\nEssa evolução não pede que você renuncie à determinação, à bravura ou à iniciativa de Áries, mas sim que coloque essas qualidades a serviço de parcerias sólidas, regeneradoras e duradouras. A coragem ariana deixa de ser um instrumento de isolamento defensivo e passa a ser o motor que sustenta compromissos corajosos e transformadores. Onde na sua vida você ainda tem insistido em lutar batalhas solitárias apenas para evitar o desconforto de estender a mão e pactuar uma cooperação verdadeira? O que se abriria no seu caminho se você se permitisse confiar na força de uma aliança equilibrada?\n\n## O capítulo de vida ativo agora\n\nO momento presente mobiliza com particular nitidez a esfera das parcerias, dos acordos contratuais e da reorganização consciente dos compromissos mútuos. Sob a lente da técnica tradicional das profecções anuais de Signo Inteiro, a passagem pelos trinta anos de idade ativa a sétima casa em Virgem, estabelecendo Mercúrio em Libra como o Senhor do Ano ao longo do ciclo que se estende de 8 de setembro de 2025 a 8 de setembro de 2026. Essa ativação profectada direciona o foco da vida para a revisão atenta dos vínculos de convivência e trabalho, exigindo ponderar com lucidez a equidade das trocas cotidianas e a consistência das palavras empenhadas.\n\nEsse cenário profectado converge de forma significativa com o céu contemporâneo de trânsitos maiores. Destaca-se com especial relevo o trânsito maior de Saturno em Áries em oposição a Mercúrio natal em Libra (em 12°28'), que se estende ao longo da janela entre 4 de setembro de 2026 e 4 de março de 2027. É fundamental compreender com precisão técnica a natureza desse movimento: essa passagem direta culmina na máxima aproximação simbólica em 19 de setembro de 2026 (com orbe mínimo de 0,00°, menor que um minuto de arco) e realiza uma segunda aproximação em 23 de fevereiro de 2027. Essa oposição atua como uma pressão contínua de amadurecimento e sobriedade, convidando a podar excessos verbais, desacelerar decisões precipitadas e renegociar contratos com base na realidade factual.\n\nEm contraponto estabilizador a essa contenção mental, os trânsitos de Júpiter oferecem aberturas decisivas de crescimento e enraizamento:\n- O trânsito de Júpiter em aspecto de sextil com o Fundo do Céu natal e trígono com o Meio do Céu natal se aperfeiçoa com exatidão em 17 de setembro de 2026, oferecendo sustentação anímica para conciliar ambições públicas e segurança íntima.\n- Em outubro e dezembro de 2026, Júpiter estabelece aspectos de quincúncio exatos: com Saturno natal em 14 de outubro de 2026, com Netuno natal em 21 de outubro de 2026 e com Urano natal em 2 de dezembro de 2026, solicitando ajustes sutis e flexíveis entre grandes planos e limites operacionais cotidianos.\n- No campo das progressões secundárias ativas, convergem contatos de alta precisão técnica: Marte progredido em trígono a Saturno natal (orbe de 0,31°), Lua progredida em quincúncio a Plutão natal (orbe de 0,56°), Marte progredido em sextil a Netuno natal (orbe de 0,86°) e Mercúrio progredido em sextil a Júpiter natal (orbe de 0,90°), favorecendo o amadurecimento intelectual, a firmeza estratégica e a capacidade de visão ética de longo prazo.\n\nLonge de representarem profecias deterministas ou acontecimentos forçados, essas configurações temporais compõem um período fecundo de auto-observação e escolhas conscientes. Elas convidam você a descartar concessões automáticas que já não honram o seu discernimento e a firmar alianças maduras, onde a clareza dos acordos caminhe de mãos dadas com a liberdade de ser quem você é. Que alianças e compromissos você deseja amadurecer nesta fase para que as suas palavras e ações estejam em plena harmonia?\n\n## Integração final\n\nAo contemplar a totalidade deste mapa como uma paisagem viva e integrada, torna-se evidente que a sua força motriz não reside na eliminação das suas polaridades, mas na capacidade de fazê-las cooperar com sabedoria. A sensibilidade intuitiva e permeável do Ascendente e da Lua em Peixes não é uma fragilidade a ser reprimida, assim como o apuro analítico e o perfeccionismo do stellium em Virgem na sétima casa não são defeitos a serem combatidos. Eles são duas asas de uma mesma ave: a compaixão que acolhe o mundo e a inteligência prática que sabe como cuidar dele na realidade cotidiana.\n\nQuando a visão ética de Júpiter em Sagitário guia as suas escolhas de longo alcance e a determinação corajosa de Marte em Escorpião protege as suas reservas estratégicas, você descobre que a verdadeira solidez pessoal não depende de couraças defensivas, mas da coerência entre o que se sente no silêncio e o que se constrói no encontro com o outro. A maturidade se consolida quando cada gesto de dedicação aos que o cercam começa sempre pelo respeito inegociável ao seu próprio ritmo, e quando a sua busca por excelência se despoja da rigidez para se transformar em um instrumento de acolhimento e amor generoso.\n\nUma pergunta essencial para orientar a sua auto-observação permanente é: de que maneira você pode colocar o seu discernimento detalhado e a sua generosidade a serviço do mundo, sem exigir de si uma perfeição inalcançável e sem abrir mão do silêncio necessário para que a sua sensibilidade continue respirando com vitalidade?\n",
+  "final_report_sha256": "7d5e245cccc22610adee55f69bff79b0370e4d36d86fa7416fb6b2d85bab76af",
+  "narrative_block_sources": [
+    {
+      "narrative_block_sha256": "8472d371a31e31cbfc64d36eb64553a0dcd206802d7e585d5109b5bb12b501e5",
+      "synthesis_ids": [
+        "reasoned.spirituality",
+        "coverage.mandatory.1",
+        "coverage.mandatory.2",
+        "coverage.mandatory.3",
+        "coverage.mandatory.4",
+        "coverage.mandatory.5",
+        "coverage.mandatory.6",
+        "coverage.mandatory.7",
+        "coverage.mandatory.12",
+        "coverage.mandatory.14"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "d3d39f687be33485d1e97500351e9a59bafc35c489f33cc175e396499d991621",
+      "synthesis_ids": [
+        "reasoned.spirituality",
+        "coverage.mandatory.3",
+        "coverage.mandatory.6",
+        "coverage.mandatory.8",
+        "coverage.mandatory.9",
+        "coverage.mandatory.10",
+        "coverage.mandatory.11",
+        "coverage.mandatory.12",
+        "coverage.mandatory.13",
+        "coverage.mandatory.14"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "a5f9ba04181a34814392311c6f37a220dedec0cfcbb5778c9da0dec59222642f",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.1.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "f909aec3068fcd1a414ff32fcac0c7e0dba08e0d6abb0cdf709c8b85ab286baa",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.1.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "5d05f41f4f6bbdb9bc48be379a24e5a28be8436e2ede30b65d0e59df4fc569ff",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.1.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "b9deb2af26cf06385f891599aec30e057ca46a5c6c3c9fe1b0f44efbfbb2d40b",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.4.mercury"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "672611ed22a6fabf193364dfd53da5bb36c22f9773f5e85de9cd9bc323d61d26",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.4.mercury"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "a4ef8a33d1d32e99d682e7af32a22c37f89c21d681bc737bab0afeb2aaeb2c8c",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.4.mercury"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "480c7ab44a2689730f291b35f05e3a42924f1afb0174ab49eb1c513a0257b3d7",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.3.venus"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "b95196644ad0ff2a24300d3d1f87ffdd4585b599d90bff959bc33a5f19f556c3",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.3.venus"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "3f4b0e5506fd17667210e96022433b257037f1cec629a1fa6bc0b37c42cd91a7",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.3.venus"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "c789d6bfeb04798adb4554f3d3aeadca1d28119188f24bae31fd3a59582f9018",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.3.venus"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "d9cafe870ccb38df18d60f1eead875ec1f3e540bf1825867a63e02408fa51382",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.3.venus"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "cdb44a47319c63bca7d318e01cdfb56a3f5a214b9f4e551d207fb00e524a5803",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.3.venus"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "baec47367c306d7eac4924a2eadeabfc06fa122e6d415e3da97e6c850a8a8829",
+      "synthesis_ids": [
+        "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "203d1d8632bdbcae886029d87ecee4373a41cb938196599175bfa81b553c5333",
+      "synthesis_ids": [
+        "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "7f8a89f9ccf2e307990d44a75a93b1fed69d8a8fee00a3377e719ea932d55751",
+      "synthesis_ids": [
+        "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "1a33aaa58127bed66aaf4589fd2b81963eae848b9a9830d23bbf77ab89877f88",
+      "synthesis_ids": [
+        "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "92ead7b1f31bf35518e686c976354bed859e829c7aa675a3a6d46d1eb831c1e9",
+      "synthesis_ids": [
+        "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "6fcd0f5c3be365839b77172a5b6b6b4acbaab68bf56f05426b31939fd9ebd2cd",
+      "synthesis_ids": [
+        "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "6ddbe00c7162d6efd27a98888a0f8224bc20b3ff4dccbffa907ebb285832cf1a",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.7.mercury"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "387a4ae9564dc4d65389ebbedf5fe695e4d16ddac0c8e41437784aedc1709d3a",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.7.mercury"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "72ac175be17b69fd997e4f52d739100c383c882a0aab8bda9d00b0c4a1f62a76",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.7.mercury"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "c3731b3489dff9a7c57daf568c37b308ab18cc1d5eef2e123478b1c968125230",
+      "synthesis_ids": [
+        "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+        "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "ddc779fcb2a8d3a63d29735fe43444c920d15a5c9b7fb429b54772b66f90cb45",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.5.moon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "da215c800730a8cdf5a4b00205429290e610a06219f7aeb3bc5756eb8d924cfb",
+      "synthesis_ids": [
+        "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.2"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "51ed1a93a177b0b43794de863baaa7c366924f4d9c24c7c6e1c60ae9c6e65754",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.10.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "b8d163783c1209f6c7e740a5dcd538bf151897f2f06b5859ce849a686ce02d58",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.6.moon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "d85d0143d710213157ff39eb3a31013a90998812db95071ca1f4ff61db2ade06",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.10.jupiter"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "4fd9e3879ce6220e76ab9fca38d70c43673bf02571b546de7ec022689df1f51d",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.2.mars",
+        "reasoned.reader_path.money_resources_value.topical_placidus.3"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "753178265984e582c33ecaa2eadb001dd731f5e15b11e3e15c3ed9e9fbd2bb47",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.8.venus"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "613ddcd559e5715cb449e1bd708a6bcf038435aa8c029b9abebb8eddcb588a10",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.2.mars"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "d3a1292933cb2c051894c7f8b1e0834a99bb603db94eea689a4c8920de8627ec",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.6.moon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "6c9e5cd015560c058f3d11d1230de9ac5328a3db3f2e24184518d8492a264283",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.6.moon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "901d1f6bd0f10db1252a1438bedadfe81e3f3d039551fd3523a7a29125d2aa49",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.6.moon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "16a9cc66cc6aba155320a898925bd844f41482d9be9ecd1fe38f9744f7f9046b",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.6.moon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "97e0e809e17a479d1efba3b4c1d340fc4c26065cb57b7af9253fbf74effb3ce2",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.6.moon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "0d8e8005a4fd31cde589e37de067707251e681431fdf6785a138ef271d2237b8",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.6.moon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "475462f81a6f884bd4fd98f8b80a8e2839a1bbdae14f11f02f2ccb56e36080d6",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.6.moon"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "0e64038dc6f383d5ccd8608001e46f577db15ab004e4ee2bc66510af7b96a053",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.4.mercury"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "d3878b149b1143317e56bb0f83d9560d4d5a635d7ac4664e47fc02d2ad011c11",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.4.mercury"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "d4aeaf70843fb1adaf7dfe02eb23ef45246c2310d20cf9c6a692a8ad59f4ee5e",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.4.mercury"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "af42bf275f234aaae4db8fccd4dfba02672f355c71937be7640908491ce4ec27",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.11.saturn"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "fdb6dd5546978d305915f9dcd28cf85ddf8ea9c4baeb586c552ac5900c0611f5",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.11.saturn"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "db6ee86faef968b90181637611be49155b2b6f424a39456ffca18a0673fabc0d",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.11.saturn"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "15b6dbeb7e253b3fba039914018d52bf24a3e43fa7fe8ecce1c3114277fc7058",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.9.mars",
+        "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.5",
+        "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "721f8c379a84b5dd89ca653316d08a4928090220a3ed7e17cb7c2978d4f3588f",
+      "synthesis_ids": [
+        "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.5",
+        "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "c044f23eacb6b0edf3b192dd5a3bd54cc3fe73c5f51f64a7e269e39ee9938bcf",
+      "synthesis_ids": [
+        "reasoned.house_ruler_context.placidus.9.mars"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "0c6caa4232c6868c4d2c1c9ee620c9e25af5ad86556c21904fe3fe1ae3135476",
+      "synthesis_ids": [
+        "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4",
+        "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.3",
+        "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.5",
+        "reasoned.house_ruler_context.placidus.12.saturn"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "330d4c1ed616ff66f7153639b7c14429e571485ea39f39affb9a012a7aa7af36",
+      "synthesis_ids": [
+        "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "2244d4a66795d1c8e909b6719cbaec091b4289c96d93a96bd3250f58e9784e79",
+      "synthesis_ids": [
+        "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "922a4293d9c6ae8d898b34b4a988e2ebb22e258ff8f751d1f2c054a20812ed7b",
+      "synthesis_ids": [
+        "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "d0ebce11f82754c3b3cefc7c5cd77d7bd986c4d7d5a90493919fa3816f690b48",
+      "synthesis_ids": [
+        "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "c73d1f12e783488637c3ce25305d496b26a7edeb29c0d122ed71f19145998536",
+      "synthesis_ids": [
+        "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "0c4dea68a1daa9b76c3637f76d8e430238d66cead214c155fbdf0211994a2df1",
+      "synthesis_ids": [
+        "reasoned.reader_path.growth_through_contradiction.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "9f4fc502301c8b202a002ac66940ebc21abb425428ffcb26d2d1431ec93bb6a6",
+      "synthesis_ids": [
+        "reasoned.reader_path.growth_through_contradiction.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "94bfc506415c81070d30e424b2190803f37d5e9b5c274fa19fac88dac646bfc1",
+      "synthesis_ids": [
+        "reasoned.reader_path.growth_through_contradiction.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "fb0e876dce00e16c7866a1f380cc142a701ebec821c25169540ed2853aaf17d7",
+      "synthesis_ids": [
+        "reasoned.reader_path.developmental_direction.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "b1f53f688b636d0551e0aa210c6e319622beee6fc0308ed3a33f0c419526029c",
+      "synthesis_ids": [
+        "reasoned.reader_path.developmental_direction.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "a77056332c99749e7eb512df758accb4ea398aeb3636cf2c2553c41f89c64231",
+      "synthesis_ids": [
+        "reasoned.reader_path.developmental_direction.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "9af73a8713a39a3428eaf4b6ec2ace521b97e4fb0d4a8548b0d6f340046cddc8",
+      "synthesis_ids": [
+        "reasoned.reader_path.developmental_direction.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "53d6fd6fa10b086505473a41e5a99efde68b4db73c5ae03d98d01e9844623633",
+      "synthesis_ids": [
+        "reasoned.reader_path.developmental_direction.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "4e7c5ec521a3de11f22b6a02e4b100ee4791a9a5a985f2a488b703627213f382",
+      "synthesis_ids": [
+        "reasoned.reader_path.developmental_direction.claim_anchored.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "1d7e71825132989d4cccab527a1c53ff67879ae43e5d20628deb4065851eae95",
+      "synthesis_ids": [
+        "reasoned.reader_path.active_life_chapter.timing_natal.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.secondary_progression.mercury.sextile.jupiter.4"
+      ]
+    },
+    {
+      "narrative_block_sha256": "8f4d756f57839fa252858b7c7e8ab208304e4b72e06ab3ecbbc859330c8ccda3",
+      "synthesis_ids": [
+        "reasoned.reader_path.active_life_chapter.timing_natal.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.secondary_progression.mercury.sextile.jupiter.4"
+      ]
+    },
+    {
+      "narrative_block_sha256": "b59168e1428b3c60621ed676708f9f2a05e79a86fd13a1ae28650d32ed064437",
+      "synthesis_ids": [
+        "reasoned.reader_path.active_life_chapter.timing_natal.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.secondary_progression.mercury.sextile.jupiter.4"
+      ]
+    },
+    {
+      "narrative_block_sha256": "473053fff0e732e01954549fb5ed2e01d23b6f6555a903b5d58c19006e6ccf4e",
+      "synthesis_ids": [
+        "reasoned.reader_path.active_life_chapter.timing_natal.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.secondary_progression.mercury.sextile.jupiter.4"
+      ]
+    },
+    {
+      "narrative_block_sha256": "b1e94b5f631e512c4d3275bca63b92942ca3e2e42f2ad1c426768bc71b58353a",
+      "synthesis_ids": [
+        "reasoned.reader_path.active_life_chapter.timing_natal.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.secondary_progression.mercury.sextile.jupiter.4"
+      ]
+    },
+    {
+      "narrative_block_sha256": "226ac781ce504a36595bdc76dc5dd41000af644d9554964057c534aca8e8c11e",
+      "synthesis_ids": [
+        "reasoned.reader_path.active_life_chapter.timing_natal.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.secondary_progression.mercury.sextile.jupiter.4"
+      ]
+    },
+    {
+      "narrative_block_sha256": "e0cfdea999792d25f0f15c4c3071cb1de77c85bd488626db54ee6a4566b9ee7c",
+      "synthesis_ids": [
+        "reasoned.reader_path.active_life_chapter.timing_natal.1"
+      ],
+      "claim_ids": [],
+      "timing_ids": [
+        "timing.secondary_progression.mercury.sextile.jupiter.4"
+      ]
+    },
+    {
+      "narrative_block_sha256": "0a3c6c46b75b1c360bf18d5103f5ca9edb5a27ef187adec90aedaca148f0387f",
+      "synthesis_ids": [
+        "reasoned.spirituality"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "587ed9ca84c1680de06f7a88af91791ae5ad52f2c3bbe9a0546e9f7a72362126",
+      "synthesis_ids": [
+        "reasoned.spirituality"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    },
+    {
+      "narrative_block_sha256": "cd30e4c0ff9a4dd00e876b375d53bac628be3a64be9141031c9e8927122a3881",
+      "synthesis_ids": [
+        "reasoned.spirituality"
+      ],
+      "claim_ids": [],
+      "timing_ids": []
+    }
+  ],
+  "reader_sections": {
+    "opening": {
+      "narrative_block_sha256s": [
+        "8472d371a31e31cbfc64d36eb64553a0dcd206802d7e585d5109b5bb12b501e5",
+        "d3d39f687be33485d1e97500351e9a59bafc35c489f33cc175e396499d991621"
+      ]
+    },
+    "domains": [
+      {
+        "domain_id": "identity_presence",
+        "narrative_block_sha256s": [
+          "a5f9ba04181a34814392311c6f37a220dedec0cfcbb5778c9da0dec59222642f",
+          "f909aec3068fcd1a414ff32fcac0c7e0dba08e0d6abb0cdf709c8b85ab286baa",
+          "5d05f41f4f6bbdb9bc48be379a24e5a28be8436e2ede30b65d0e59df4fc569ff"
+        ]
+      },
+      {
+        "domain_id": "emotional_security",
+        "narrative_block_sha256s": [
+          "b9deb2af26cf06385f891599aec30e057ca46a5c6c3c9fe1b0f44efbfbb2d40b",
+          "672611ed22a6fabf193364dfd53da5bb36c22f9773f5e85de9cd9bc323d61d26",
+          "a4ef8a33d1d32e99d682e7af32a22c37f89c21d681bc737bab0afeb2aaeb2c8c"
+        ]
+      },
+      {
+        "domain_id": "mind_learning_communication",
+        "narrative_block_sha256s": [
+          "480c7ab44a2689730f291b35f05e3a42924f1afb0174ab49eb1c513a0257b3d7",
+          "b95196644ad0ff2a24300d3d1f87ffdd4585b599d90bff959bc33a5f19f556c3",
+          "3f4b0e5506fd17667210e96022433b257037f1cec629a1fa6bc0b37c42cd91a7",
+          "c789d6bfeb04798adb4554f3d3aeadca1d28119188f24bae31fd3a59582f9018",
+          "d9cafe870ccb38df18d60f1eead875ec1f3e540bf1825867a63e02408fa51382",
+          "cdb44a47319c63bca7d318e01cdfb56a3f5a214b9f4e551d207fb00e524a5803"
+        ]
+      },
+      {
+        "domain_id": "desire_action_limits",
+        "narrative_block_sha256s": [
+          "baec47367c306d7eac4924a2eadeabfc06fa122e6d415e3da97e6c850a8a8829",
+          "203d1d8632bdbcae886029d87ecee4373a41cb938196599175bfa81b553c5333",
+          "7f8a89f9ccf2e307990d44a75a93b1fed69d8a8fee00a3377e719ea932d55751",
+          "1a33aaa58127bed66aaf4589fd2b81963eae848b9a9830d23bbf77ab89877f88",
+          "92ead7b1f31bf35518e686c976354bed859e829c7aa675a3a6d46d1eb831c1e9",
+          "6fcd0f5c3be365839b77172a5b6b6b4acbaab68bf56f05426b31939fd9ebd2cd"
+        ]
+      },
+      {
+        "domain_id": "love_intimacy_relationship",
+        "narrative_block_sha256s": [
+          "6ddbe00c7162d6efd27a98888a0f8224bc20b3ff4dccbffa907ebb285832cf1a",
+          "387a4ae9564dc4d65389ebbedf5fe695e4d16ddac0c8e41437784aedc1709d3a",
+          "72ac175be17b69fd997e4f52d739100c383c882a0aab8bda9d00b0c4a1f62a76"
+        ]
+      },
+      {
+        "domain_id": "creativity_pleasure_aliveness",
+        "narrative_block_sha256s": [
+          "c3731b3489dff9a7c57daf568c37b308ab18cc1d5eef2e123478b1c968125230",
+          "ddc779fcb2a8d3a63d29735fe43444c920d15a5c9b7fb429b54772b66f90cb45",
+          "da215c800730a8cdf5a4b00205429290e610a06219f7aeb3bc5756eb8d924cfb"
+        ]
+      },
+      {
+        "domain_id": "work_vocation_visibility",
+        "narrative_block_sha256s": [
+          "51ed1a93a177b0b43794de863baaa7c366924f4d9c24c7c6e1c60ae9c6e65754",
+          "b8d163783c1209f6c7e740a5dcd538bf151897f2f06b5859ce849a686ce02d58",
+          "d85d0143d710213157ff39eb3a31013a90998812db95071ca1f4ff61db2ade06"
+        ]
+      },
+      {
+        "domain_id": "money_resources_value",
+        "narrative_block_sha256s": [
+          "4fd9e3879ce6220e76ab9fca38d70c43673bf02571b546de7ec022689df1f51d",
+          "753178265984e582c33ecaa2eadb001dd731f5e15b11e3e15c3ed9e9fbd2bb47",
+          "613ddcd559e5715cb449e1bd708a6bcf038435aa8c029b9abebb8eddcb588a10"
+        ]
+      },
+      {
+        "domain_id": "body_energy_routine",
+        "narrative_block_sha256s": [
+          "d3a1292933cb2c051894c7f8b1e0834a99bb603db94eea689a4c8920de8627ec",
+          "6c9e5cd015560c058f3d11d1230de9ac5328a3db3f2e24184518d8492a264283",
+          "901d1f6bd0f10db1252a1438bedadfe81e3f3d039551fd3523a7a29125d2aa49",
+          "16a9cc66cc6aba155320a898925bd844f41482d9be9ecd1fe38f9744f7f9046b",
+          "97e0e809e17a479d1efba3b4c1d340fc4c26065cb57b7af9253fbf74effb3ce2",
+          "0d8e8005a4fd31cde589e37de067707251e681431fdf6785a138ef271d2237b8",
+          "475462f81a6f884bd4fd98f8b80a8e2839a1bbdae14f11f02f2ccb56e36080d6"
+        ]
+      },
+      {
+        "domain_id": "home_roots_private_life",
+        "narrative_block_sha256s": [
+          "0e64038dc6f383d5ccd8608001e46f577db15ab004e4ee2bc66510af7b96a053",
+          "d3878b149b1143317e56bb0f83d9560d4d5a635d7ac4664e47fc02d2ad011c11",
+          "d4aeaf70843fb1adaf7dfe02eb23ef45246c2310d20cf9c6a692a8ad59f4ee5e"
+        ]
+      },
+      {
+        "domain_id": "friendship_community_belonging",
+        "narrative_block_sha256s": [
+          "af42bf275f234aaae4db8fccd4dfba02672f355c71937be7640908491ce4ec27",
+          "fdb6dd5546978d305915f9dcd28cf85ddf8ea9c4baeb586c552ac5900c0611f5",
+          "db6ee86faef968b90181637611be49155b2b6f424a39456ffca18a0673fabc0d"
+        ]
+      },
+      {
+        "domain_id": "meaning_beliefs_horizon",
+        "narrative_block_sha256s": [
+          "15b6dbeb7e253b3fba039914018d52bf24a3e43fa7fe8ecce1c3114277fc7058",
+          "721f8c379a84b5dd89ca653316d08a4928090220a3ed7e17cb7c2978d4f3588f",
+          "c044f23eacb6b0edf3b192dd5a3bd54cc3fe73c5f51f64a7e269e39ee9938bcf"
+        ]
+      },
+      {
+        "domain_id": "shadow_defenses_patterns",
+        "narrative_block_sha256s": [
+          "0c6caa4232c6868c4d2c1c9ee620c9e25af5ad86556c21904fe3fe1ae3135476",
+          "330d4c1ed616ff66f7153639b7c14429e571485ea39f39affb9a012a7aa7af36",
+          "2244d4a66795d1c8e909b6719cbaec091b4289c96d93a96bd3250f58e9784e79",
+          "922a4293d9c6ae8d898b34b4a988e2ebb22e258ff8f751d1f2c054a20812ed7b",
+          "d0ebce11f82754c3b3cefc7c5cd77d7bd986c4d7d5a90493919fa3816f690b48",
+          "c73d1f12e783488637c3ce25305d496b26a7edeb29c0d122ed71f19145998536"
+        ]
+      },
+      {
+        "domain_id": "growth_through_contradiction",
+        "narrative_block_sha256s": [
+          "0c4dea68a1daa9b76c3637f76d8e430238d66cead214c155fbdf0211994a2df1",
+          "9f4fc502301c8b202a002ac66940ebc21abb425428ffcb26d2d1431ec93bb6a6",
+          "94bfc506415c81070d30e424b2190803f37d5e9b5c274fa19fac88dac646bfc1"
+        ]
+      },
+      {
+        "domain_id": "developmental_direction",
+        "narrative_block_sha256s": [
+          "fb0e876dce00e16c7866a1f380cc142a701ebec821c25169540ed2853aaf17d7",
+          "b1f53f688b636d0551e0aa210c6e319622beee6fc0308ed3a33f0c419526029c",
+          "a77056332c99749e7eb512df758accb4ea398aeb3636cf2c2553c41f89c64231",
+          "9af73a8713a39a3428eaf4b6ec2ace521b97e4fb0d4a8548b0d6f340046cddc8",
+          "53d6fd6fa10b086505473a41e5a99efde68b4db73c5ae03d98d01e9844623633",
+          "4e7c5ec521a3de11f22b6a02e4b100ee4791a9a5a985f2a488b703627213f382"
+        ]
+      },
+      {
+        "domain_id": "active_life_chapter",
+        "narrative_block_sha256s": [
+          "1d7e71825132989d4cccab527a1c53ff67879ae43e5d20628deb4065851eae95",
+          "8f4d756f57839fa252858b7c7e8ab208304e4b72e06ab3ecbbc859330c8ccda3",
+          "b59168e1428b3c60621ed676708f9f2a05e79a86fd13a1ae28650d32ed064437",
+          "473053fff0e732e01954549fb5ed2e01d23b6f6555a903b5d58c19006e6ccf4e",
+          "b1e94b5f631e512c4d3275bca63b92942ca3e2e42f2ad1c426768bc71b58353a",
+          "226ac781ce504a36595bdc76dc5dd41000af644d9554964057c534aca8e8c11e",
+          "e0cfdea999792d25f0f15c4c3071cb1de77c85bd488626db54ee6a4566b9ee7c"
+        ]
+      }
+    ],
+    "integration": {
+      "narrative_block_sha256s": [
+        "0a3c6c46b75b1c360bf18d5103f5ca9edb5a27ef187adec90aedaca148f0387f",
+        "587ed9ca84c1680de06f7a88af91791ae5ad52f2c3bbe9a0546e9f7a72362126",
+        "cd30e4c0ff9a4dd00e876b375d53bac628be3a64be9141031c9e8927122a3881"
+      ]
+    }
+  },
+  "reader_selection_plan": {
+    "version": "1.0",
+    "packet_id": "3fd3322a7055d282f61bb3a1e4f934f4ae3fc76d4e3ab41178688ea22e81350a",
+    "domains": [
+      {
+        "domain_id": "identity_presence",
+        "paths": [
+          {
+            "path_id": "reader_path.identity_presence.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A tonalidade receptiva e difusa do Ascendente em Peixes atua como atmosfera perceptiva geral, sendo plenamente articulada através da condição e dignidade do regente do mapa."
+          },
+          {
+            "path_id": "reader_path.identity_presence.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A função de regente do mapa por Júpiter converge diretamente com o circuito de regência da casa 1, não demandando desenvolvimento isolado da sua governança angular."
+          },
+          {
+            "path_id": "reader_path.identity_presence.claim_anchored.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A posição solar em Virgem na casa 7 é reservada para a dinâmica de discernimento relacional e oposição estrutural, evitando redundância na identidade de abertura."
+          },
+          {
+            "path_id": "reader_path.identity_presence.house_ruler_context.4",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.1.jupiter"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.identity_presence.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença de Saturno em Peixes opera como contenção estrutural e defesa inconsciente, sendo tratada no domínio de padrões defensivos e sombra."
+          }
+        ]
+      },
+      {
+        "domain_id": "emotional_security",
+        "paths": [
+          {
+            "path_id": "reader_path.emotional_security.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A vulnerabilidade psíquica da Lua em Peixes na casa 12 encontra sua ancoragem protetiva e tradução prática através do dispositor da casa 4."
+          },
+          {
+            "path_id": "reader_path.emotional_security.house_ruler_context.2",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.4.mercury"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "mind_learning_communication",
+        "paths": [
+          {
+            "path_id": "reader_path.mind_learning_communication.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A acuidade mental de Mercúrio em Libra é integralmente mobilizada pelo circuito da casa 3 governada por Vênus, sem justificar duplicação cognitiva."
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.house_ruler_context.2",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.3.venus"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A governança da casa 9 por Marte pertence primordialmente ao eixo de cosmovisão e crenças amplas, diferindo do processamento comunicativo local."
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.topical_placidus.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença de Júpiter na nona casa amplia a busca de horizontes e filosofia de vida, tratada no domínio de crenças e significado."
+          },
+          {
+            "path_id": "reader_path.mind_learning_communication.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O trânsito e colocação de Plutão na nona casa desconstroem paradigmas conceituais, sem alterar o mecanismo cotidiano de comunicação."
+          }
+        ]
+      },
+      {
+        "domain_id": "desire_action_limits",
+        "paths": [
+          {
+            "path_id": "reader_path.desire_action_limits.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.house_ruler_context.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A regência da casa 1 por Júpiter estabelece a bússola ética global, diferindo do vetor específico de ação assertiva e limites de Marte."
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A regência da casa 6 pela Lua pertence à ritmicidade do cuidado diário, não definindo a estratégia de confronto e desejo."
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.house_ruler_context.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A governança da casa 8 por Vênus foca na intimidade compartilhada, convergindo com os domínios de vínculos e valores relacionais."
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A colocação tópica de Marte em Escorpião reforça sua dignidade essencial, plenamente expressa na rota principal da ação."
+          },
+          {
+            "path_id": "reader_path.desire_action_limits.topical_placidus.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A exigência saturnina atua na autocrítica e defesas, não no impulso direto de volição e iniciativa pessoal."
+          }
+        ]
+      },
+      {
+        "domain_id": "love_intimacy_relationship",
+        "paths": [
+          {
+            "path_id": "reader_path.love_intimacy_relationship.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O magnetismo e estilo afetivo de Vênus em Virgem na casa 7 são mobilizados pelo regente da parceria e pela polaridade com Saturno."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O circuito da casa 5 regido pela Lua expressa espontaneidade e prazer lúdico, diferindo do compromisso relacional da casa 7."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.3",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.7.mercury"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A governança da casa 8 por Vênus aborda a partilha e fusão material, desenvolvida no domínio de recursos e vulnerabilidade."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença de Marte na oitava casa dinamiza a intensidade instintiva, sendo tratada sob a perspectiva da soberania e limites."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.topical_placidus.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A colocação tópica de Mercúrio na sétima casa reforça o canal dialógico do regente, sem criar mecanismo relacional separado."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.topical_placidus.7",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença do Sol na casa 7 ilumina o espelhamento da individualidade nas parcerias, integrada na dinâmica do regente relacional."
+          },
+          {
+            "path_id": "reader_path.love_intimacy_relationship.topical_placidus.8",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A posição tópica de Vênus na sétima casa sustenta o valor atribuído ao vínculo, convergindo com o contexto relacional de Mercúrio."
+          }
+        ]
+      },
+      {
+        "domain_id": "creativity_pleasure_aliveness",
+        "paths": [
+          {
+            "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+            "decision": "merged_with_represented",
+            "synthesis_ids": [],
+            "merged_with_path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+            "rationale": "A vitalidade expressiva do Sol converge diretamente com a busca de prazer, fruição e valores autênticos de Vênus na dinamização criativa da vida."
+          },
+          {
+            "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+              "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.creativity_pleasure_aliveness.house_ruler_context.3",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.5.moon"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "work_vocation_visibility",
+        "paths": [
+          {
+            "path_id": "reader_path.work_vocation_visibility.house_ruler_context.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.10.jupiter"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.work_vocation_visibility.house_ruler_context.2",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.6.moon"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "money_resources_value",
+        "paths": [
+          {
+            "path_id": "reader_path.money_resources_value.house_ruler_context.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.2.mars",
+              "reasoned.reader_path.money_resources_value.topical_placidus.3"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.money_resources_value.house_ruler_context.2",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.8.venus"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.money_resources_value.topical_placidus.3",
+            "decision": "merged_with_represented",
+            "synthesis_ids": [],
+            "merged_with_path_id": "reader_path.money_resources_value.house_ruler_context.1",
+            "rationale": "A colocação tópica de Marte na casa 8 ancora concretamente o vetor de governança financeira e circulação de recursos da casa 2."
+          }
+        ]
+      },
+      {
+        "domain_id": "body_energy_routine",
+        "paths": [
+          {
+            "path_id": "reader_path.body_energy_routine.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O esforço e gasto energético de Marte em Escorpião são canalizados pela disciplina somática e regência da casa 6."
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A vitalidade solar sustenta a presença geral, não configurando a rotina de recuperação e sustentabilidade corporal."
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O regente da casa 1 por Júpiter confere vigor constitucional, subordinando os hábitos cotidianos à organização da casa 6."
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.house_ruler_context.4",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.6.moon"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.body_energy_routine.topical_placidus.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença de Saturno atua na exigência de limites e fadiga psíquica, melhor compreendida no capítulo de defesas e sombra."
+          }
+        ]
+      },
+      {
+        "domain_id": "home_roots_private_life",
+        "paths": [
+          {
+            "path_id": "reader_path.home_roots_private_life.house_ruler_context.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.4.mercury"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "friendship_community_belonging",
+        "paths": [
+          {
+            "path_id": "reader_path.friendship_community_belonging.house_ruler_context.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.11.saturn"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.friendship_community_belonging.topical_placidus.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A presença de Netuno na casa 11 expressa idealismo comunitário difuso, sem definir os critérios reais de fidelidade estruturados por Saturno."
+          }
+        ]
+      },
+      {
+        "domain_id": "meaning_beliefs_horizon",
+        "paths": [
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.1",
+            "decision": "merged_with_represented",
+            "synthesis_ids": [],
+            "merged_with_path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.5",
+            "rationale": "A dignidade e vocação expansiva de Júpiter convergem diretamente com sua presença tópica na casa 9, fundamentando a cosmovisão e a busca de sentido."
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A função analítica de Mercúrio em Libra pertence ao intercâmbio relacional, não estruturando o horizonte metafísico da casa 9."
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O circuito de aprendizado imediato da casa 3 pertence ao domínio comunicativo, não competindo com a arquitetura ética da casa 9."
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.4",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.9.mars"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.5",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.5",
+              "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A intensidade plutoniana na nona casa atua como força subterrânea de crise de fé, subordinada à regência primária de Marte e à presença culminante de Júpiter."
+          }
+        ]
+      },
+      {
+        "domain_id": "shadow_defenses_patterns",
+        "paths": [
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.1",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A quadratura Lua-Júpiter opera como oscilação entre recolhimento e euforia expansiva, desenvolvida no domínio de crescimento por contradição."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A fricção Marte-Urano mobiliza respostas abruptas de independência, tratada na polaridade dinâmica de ação e limites."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.3",
+            "decision": "merged_with_represented",
+            "synthesis_ids": [],
+            "merged_with_path_id": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+            "rationale": "A oposição Sol-Lua converge diretamente com a oposição Sol-Saturno no eixo Virgem-Peixes, integrando a dinâmica central de cisão defensiva entre exigência de competência e vulnerabilidade emocional recolhida."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4",
+              "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.3",
+              "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.5"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.5",
+            "decision": "merged_with_represented",
+            "synthesis_ids": [],
+            "merged_with_path_id": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+            "rationale": "A oposição Vênus-Saturno complementa a oposição Sol-Saturno ao traduzir o padrão de autocrítica e contenção para a esfera relacional e afetiva, participando do mesmo núcleo reativo de defesa."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O quincúncio Lua-Mercúrio introduz hesitações entre sentimento e expressão verbal, tendo impacto subordinado perante o eixo de oposições estruturantes."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.7",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.house_ruler_context.placidus.12.saturn"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.8",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A regência da casa 8 por Vênus foca na partilha de intimidade e regeneração de confiança, tratada no domínio de recursos compartilhados."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.9",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A colocação de Marte na oitava casa ancora intensidade instintiva, já plenamente desdobrada na dinâmica de volição e soberania material."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.10",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A posição da Lua na casa 12 participa do recolhimento somático, canalizada na regência da casa 5 e na oposição ao Sol."
+          },
+          {
+            "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.11",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "Urano na décima segunda casa opera como descondicionamento transpessoal pontual, sem fixar um padrão defensivo repetitivo do ego."
+          }
+        ]
+      },
+      {
+        "domain_id": "growth_through_contradiction",
+        "paths": [
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.growth_through_contradiction.claim_anchored.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A quadratura Marte-Urano mobiliza prontidão para ruptura, atuando como subfator subordinado à tensão integradora entre anseio de expansão e segurança."
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A polaridade Sol-Lua é desenvolvida como eixo estruturante de defesa e discernimento em outros domínios, evitando repetição na contradição dinâmica."
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A oposição Sol-Saturno sintetiza o núcleo de exigência de competência e limites, tratada na arquitetura de defesas e padrões."
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A oposição Vênus-Saturno qualifica o rigor nos afetos e valores, desdobrada como nuance defensiva no domínio de sombra."
+          },
+          {
+            "path_id": "reader_path.growth_through_contradiction.claim_anchored.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O quincúncio Lua-Mercúrio introduz discrepâncias sutis entre razão e afeto, sem a magnitude mobilizadora da quadratura angular."
+          }
+        ]
+      },
+      {
+        "domain_id": "developmental_direction",
+        "paths": [
+          {
+            "path_id": "reader_path.developmental_direction.claim_anchored.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.developmental_direction.claim_anchored.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          }
+        ]
+      },
+      {
+        "domain_id": "active_life_chapter",
+        "paths": [
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.1",
+            "decision": "represented",
+            "synthesis_ids": [
+              "reasoned.reader_path.active_life_chapter.timing_natal.1"
+            ],
+            "merged_with_path_id": null,
+            "rationale": null
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.2",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A ativação temporal secundária de Mercúrio com Saturno oferece reforço de foco analítico subordinado à profecção ativa."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.3",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A profecção anual de Mercúrio estabelece o pano de fundo temporal geral, já articulado na ativação direta da progressão."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.4",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O quincúncio Júpiter-Netuno atua como oscilação sutil de expectativas, sem demarcar janela decisiva de acontecimentos."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.5",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O sextil progredido Marte-Netuno modula suavemente o direcionamento de esforço, sem constituir o foco primário do período."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.6",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O arco solar Saturno-Netuno indica processo gradual de desilusão criativa, operando em segundo plano diante da progressão exata."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.7",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O quincúncio progredido Lua-Plutão exige reajustes emocionais sutis, sem a clareza orientadora da ativação jupiteriana."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.8",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O aspecto Júpiter-Saturno introduz calibragem entre pragmatismo e crescimento, secundário à dinâmica angular vigente."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.9",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O trígono progredido Marte-Saturno confere resiliência estável de fundo, dispensando destaque como virada biográfica."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.10",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "O arco solar Vênus-Saturno reforça a maturidade relacional de longo prazo, já contemplada na base estrutural natal."
+          },
+          {
+            "path_id": "reader_path.active_life_chapter.timing_natal.11",
+            "decision": "omitted_no_distinct_reader_value",
+            "synthesis_ids": [],
+            "merged_with_path_id": null,
+            "rationale": "A ativação Júpiter-Urano estimula inquietação por renovação, subordinada à maturação do ciclo principal."
+          }
+        ]
+      }
+    ]
+  },
+  "reader_selection_plan_sha256": "b3dcb1b79251af6796e66b3e8c3b0acae0780678757cfe716dbca8c3830bd713",
+  "regeneration_request": null
+}

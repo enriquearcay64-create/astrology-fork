@@ -1,0 +1,59 @@
+{
+  "benchmark_id": "chart3_mutable_earth_water_v231",
+  "run_id": "run_20260905_052000",
+  "description": "Chart 3 (Synthetic Mutable Earth/Water) Fresh V2.3.1a Benchmark Execution",
+  "birth_data": {
+    "iso_time": "1995-09-08T19:45:00",
+    "timezone": "Europe/Paris",
+    "latitude": 48.8566,
+    "longitude": 2.3522,
+    "birth_time_known": true
+  },
+  "git_commit_sha": "d0fcf23769c3a372e9a667d5ce8fa98e3b33da0a",
+  "pipeline_version": "v2.3.1a",
+  "evaluation_scores": {
+    "candidate_v231_report_aqua": {
+      "total_score": 159,
+      "max_score": 170,
+      "mean_score": 9.35,
+      "hard_checks_status": "PASSED (0 errors)"
+    },
+    "champion_baseline_report_terra": {
+      "total_score": 127,
+      "max_score": 170,
+      "mean_score": 7.47,
+      "hard_checks_status": "PASSED (0 errors)"
+    },
+    "delta": "+32 points (+1.88 mean difference to Candidate V2.3.1a)",
+    "auditor_verdict": "CANDIDATE SUPERIOR — READY FOR BROADER BENCHMARK (Salto Geracional Homologado)"
+  },
+  "models": {
+    "author_model": "gemini-2.5-pro (subagent inherit)",
+    "reviewer_model": "gemini-2.5-pro (subagent inherit)",
+    "blind_evaluator_model": "gemini-2.5-pro (subagent inherit)"
+  },
+  "artifacts_sha256": {
+    "01-author-selection-plan.json": "0ce5b9076ef5618d47713c8d1a09e3de5c605b67d668b7b6209ea3574e2e9f4d",
+    "01-candidate-catalog.json": "0a18049db84b64be54be639ca685851e807c1d00d83e852e593d84cf5b833879",
+    "01-handoff.json": "07b3c8af3e891c4bd6e37a17d3de58fe396bee0ca45dde0875429b128dae1c92",
+    "01-prospective-block-plan.json": "de3f3a74cb8da45b407e294c6bd250b7ab86b4a037fac4a85faa31e3d7a277ad",
+    "02-author-bundle.json": "1123583eb1d034445a41cba07290a1d53133baae454c3b8cc7aa6edc6b9da085",
+    "02-prospective-audit.json": "26c3677b599b7abd8442e987faa05a05694b3623398804da585a07c202c260cb",
+    "03-provenance-guard.json": "dd490529be17ae3ba6091f5e21d5f25a94533180f6c03a828bba30c1d2dd4e69",
+    "04-prospective-final-audit.json": "26c3677b599b7abd8442e987faa05a05694b3623398804da585a07c202c260cb",
+    "04-reviewer-bundle.json": "bce44364e0e911e90a45ee6a55981c970d5cee3229aad9344784df19c7f40b90",
+    "05-publication-guard.json": "c41b125841d45a61e1de5a69280e11a8eb4b54f91acfc3a0ee97e58906d30007",
+    "06-editorial-qa.json": "0e34b459fa15a1a6a99c0874918cd60ed972117627acb697f334d57229edb8f4",
+    "Report_Aqua.md": "5fbc96d51d6bf68422f828d0bad25bc2a1d9503e025093f0c084a300158967fe",
+    "Report_Terra.md": "81a9b1736bda87487b8e245ae83b73a688ba7402dc47e652b9160fb82b628f57",
+    "author_draft.md": "362e014bab8b1cfeac31e3314dd005286600e67a55b81e641a9fdd0345a8f74c",
+    "author_prompt.txt": "d272a75a178445d33c57ec8234d76131327e3833b5510c802db34c83ba46f5ed",
+    "author_selection_prompt.txt": "8233312e04598c79aa287c7cd3a4058f0302505ea303403d9226d68bfc006e47",
+    "canonical_technical_appendix.md": "2537398e2fc0e195d8db06d8db57f6ef06944f005610dd47c27c15c5c8b21390",
+    "evaluation_final.md": "e62844141908f473051affba959543e98e8ac85b555711e1d036d5b60459dbab",
+    "evaluation_key.json": "1e2254f339d8d22a9c8f5675160c110fbbefe9086d39dabb9a5456dee4f0c0f2",
+    "evaluator_prompt.txt": "5a7670011c6a35d358548bd0882f5e6ca7acc44e8a4b2bcf12141a40a323450f",
+    "final_reviewed_report.md": "5fbc96d51d6bf68422f828d0bad25bc2a1d9503e025093f0c084a300158967fe",
+    "reviewer_prompt.txt": "530ccf6f1076712e907a242e4e66ec8e393f73eda662b0ae7755fcd39401efcc"
+  }
+}

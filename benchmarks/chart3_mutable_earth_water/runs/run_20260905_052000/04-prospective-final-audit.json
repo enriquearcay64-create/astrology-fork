@@ -1,0 +1,35 @@
+{
+  "prospective_plan_sha256": "3f6da3915cd37c32c67a38559c532ef85ad5a4f7be61e9b89746e962463b9f87",
+  "opening_mandatory_bindings": {
+    "8472d371a31e31cbfc64d36eb64553a0dcd206802d7e585d5109b5bb12b501e5": [
+      "reasoned.spirituality",
+      "coverage.mandatory.1",
+      "coverage.mandatory.2",
+      "coverage.mandatory.3",
+      "coverage.mandatory.4",
+      "coverage.mandatory.5",
+      "coverage.mandatory.6",
+      "coverage.mandatory.7",
+      "coverage.mandatory.12",
+      "coverage.mandatory.14"
+    ],
+    "d3d39f687be33485d1e97500351e9a59bafc35c489f33cc175e396499d991621": [
+      "reasoned.spirituality",
+      "coverage.mandatory.3",
+      "coverage.mandatory.6",
+      "coverage.mandatory.8",
+      "coverage.mandatory.9",
+      "coverage.mandatory.10",
+      "coverage.mandatory.11",
+      "coverage.mandatory.12",
+      "coverage.mandatory.13",
+      "coverage.mandatory.14"
+    ]
+  },
+  "unmaterialized_mandatories": [],
+  "unmaterialized_planned_sources": [],
+  "blocks_without_semantic_source": [],
+  "provenance_fail_closed": true,
+  "bound_block_count": 73,
+  "prospective_provenance_verified": true
+}

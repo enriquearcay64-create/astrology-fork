@@ -1,0 +1,672 @@
+{
+  "version": "1.0",
+  "packet_id": "3fd3322a7055d282f61bb3a1e4f934f4ae3fc76d4e3ab41178688ea22e81350a",
+  "domains": [
+    {
+      "domain_id": "identity_presence",
+      "paths": [
+        {
+          "path_id": "reader_path.identity_presence.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A tonalidade receptiva e difusa do Ascendente em Peixes atua como atmosfera perceptiva geral, sendo plenamente articulada através da condição e dignidade do regente do mapa."
+        },
+        {
+          "path_id": "reader_path.identity_presence.claim_anchored.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A função de regente do mapa por Júpiter converge diretamente com o circuito de regência da casa 1, não demandando desenvolvimento isolado da sua governança angular."
+        },
+        {
+          "path_id": "reader_path.identity_presence.claim_anchored.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A posição solar em Virgem na casa 7 é reservada para a dinâmica de discernimento relacional e oposição estrutural, evitando redundância na identidade de abertura."
+        },
+        {
+          "path_id": "reader_path.identity_presence.house_ruler_context.4",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.1.jupiter"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.identity_presence.topical_placidus.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A presença de Saturno em Peixes opera como contenção estrutural e defesa inconsciente, sendo tratada no domínio de padrões defensivos e sombra."
+        }
+      ]
+    },
+    {
+      "domain_id": "emotional_security",
+      "paths": [
+        {
+          "path_id": "reader_path.emotional_security.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A vulnerabilidade psíquica da Lua em Peixes na casa 12 encontra sua ancoragem protetiva e tradução prática através do dispositor da casa 4."
+        },
+        {
+          "path_id": "reader_path.emotional_security.house_ruler_context.2",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.4.mercury"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        }
+      ]
+    },
+    {
+      "domain_id": "mind_learning_communication",
+      "paths": [
+        {
+          "path_id": "reader_path.mind_learning_communication.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A acuidade mental de Mercúrio em Libra é integralmente mobilizada pelo circuito da casa 3 governada por Vênus, sem justificar duplicação cognitiva."
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.house_ruler_context.2",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.3.venus"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.house_ruler_context.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A governança da casa 9 por Marte pertence primordialmente ao eixo de cosmovisão e crenças amplas, diferindo do processamento comunicativo local."
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.topical_placidus.4",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A presença de Júpiter na nona casa amplia a busca de horizontes e filosofia de vida, tratada no domínio de crenças e significado."
+        },
+        {
+          "path_id": "reader_path.mind_learning_communication.topical_placidus.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O trânsito e colocação de Plutão na nona casa desconstroem paradigmas conceituais, sem alterar o mecanismo cotidiano de comunicação."
+        }
+      ]
+    },
+    {
+      "domain_id": "desire_action_limits",
+      "paths": [
+        {
+          "path_id": "reader_path.desire_action_limits.claim_anchored.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.desire_action_limits.claim_anchored.1"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.house_ruler_context.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A regência da casa 1 por Júpiter estabelece a bússola ética global, diferindo do vetor específico de ação assertiva e limites de Marte."
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.house_ruler_context.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A regência da casa 6 pela Lua pertence à ritmicidade do cuidado diário, não definindo a estratégia de confronto e desejo."
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.house_ruler_context.4",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A governança da casa 8 por Vênus foca na intimidade compartilhada, convergindo com os domínios de vínculos e valores relacionais."
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.topical_placidus.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A colocação tópica de Marte em Escorpião reforça sua dignidade essencial, plenamente expressa na rota principal da ação."
+        },
+        {
+          "path_id": "reader_path.desire_action_limits.topical_placidus.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A exigência saturnina atua na autocrítica e defesas, não no impulso direto de volição e iniciativa pessoal."
+        }
+      ]
+    },
+    {
+      "domain_id": "love_intimacy_relationship",
+      "paths": [
+        {
+          "path_id": "reader_path.love_intimacy_relationship.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O magnetismo e estilo afetivo de Vênus em Virgem na casa 7 são mobilizados pelo regente da parceria e pela polaridade com Saturno."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O circuito da casa 5 regido pela Lua expressa espontaneidade e prazer lúdico, diferindo do compromisso relacional da casa 7."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.3",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.7.mercury"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.house_ruler_context.4",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A governança da casa 8 por Vênus aborda a partilha e fusão material, desenvolvida no domínio de recursos e vulnerabilidade."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A presença de Marte na oitava casa dinamiza a intensidade instintiva, sendo tratada sob a perspectiva da soberania e limites."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A colocação tópica de Mercúrio na sétima casa reforça o canal dialógico do regente, sem criar mecanismo relacional separado."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.7",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A presença do Sol na casa 7 ilumina o espelhamento da individualidade nas parcerias, integrada na dinâmica do regente relacional."
+        },
+        {
+          "path_id": "reader_path.love_intimacy_relationship.topical_placidus.8",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A posição tópica de Vênus na sétima casa sustenta o valor atribuído ao vínculo, convergindo com o contexto relacional de Mercúrio."
+        }
+      ]
+    },
+    {
+      "domain_id": "creativity_pleasure_aliveness",
+      "paths": [
+        {
+          "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.1",
+          "decision": "merged_with_represented",
+          "synthesis_ids": [],
+          "merged_with_path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+          "rationale": "A vitalidade expressiva do Sol converge diretamente com a busca de prazer, fruição e valores autênticos de Vênus na dinamização criativa da vida."
+        },
+        {
+          "path_id": "reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.2",
+            "reasoned.reader_path.creativity_pleasure_aliveness.claim_anchored.1"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.creativity_pleasure_aliveness.house_ruler_context.3",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.5.moon"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        }
+      ]
+    },
+    {
+      "domain_id": "work_vocation_visibility",
+      "paths": [
+        {
+          "path_id": "reader_path.work_vocation_visibility.house_ruler_context.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.10.jupiter"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.work_vocation_visibility.house_ruler_context.2",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.6.moon"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        }
+      ]
+    },
+    {
+      "domain_id": "money_resources_value",
+      "paths": [
+        {
+          "path_id": "reader_path.money_resources_value.house_ruler_context.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.2.mars",
+            "reasoned.reader_path.money_resources_value.topical_placidus.3"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.money_resources_value.house_ruler_context.2",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.8.venus"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.money_resources_value.topical_placidus.3",
+          "decision": "merged_with_represented",
+          "synthesis_ids": [],
+          "merged_with_path_id": "reader_path.money_resources_value.house_ruler_context.1",
+          "rationale": "A colocação tópica de Marte na casa 8 ancora concretamente o vetor de governança financeira e circulação de recursos da casa 2."
+        }
+      ]
+    },
+    {
+      "domain_id": "body_energy_routine",
+      "paths": [
+        {
+          "path_id": "reader_path.body_energy_routine.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O esforço e gasto energético de Marte em Escorpião são canalizados pela disciplina somática e regência da casa 6."
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.claim_anchored.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A vitalidade solar sustenta a presença geral, não configurando a rotina de recuperação e sustentabilidade corporal."
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.house_ruler_context.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O regente da casa 1 por Júpiter confere vigor constitucional, subordinando os hábitos cotidianos à organização da casa 6."
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.house_ruler_context.4",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.6.moon"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.body_energy_routine.topical_placidus.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A presença de Saturno atua na exigência de limites e fadiga psíquica, melhor compreendida no capítulo de defesas e sombra."
+        }
+      ]
+    },
+    {
+      "domain_id": "home_roots_private_life",
+      "paths": [
+        {
+          "path_id": "reader_path.home_roots_private_life.house_ruler_context.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.4.mercury"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        }
+      ]
+    },
+    {
+      "domain_id": "friendship_community_belonging",
+      "paths": [
+        {
+          "path_id": "reader_path.friendship_community_belonging.house_ruler_context.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.11.saturn"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.friendship_community_belonging.topical_placidus.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A presença de Netuno na casa 11 expressa idealismo comunitário difuso, sem definir os critérios reais de fidelidade estruturados por Saturno."
+        }
+      ]
+    },
+    {
+      "domain_id": "meaning_beliefs_horizon",
+      "paths": [
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.1",
+          "decision": "merged_with_represented",
+          "synthesis_ids": [],
+          "merged_with_path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.5",
+          "rationale": "A dignidade e vocação expansiva de Júpiter convergem diretamente com sua presença tópica na casa 9, fundamentando a cosmovisão e a busca de sentido."
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.claim_anchored.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A função analítica de Mercúrio em Libra pertence ao intercâmbio relacional, não estruturando o horizonte metafísico da casa 9."
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O circuito de aprendizado imediato da casa 3 pertence ao domínio comunicativo, não competindo com a arquitetura ética da casa 9."
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.house_ruler_context.4",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.9.mars"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.5",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.meaning_beliefs_horizon.topical_placidus.5",
+            "reasoned.reader_path.meaning_beliefs_horizon.claim_anchored.1"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.meaning_beliefs_horizon.topical_placidus.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A intensidade plutoniana na nona casa atua como força subterrânea de crise de fé, subordinada à regência primária de Marte e à presença culminante de Júpiter."
+        }
+      ]
+    },
+    {
+      "domain_id": "shadow_defenses_patterns",
+      "paths": [
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.1",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A quadratura Lua-Júpiter opera como oscilação entre recolhimento e euforia expansiva, desenvolvida no domínio de crescimento por contradição."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A fricção Marte-Urano mobiliza respostas abruptas de independência, tratada na polaridade dinâmica de ação e limites."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.3",
+          "decision": "merged_with_represented",
+          "synthesis_ids": [],
+          "merged_with_path_id": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+          "rationale": "A oposição Sol-Lua converge diretamente com a oposição Sol-Saturno no eixo Virgem-Peixes, integrando a dinâmica central de cisão defensiva entre exigência de competência e vulnerabilidade emocional recolhida."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.4",
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.3",
+            "reasoned.reader_path.shadow_defenses_patterns.claim_anchored.5"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.5",
+          "decision": "merged_with_represented",
+          "synthesis_ids": [],
+          "merged_with_path_id": "reader_path.shadow_defenses_patterns.claim_anchored.4",
+          "rationale": "A oposição Vênus-Saturno complementa a oposição Sol-Saturno ao traduzir o padrão de autocrítica e contenção para a esfera relacional e afetiva, participando do mesmo núcleo reativo de defesa."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.claim_anchored.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O quincúncio Lua-Mercúrio introduz hesitações entre sentimento e expressão verbal, tendo impacto subordinado perante o eixo de oposições estruturantes."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.7",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.house_ruler_context.placidus.12.saturn"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.house_ruler_context.8",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A regência da casa 8 por Vênus foca na partilha de intimidade e regeneração de confiança, tratada no domínio de recursos compartilhados."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.9",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A colocação de Marte na oitava casa ancora intensidade instintiva, já plenamente desdobrada na dinâmica de volição e soberania material."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.10",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A posição da Lua na casa 12 participa do recolhimento somático, canalizada na regência da casa 5 e na oposição ao Sol."
+        },
+        {
+          "path_id": "reader_path.shadow_defenses_patterns.topical_placidus.11",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "Urano na décima segunda casa opera como descondicionamento transpessoal pontual, sem fixar um padrão defensivo repetitivo do ego."
+        }
+      ]
+    },
+    {
+      "domain_id": "growth_through_contradiction",
+      "paths": [
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.growth_through_contradiction.claim_anchored.1"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A quadratura Marte-Urano mobiliza prontidão para ruptura, atuando como subfator subordinado à tensão integradora entre anseio de expansão e segurança."
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A polaridade Sol-Lua é desenvolvida como eixo estruturante de defesa e discernimento em outros domínios, evitando repetição na contradição dinâmica."
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.4",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A oposição Sol-Saturno sintetiza o núcleo de exigência de competência e limites, tratada na arquitetura de defesas e padrões."
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A oposição Vênus-Saturno qualifica o rigor nos afetos e valores, desdobrada como nuance defensiva no domínio de sombra."
+        },
+        {
+          "path_id": "reader_path.growth_through_contradiction.claim_anchored.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O quincúncio Lua-Mercúrio introduz discrepâncias sutis entre razão e afeto, sem a magnitude mobilizadora da quadratura angular."
+        }
+      ]
+    },
+    {
+      "domain_id": "developmental_direction",
+      "paths": [
+        {
+          "path_id": "reader_path.developmental_direction.claim_anchored.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.developmental_direction.claim_anchored.1"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        }
+      ]
+    },
+    {
+      "domain_id": "active_life_chapter",
+      "paths": [
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.1",
+          "decision": "represented",
+          "synthesis_ids": [
+            "reasoned.reader_path.active_life_chapter.timing_natal.1"
+          ],
+          "merged_with_path_id": null,
+          "rationale": null
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.2",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação temporal secundária de Mercúrio com Saturno oferece reforço de foco analítico subordinado à profecção ativa."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.3",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A profecção anual de Mercúrio estabelece o pano de fundo temporal geral, já articulado na ativação direta da progressão."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.4",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O quincúncio Júpiter-Netuno atua como oscilação sutil de expectativas, sem demarcar janela decisiva de acontecimentos."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.5",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O sextil progredido Marte-Netuno modula suavemente o direcionamento de esforço, sem constituir o foco primário do período."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.6",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O arco solar Saturno-Netuno indica processo gradual de desilusão criativa, operando em segundo plano diante da progressão exata."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.7",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O quincúncio progredido Lua-Plutão exige reajustes emocionais sutis, sem a clareza orientadora da ativação jupiteriana."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.8",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O aspecto Júpiter-Saturno introduz calibragem entre pragmatismo e crescimento, secundário à dinâmica angular vigente."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.9",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O trígono progredido Marte-Saturno confere resiliência estável de fundo, dispensando destaque como virada biográfica."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.10",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "O arco solar Vênus-Saturno reforça a maturidade relacional de longo prazo, já contemplada na base estrutural natal."
+        },
+        {
+          "path_id": "reader_path.active_life_chapter.timing_natal.11",
+          "decision": "omitted_no_distinct_reader_value",
+          "synthesis_ids": [],
+          "merged_with_path_id": null,
+          "rationale": "A ativação Júpiter-Urano estimula inquietação por renovação, subordinada à maturação do ciclo principal."
+        }
+      ]
+    }
+  ]
+}

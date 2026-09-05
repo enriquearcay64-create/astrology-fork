@@ -1,0 +1,11 @@
+{
+  "nonce": "v231a_blind_nonce_7482a0b1c94d",
+  "nonce_sha256": "8667a46076befb1bf78bf44311df8e2e3b7fc783b198e765c499f37bdcc0d38d",
+  "last_nibble": 13,
+  "mapping": {
+    "Report_Terra.md": "champion_baseline",
+    "Report_Aqua.md": "candidate_v231"
+  },
+  "candidate_sha256": "5fbc96d51d6bf68422f828d0bad25bc2a1d9503e025093f0c084a300158967fe",
+  "champion_sha256": "81a9b1736bda87487b8e245ae83b73a688ba7402dc47e652b9160fb82b628f57"
+}
