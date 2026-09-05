@@ -1398,7 +1398,7 @@ def _validate_reader_selection_plan_v13(
         return ["missing_reader_selection_plan"], None, None
     if _canonical_hash(plan) != plan_hash:
         errors.append("reader_selection_plan_hash_mismatch")
-    if set(plan) != {"version", "domains"} or plan.get("version") != "1.0" or not isinstance(plan.get("domains"), list):
+    if not ({"version", "domains"}.issubset(set(plan)) and set(plan).issubset({"version", "domains", "packet_id"})) or plan.get("version") != "1.0" or not isinstance(plan.get("domains"), list):
         return [*errors, "invalid_reader_selection_plan"], None, None
     if not isinstance(manifest, dict):
         return [*errors, "missing_reader_domain_manifest"], None, None
@@ -1762,7 +1762,7 @@ def _validate_reader_selection_plan(
         return ["missing_reader_selection_plan"], None, None
     if _canonical_hash(plan) != plan_hash:
         errors.append("reader_selection_plan_hash_mismatch")
-    if set(plan) != {"version", "domains"} or plan.get("version") != "1.0" or not isinstance(plan.get("domains"), list):
+    if not ({"version", "domains"}.issubset(set(plan)) and set(plan).issubset({"version", "domains", "packet_id"})) or plan.get("version") != "1.0" or not isinstance(plan.get("domains"), list):
         return [*errors, "invalid_reader_selection_plan"], None, None
     if not isinstance(manifest, dict):
         return [*errors, "missing_reader_domain_manifest"], None, None
