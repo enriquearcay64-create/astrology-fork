@@ -28,6 +28,13 @@ from astrology.pipeline import (
     _canonical_hash,
 )
 from astrology.report import format_canonical_timing_activation
+from astrology.exceptions import (
+    AstrologyError,
+    BenchmarkIntegrityError,
+    LineageMismatchError,
+    SelectionPlanValidationError,
+    ReviewerAuthorityBoundaryError,
+)
 from scripts.run_chart3_pipeline import (
     CHART_3_BIRTH,
     PROFILE,
@@ -204,20 +211,79 @@ def test_v231_closest_approach_never_populates_exact_peak():
     assert fmt_approach["peak_date"] == "2026-12-05"
 
 
-def test_v231_benchmark_tamper_detection_and_no_draft_report():
+def test_v231_benchmark_tamper_detection_and_no_draft_report(tmp_path):
     """Requirement 6: Chart 3 benchmark replays cleanly and fails on any artifact tampering, with zero DRAFT_REPORT."""
+    import shutil
     import scripts.run_chart3_pipeline as r3_mod
     assert not hasattr(r3_mod, "DRAFT_REPORT"), "scripts/run_chart3_pipeline.py must not define or export DRAFT_REPORT"
 
     # Full replay of immutable benchmark passes cleanly
     assert replay_chart3_benchmark(BENCHMARK_DIR) is True
 
-    # Tamper detection: simulate byte modification on benchmark artifact
-    manifest = json.loads((BENCHMARK_DIR / "benchmark_manifest.json").read_text(encoding="utf-8"))
-    real_hash = manifest["artifacts_sha256"]["final_reviewed_report.md"]
-    tampered_bytes = b"# Tampered content\n"
-    tampered_hash = hashlib.sha256(tampered_bytes).hexdigest()
-    assert tampered_hash != real_hash
+    # Real on-disk tamper detection: copy BENCHMARK_DIR to tmp_path and mutate 1 byte
+    tamper_dir = tmp_path / "chart3_tampered"
+    shutil.copytree(BENCHMARK_DIR, tamper_dir)
 
-    # verify_benchmark_artifacts detects missing or corrupted file
-    assert verify_benchmark_artifacts(BENCHMARK_DIR) is not None
+    # Untampered copy passes verify_benchmark_artifacts
+    assert verify_benchmark_artifacts(tamper_dir) is not None
+
+    # Mutate 1 byte on disk in final_reviewed_report.md
+    target_file = tamper_dir / "final_reviewed_report.md"
+    orig_bytes = target_file.read_bytes()
+    mutated_bytes = orig_bytes[:-1] + (b"X" if orig_bytes[-1:] != b"X" else b"Y")
+    target_file.write_bytes(mutated_bytes)
+
+    # verify_benchmark_artifacts on disk MUST raise BenchmarkIntegrityError
+    with pytest.raises(BenchmarkIntegrityError, match="Hash mismatch for final_reviewed_report.md"):
+        verify_benchmark_artifacts(tamper_dir)
+
+    # replay_chart3_benchmark on disk MUST also raise BenchmarkIntegrityError
+    with pytest.raises(BenchmarkIntegrityError):
+        replay_chart3_benchmark(tamper_dir)
+
+
+def test_v231_lineage_mismatch_raises_lineage_mismatch_error():
+    """Requirement 7: Lineage mismatch between handoff and selection plan raises LineageMismatchError."""
+    handoff = prepare_premium_handoff(CHART_3_BIRTH, profile=PROFILE)
+    manifest = handoff["reader_domain_manifest"]
+    sel_path = BENCHMARK_DIR / "01-author-selection-plan.json"
+    valid_plan = json.loads(sel_path.read_text(encoding="utf-8"))
+
+    mismatched_plan = copy.deepcopy(valid_plan)
+    mismatched_plan["packet_id"] = "forged_packet_id_00000000000000000000000000000000"
+
+    with pytest.raises(LineageMismatchError, match="packet_id"):
+        plan_prospective_narrative_blocks(handoff, author_selection_plan=mismatched_plan)
+
+
+def test_v231_single_effective_as_of_resolution():
+    """Requirement 8: effective_as_of is resolved exactly once and shared consistently."""
+    from datetime import datetime, timezone
+    from scripts.run_canonical_premium_pipeline import prepare_audit_run
+
+    fixed_as_of = datetime(2026, 9, 5, 12, 0, 0, tzinfo=timezone.utc)
+    handoff = prepare_premium_handoff(CHART_3_BIRTH, profile=PROFILE, as_of=fixed_as_of)
+
+    # Check that effective_as_of is captured in preparation_parameters
+    assert handoff["preparation_parameters"]["effective_as_of"] == fixed_as_of.isoformat()
+    # Check that timing matches this snapshot
+    assert handoff.get("timing") is not None
+
+    # Verify that plan_prospective_narrative_blocks retains the exact packet_id lineage
+    sel_path = BENCHMARK_DIR / "01-author-selection-plan.json"
+    sel_plan = json.loads(sel_path.read_text(encoding="utf-8"))
+    sel_plan["packet_id"] = handoff["packet_id"]
+
+    block_plan = plan_prospective_narrative_blocks(handoff, author_selection_plan=sel_plan)
+    assert block_plan["packet_id"] == handoff["packet_id"]
+
+
+def test_v231_python_optimized_mode_integrity():
+    """Requirement 9: Replay script and guards run safely under python3 -O without bypassed assertions."""
+    import subprocess
+    cmd = [
+        "python3", "-O", "scripts/run_chart3_pipeline.py"
+    ]
+    res = subprocess.run(cmd, cwd=str(Path(__file__).resolve().parent.parent), capture_output=True, text=True)
+    assert res.returncode == 0, f"Replay failed under -O mode:\nSTDOUT: {res.stdout}\nSTDERR: {res.stderr}"
+    assert "Frozen benchmark artifacts passed deterministic integrity and publication replay." in res.stdout

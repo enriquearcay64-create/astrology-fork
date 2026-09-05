@@ -19,6 +19,8 @@ from pathlib import Path
 from astrology.models import BirthData, LocalizationProfile
 from astrology.engine import calculate_chart
 from astrology.safe_view import build_safe_interpretive_view
+from astrology.timing import cross_technique_timing
+from astrology.exceptions import BenchmarkIntegrityError, LineageMismatchError
 from astrology.pipeline import (
     validate_author_selection_plan,
     plan_prospective_narrative_blocks,
@@ -47,7 +49,7 @@ def verify_benchmark_artifacts(bench_dir: Path = BENCHMARK_DIR) -> Dict[str, obj
     """Verify SHA-256 integrity of all versioned benchmark artifacts."""
     manifest_path = bench_dir / "benchmark_manifest.json"
     if not manifest_path.exists():
-        raise FileNotFoundError(f"Missing benchmark manifest: {manifest_path}")
+        raise BenchmarkIntegrityError(f"Missing benchmark manifest: {manifest_path}")
     
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     expected_hashes = manifest.get("artifacts_sha256", {})
@@ -55,10 +57,11 @@ def verify_benchmark_artifacts(bench_dir: Path = BENCHMARK_DIR) -> Dict[str, obj
     for filename, expected_hash in expected_hashes.items():
         artifact_path = bench_dir / filename
         if not artifact_path.exists():
-            raise FileNotFoundError(f"Missing expected benchmark artifact: {artifact_path}")
+            raise BenchmarkIntegrityError(f"Missing expected benchmark artifact: {artifact_path}")
         content = artifact_path.read_bytes()
         actual_hash = hashlib.sha256(content).hexdigest()
-        assert actual_hash == expected_hash, f"Hash mismatch for {filename}: expected {expected_hash}, got {actual_hash}"
+        if actual_hash != expected_hash:
+            raise BenchmarkIntegrityError(f"Hash mismatch for {filename}: expected {expected_hash}, got {actual_hash}")
     
     return manifest
 
@@ -84,20 +87,44 @@ def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
     valid, errors = validate_author_selection_plan(
         author_selection_plan, domain_manifest, handoff=handoff
     )
-    assert valid is True, f"Author selection plan validation failed: {errors}"
+    if not valid:
+        raise BenchmarkIntegrityError(f"Author selection plan validation failed: {errors}")
     print("Author Selection Plan: VALIDATED (0 errors, fail-closed prospective gate passed).")
 
-    # 3. Compile Prospective Block Plan
+    # 3. Compile Prospective Block Plan and Re-verify against artifact
     print("\n==> [3/5] Compiling Prospective Block Plan from Selection Plan...")
     block_plan = plan_prospective_narrative_blocks(handoff, author_selection_plan=author_selection_plan)
-    assert len(block_plan.get("sections", {})) == 18, "Expected 18 planned sections (opening + 16 domains + integration)"
-    print("Prospective Block Plan: COMPILED successfully.")
+    if len(block_plan.get("sections", {})) != 18:
+        raise BenchmarkIntegrityError("Expected 18 planned sections (opening + 16 domains + integration)")
+
+    versioned_block_plan_path = bench_dir / "01-prospective-block-plan.json"
+    if versioned_block_plan_path.exists():
+        versioned_bp = json.loads(versioned_block_plan_path.read_text(encoding="utf-8"))
+        if set(block_plan.get("sections", {}).keys()) != set(versioned_bp.get("sections", {}).keys()):
+            raise BenchmarkIntegrityError("Recompiled prospective block plan sections do not match versioned block plan.")
+    print("Prospective Block Plan: COMPILED and verified successfully.")
+
+    # Appendix Re-rendering Check
+    as_of_val = handoff["preparation_parameters"].get("effective_as_of")
+    as_of_dt = datetime.fromisoformat(as_of_val) if isinstance(as_of_val, str) else as_of_val
+    horizon_days = handoff["preparation_parameters"].get("horizon_days", 366)
+    timing_data = handoff.get("timing")
+    if timing_data is None:
+        raw_chart = calculate_chart(CHART_3_BIRTH)
+        chart_view = build_safe_interpretive_view(raw_chart)
+        timing_data = cross_technique_timing(chart_view.semantic_chart(), as_of_dt, horizon_days)
+
+    re_rendered_appendix = render_canonical_technical_appendix(CHART_3_BIRTH, profile=PROFILE, timing=timing_data)
+    appendix_file = (bench_dir / "canonical_technical_appendix.md").read_text(encoding="utf-8")
+    if re_rendered_appendix.strip() != appendix_file.strip():
+        raise BenchmarkIntegrityError("Canonical technical appendix re-render does not match versioned benchmark artifact.")
 
     # 4. Provenance Guard on Authored Draft
     print("\n==> [4/5] Running Deterministic Provenance Guard on Author Draft...")
     sources, sections, trace = bind_prospective_plan_to_prose(author_draft, block_plan, domain_manifest)
     unmat = trace.get("unmaterialized_planned_sources", [])
-    assert len(unmat) == 0, f"Unmaterialized planned sources detected: {unmat}"
+    if len(unmat) != 0:
+        raise BenchmarkIntegrityError(f"Unmaterialized planned sources detected: {unmat}")
 
     author_bundle = build_author_bundle(
         handoff=handoff,
@@ -109,7 +136,8 @@ def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
     prov_result = validate_premium_author_bundle(
         CHART_3_BIRTH, author_bundle, profile=PROFILE, prepared_handoff=handoff,
     )
-    assert prov_result.get("approved") is True, f"Provenance Guard rejected draft: {prov_result.get('verification_errors')}"
+    if prov_result.get("approved") is not True:
+        raise BenchmarkIntegrityError(f"Provenance Guard rejected draft: {prov_result.get('verification_errors')}")
     print(f"Provenance Guard: APPROVED (Total blocks: {len(sources)}, 0 unmaterialized mandatories).")
 
     # 5. Publication Guard, Editorial QA & Relationship Fidelity
@@ -132,7 +160,8 @@ def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
         profile=PROFILE,
         prepared_handoff=handoff,
     )
-    assert pub_result.get("approved") is True, f"Publication Guard rejected final report: {pub_result.get('verification_errors')}"
+    if pub_result.get("approved") is not True:
+        raise BenchmarkIntegrityError(f"Publication Guard rejected final report: {pub_result.get('verification_errors')}")
 
     # Editorial QA
     b_risk = barnum_risk(final_reviewed_report)
@@ -141,15 +170,19 @@ def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
     chart = build_safe_interpretive_view(calculate_chart(CHART_3_BIRTH))
     f_errors = validate_technical_relationship_fidelity(final_reviewed_report, chart, lang=PROFILE.preferred_language)
 
-    assert b_risk["share"] == 0.0, f"Barnum risk found: {b_risk}"
-    assert g_risk["share"] == 0.0, f"Grandiosity risk found: {g_risk}"
-    assert m_risk["share"] == 0.0, f"Medicalization risk found: {m_risk}"
-    assert len(f_errors) == 0, f"Relationship fidelity errors found: {f_errors}"
+    if b_risk["share"] != 0.0:
+        raise BenchmarkIntegrityError(f"Barnum risk found: {b_risk}")
+    if g_risk["share"] != 0.0:
+        raise BenchmarkIntegrityError(f"Grandiosity risk found: {g_risk}")
+    if m_risk["share"] != 0.0:
+        raise BenchmarkIntegrityError(f"Medicalization risk found: {m_risk}")
+    if len(f_errors) != 0:
+        raise BenchmarkIntegrityError(f"Relationship fidelity errors found: {f_errors}")
 
     print(f"Publication Guard: APPROVED.")
     print(f"Editorial QA: Barnum={b_risk['share']}, Grandiosity={g_risk['share']}, Medicalization={m_risk['share']}.")
     print(f"Relationship Fidelity: {len(f_errors)} errors.")
-    print("\n==> ALL GATES PASSED! Chart 3 benchmark is 100% reproducible and auditable from Git.")
+    print("\n==> Frozen benchmark artifacts passed deterministic integrity and publication replay.")
     return True
 
 

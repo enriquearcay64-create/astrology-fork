@@ -13,6 +13,12 @@ from .config import (
     LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION,
     PREMIUM_HANDOFF_CONTRACT_VERSION,
 )
+from .exceptions import (
+    LineageMismatchError,
+    SelectionPlanValidationError,
+    BenchmarkIntegrityError,
+    ReviewerAuthorityBoundaryError,
+)
 from .engine import calculate_chart
 from .hierarchy import calculate_hierarchy
 from .interpretation import build_compensation_hypotheses, build_paradoxes
@@ -324,8 +330,42 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
     handoff_contract_hash = _canonical_hash(handoff_contract)
     prepared_signature_hash = _canonical_hash(core["chart_signature"])
     prepared_synthesis_hash = _canonical_hash(core["reasoned_synthesis"])
-    manifest_hash = _canonical_hash(core["reader_domain_manifest"])
-    reader_introduction = _premium_reader_introduction(core["reader_domain_manifest"].get("locale"))
+    manifest = core["reader_domain_manifest"]
+    manifest_hash = _canonical_hash(manifest)
+    reader_introduction = _premium_reader_introduction(manifest.get("locale"))
+
+    # Authentically validate composed domain syntheses against chart claims
+    facts = core["reasoning_packet"].get("facts", {})
+    claims_list = (
+        facts.get("allowed_claims")
+        or core.get("claims")
+        or []
+    )
+    claims_dict = {str(item["id"]): item for item in claims_list if isinstance(item, dict)}
+    coverage = facts.get("coverage", {})
+    composed_synths, _, _ = compose_canonical_domain_syntheses(claims_dict, manifest, coverage)
+    synth_items = [
+        ReasonedSynthesis(**{k: v for k, v in item.items() if k in set(ReasonedSynthesis.__dataclass_fields__)})
+        for item in composed_synths
+    ]
+    timing_ids = [item["id"] for item in facts.get("timing_evidence", [])]
+    claims_objs = [Claim(**item) for item in claims_dict.values()]
+    validated_synths = validate_reasoned_syntheses(synth_items, handoff_chart, claims_objs, timing_ids)
+    approved_domain_synths = [to_primitive(item) for item in validated_synths if item.status == "allowed"]
+
+    seen_ids = set()
+    approved_reasoned_syntheses = []
+    for item in [*approved_domain_synths, *core["reasoned_synthesis"]]:
+        if isinstance(item, dict) and item.get("id") not in seen_ids:
+            seen_ids.add(item.get("id"))
+            approved_reasoned_syntheses.append(item)
+
+    candidate_catalog = build_selection_candidate_catalog(
+        manifest=manifest,
+        approved_syntheses=approved_reasoned_syntheses,
+        packet_id=core["packet_id"],
+    )
+
     return {
         "stage": "reasoning_packet_ready",
         "premium_report_depth": "deep",
@@ -341,7 +381,10 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
         "prepared_chart_signature_sha256": prepared_signature_hash,
         "prepared_signature_synthesis_sha256": prepared_synthesis_hash,
         "prepared_signature_syntheses": core["reasoned_synthesis"],
-        "reader_domain_manifest": core["reader_domain_manifest"],
+        "approved_reasoned_syntheses": approved_reasoned_syntheses,
+        "candidate_catalog": candidate_catalog,
+        "candidate_catalog_sha256": candidate_catalog["catalog_sha256"],
+        "reader_domain_manifest": manifest,
         "reader_domain_manifest_sha256": manifest_hash,
         "reader_introduction": reader_introduction,
         "reader_introduction_sha256": _canonical_hash(reader_introduction),
@@ -354,6 +397,7 @@ def prepare_premium_handoff(birth: BirthData, profile: Optional[LocalizationProf
         "reasoning_packet": core["reasoning_packet"],
         "chart_signature": core["chart_signature"],
         "narrative_plan": core["narrative_plan"],
+        "timing": core["timing"],
         "timeline": core["timeline"],
         "developmental_intervals": core["developmental_intervals"],
         # The client appendix is concise deterministic reference data; the
@@ -1244,6 +1288,61 @@ def _synthesis_matches_reader_path(synthesis: Dict[str, object], path: Dict[str,
         and str(synthesis.get("reasoning_class")) == str(path.get("reasoning_class"))
         and set(map(str, path.get("composition_operations", []))).issubset(set(map(str, synthesis.get("composition_operations", []))))
     )
+
+
+def build_selection_candidate_catalog(
+    handoff: Optional[Dict[str, object]] = None,
+    *,
+    manifest: Optional[Dict[str, object]] = None,
+    approved_syntheses: Optional[Iterable[Dict[str, object]]] = None,
+    packet_id: Optional[str] = None,
+) -> Dict[str, object]:
+    """Return the structured SelectionCandidateCatalog containing all legal paths,
+    observations, primary factors, and valid synthesis candidate IDs."""
+    if handoff is not None:
+        manifest = manifest or handoff.get("reader_domain_manifest", {})
+        approved_syntheses = approved_syntheses or handoff.get("approved_reasoned_syntheses", [])
+        packet_id = packet_id or handoff.get("packet_id")
+
+    manifest = manifest or {}
+    approved = list(approved_syntheses or [])
+
+    catalog_domains = []
+    for d in manifest.get("domains", []):
+        if not isinstance(d, dict) or d.get("availability") != "available":
+            continue
+        d_id = str(d["id"])
+        paths = d.get("legal_coverage_paths", [])
+        path_entries = []
+        for p in paths:
+            p_id = str(p["id"])
+            matching_sids = [
+                str(s["id"]) for s in approved
+                if isinstance(s, dict) and s.get("status") == "allowed" and _synthesis_matches_reader_path(s, p)
+            ]
+            path_entries.append({
+                "path_id": p_id,
+                "label": p.get("label") or p_id,
+                "primary_factor_ids": list(map(str, p.get("primary_factor_ids", []))),
+                "source_claim_ids": list(map(str, p.get("source_claim_ids", []))),
+                "timing_ids": list(map(str, p.get("timing_ids", []))),
+                "reasoning_class": str(p.get("reasoning_class", "")),
+                "candidate_synthesis_ids": matching_sids,
+            })
+        catalog_domains.append({
+            "domain_id": d_id,
+            "domain_heading": d.get("heading"),
+            "paths": path_entries,
+        })
+
+    catalog_payload = {
+        "catalog_version": "1.0",
+        "packet_id": packet_id,
+        "domains": catalog_domains,
+    }
+    catalog_payload["catalog_sha256"] = _canonical_hash(catalog_payload)
+    return catalog_payload
+
 
 
 def _selection_synthesis_set_matches_path_v13(
@@ -2215,6 +2314,12 @@ def _validate_premium_author_bundle_v14(
         set(checked["timing_evidence_ids"]), parsed,
     )
     errors.extend(source_errors)
+    author_materialized_synthesis_ids = sorted(list({
+        str(s_id)
+        for src in valid_sources
+        if isinstance(src, dict)
+        for s_id in src.get("synthesis_ids", [])
+    }))
     approved_syntheses = checked["approved_reasoned_syntheses"]
     errors.extend(_validate_subheading_sources(parsed, valid_sources, approved_syntheses, manifest))
     eligible_hashes = {
@@ -2249,6 +2354,7 @@ def _validate_premium_author_bundle_v14(
         "reader_selection_plan": selection_plan,
         "reader_selection_plan_sha256": selection_plan_hash,
         "approved_reasoned_syntheses": approved_syntheses,
+        "author_materialized_synthesis_ids": author_materialized_synthesis_ids,
         "allowed_claims": checked["allowed_claims"],
         "synthesis_bundle_sha256": expected_synthesis_hash,
         "draft_report_sha256": _canonical_hash(draft),
@@ -2542,6 +2648,31 @@ def _validate_premium_narrative_v14(
         set(provenance.get("timing_evidence_ids", [])), parsed,
     )
     errors.extend(source_errors)
+    author_materialized_ids = set(provenance.get("author_materialized_synthesis_ids") or [])
+    if author_materialized_ids:
+        for src in valid_sources:
+            if isinstance(src, dict):
+                for s_id in src.get("synthesis_ids", []):
+                    if s_id not in author_materialized_ids:
+                        errors.append(f"reviewer_unauthorized_synthesis_expansion:{s_id}")
+
+    manifest_domain_map = {str(d["id"]): d for d in manifest.get("domains", []) if isinstance(d, dict)}
+    entry_by_hash = {str(item.get("narrative_block_sha256")): item for item in parsed.get("authored", []) if isinstance(item, dict)}
+    approved_by_id = {str(item.get("id")): item for item in provenance.get("approved_reasoned_syntheses", []) if isinstance(item, dict)}
+    for src in valid_sources:
+        if isinstance(src, dict):
+            b_hash = str(src.get("narrative_block_sha256"))
+            sec = entry_by_hash.get(b_hash, {}).get("section")
+            if sec in manifest_domain_map:
+                d_obj = manifest_domain_map[sec]
+                d_paths = d_obj.get("legal_coverage_paths", [])
+                for s_id in src.get("synthesis_ids", []):
+                    s_obj = approved_by_id.get(str(s_id))
+                    if s_obj:
+                        matches_domain = any(_synthesis_matches_reader_path(s_obj, p) for p in d_paths)
+                        if not matches_domain:
+                            errors.append(f"reviewer_unauthorized_cross_domain_synthesis:{sec}:{s_id}")
+
     approved_syntheses = provenance.get("approved_reasoned_syntheses", [])
     errors.extend(_validate_subheading_sources(parsed, valid_sources, approved_syntheses, manifest))
     eligible_hashes = {
@@ -2740,6 +2871,13 @@ def validate_author_selection_plan(
         return False, ["missing_plan_dict"]
     if plan.get("version") != "1.0":
         errors.append("invalid_plan_version")
+
+    # Strict packet lineage check
+    if handoff and isinstance(handoff, dict) and "packet_id" in handoff:
+        plan_packet_id = plan.get("packet_id")
+        if plan_packet_id and plan_packet_id != handoff["packet_id"]:
+            errors.append(f"lineage_mismatch:plan_packet_id_{plan_packet_id}_vs_handoff_{handoff['packet_id']}")
+
     available = [
         d for d in manifest.get("domains", [])
         if isinstance(d, dict) and d.get("availability") == "available"
@@ -2788,6 +2926,14 @@ def validate_author_selection_plan(
         if not isinstance(path_entries, list):
             errors.append(f"invalid_paths_list:{d_id}")
             continue
+
+        # Enforce coverage contract: every available domain must have at least one represented path
+        represented_in_domain = [
+            pe for pe in path_entries if isinstance(pe, dict) and pe.get("decision") == "represented"
+        ]
+        if not represented_in_domain:
+            errors.append(f"domain_has_no_represented_paths:{d_id}")
+
         path_map = {str(pe.get("path_id")): pe for pe in path_entries if isinstance(pe, dict)}
 
         for pid in expected_ids:
@@ -2982,6 +3128,10 @@ def plan_prospective_narrative_blocks(
         )
     else:
         sel_plan = effective_selection or handoff.get("reader_selection_plan")
+        if sel_plan.get("packet_id") and handoff.get("packet_id") and sel_plan["packet_id"] != handoff["packet_id"]:
+            raise LineageMismatchError(
+                f"Selection plan packet_id {sel_plan.get('packet_id')} does not match handoff packet_id {handoff.get('packet_id')}"
+            )
         valid, errors = validate_author_selection_plan(
             sel_plan,
             manifest,
@@ -2989,7 +3139,7 @@ def plan_prospective_narrative_blocks(
             handoff=handoff,
         )
         if not valid:
-            raise ValueError("Invalid reader selection plan: " + ", ".join(errors[:5]))
+            raise SelectionPlanValidationError("Invalid reader selection plan: " + ", ".join(errors[:5]))
     plan_by_domain: Dict[str, Dict[str, object]] = {}
 
     for d_entry in sel_plan.get("domains", []):
@@ -3057,18 +3207,7 @@ def plan_prospective_narrative_blocks(
                     "intended_mechanism": f"Mecanismo de {rp_id} no domínio {d_id}",
                 })
         else:
-            s_ids = domain_sources.get(d_id, [f"reasoned.reader.{d_id}"])
-            t_ids = []
-            if d_id == "active_life_chapter" and d.get("legal_coverage_paths"):
-                t_ids = list(map(str, d["legal_coverage_paths"][0].get("timing_ids", [])))
-            blocks.append({
-                "block_index": 0,
-                "kind": "paragraph",
-                "synthesis_ids": s_ids,
-                "claim_ids": [],
-                "timing_ids": t_ids,
-                "intended_mechanism": f"Mecanismo central e escolhas práticas no domínio {d_id}",
-            })
+            raise SelectionPlanValidationError(f"Available domain '{d_id}' has no represented paths in selection plan")
 
         sections_plan[d_id] = blocks
 
