@@ -3,12 +3,55 @@ from .exceptions import SelectionPlanValidationError
 from .pipeline import _parse_premium_narrative, _narrative_block_entry
 
 BLOCK_FIELDS = {'section_id', 'kind', 'content', 'synthesis_ids', 'claim_ids', 'timing_ids'}
+AUTHOR_PAYLOAD_FIELDS = {'packet_id', 'blocks'}
+REVIEWER_PAYLOAD_FIELDS = {'packet_id', 'verdict', 'blocks', 'corrections_made', 'remaining_warnings', 'regeneration_request'}
+
+
+def validate_reviewer_payload(payload, expected_packet_id):
+    if not isinstance(payload, dict):
+        raise SelectionPlanValidationError('Reviewer payload must be an object')
+    if set(payload) != REVIEWER_PAYLOAD_FIELDS:
+        missing = sorted(REVIEWER_PAYLOAD_FIELDS - set(payload))
+        extra = sorted(set(payload) - REVIEWER_PAYLOAD_FIELDS)
+        raise SelectionPlanValidationError(f'Invalid reviewer payload schema: missing={missing}, extra={extra}')
+    if payload.get('packet_id') != expected_packet_id:
+        raise SelectionPlanValidationError(f'Reviewer packet_id mismatch: {payload.get("packet_id")} != {expected_packet_id}')
+    verdict = payload.get('verdict')
+    if verdict not in {'approved', 'regenerate_author', 'blocked'}:
+        raise SelectionPlanValidationError(f'Invalid reviewer verdict: {verdict}')
+    if not isinstance(payload.get('corrections_made'), list) or any(not isinstance(x, str) for x in payload['corrections_made']):
+        raise SelectionPlanValidationError('corrections_made must be a list of strings')
+    if not isinstance(payload.get('remaining_warnings'), list) or any(not isinstance(x, str) for x in payload['remaining_warnings']):
+        raise SelectionPlanValidationError('remaining_warnings must be a list of strings')
+    regen = payload.get('regeneration_request')
+    if verdict == 'approved':
+        if regen is not None:
+            raise SelectionPlanValidationError('approved reviewer verdict must have null regeneration_request')
+        if not isinstance(payload.get('blocks'), list) or not payload['blocks']:
+            raise SelectionPlanValidationError('approved reviewer verdict requires non-empty blocks')
+    elif verdict == 'regenerate_author':
+        if not isinstance(regen, dict) or set(regen) != {'items'} or not isinstance(regen.get('items'), list) or not regen['items']:
+            raise SelectionPlanValidationError('regenerate_author reviewer verdict requires structured regeneration_request with non-empty items')
+    elif verdict == 'blocked':
+        if regen is not None:
+            raise SelectionPlanValidationError('blocked reviewer verdict must have null regeneration_request')
+        if not payload['remaining_warnings'] or not any(isinstance(x, str) and x.strip() for x in payload['remaining_warnings']):
+            raise SelectionPlanValidationError('blocked reviewer verdict requires non-empty remaining_warnings')
+    return payload
 
 
 def render_explicit_blocks(payload, handoff, block_plan, author_scope=None):
-    if not isinstance(payload, dict) or set(payload) != {'packet_id', 'blocks'} or payload.get('packet_id') != handoff['packet_id']:
+    if not isinstance(payload, dict) or payload.get('packet_id') != handoff['packet_id']:
         raise SelectionPlanValidationError('Explicit prose packet/shape mismatch')
-    rows = payload['blocks']
+    if set(payload) == AUTHOR_PAYLOAD_FIELDS:
+        rows = payload['blocks']
+    elif set(payload) == REVIEWER_PAYLOAD_FIELDS:
+        validate_reviewer_payload(payload, handoff['packet_id'])
+        if payload['verdict'] != 'approved':
+            raise SelectionPlanValidationError(f'Cannot render blocks for non-approved reviewer verdict: {payload["verdict"]}')
+        rows = payload['blocks']
+    else:
+        raise SelectionPlanValidationError('Explicit prose packet/shape mismatch')
     if not isinstance(rows, list) or not rows:
         raise SelectionPlanValidationError('Explicit blocks required')
     manifest = handoff['reader_domain_manifest']

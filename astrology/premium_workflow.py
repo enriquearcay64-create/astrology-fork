@@ -64,7 +64,7 @@ def prepare_author_from_selection(handoff, selection, lang="pt-BR"):
         f"=== READER DOMAIN MANIFEST ===\n{json.dumps(handoff['reader_domain_manifest'], ensure_ascii=False, sort_keys=True)}\n\n"
         f"=== FIXED READER INTRODUCTION ===\n{handoff['reader_introduction']}\n"
     )
-    prompt += "\n" + EXPLICIT_PROSE_INSTRUCTIONS
+    prompt += "\n" + AUTHOR_EXPLICIT_PROSE_INSTRUCTIONS
     return {"stage": "awaiting_author", "packet_id": handoff["packet_id"], "block_plan": blocks, "author_prompt": prompt}
 
 
@@ -90,7 +90,7 @@ def require_deliverable(qa):
             raise BenchmarkIntegrityError(f'Editorial gate failed: {name}')
 
 
-EXPLICIT_PROSE_INSTRUCTIONS = '''Return ONLY JSON with exactly packet_id and blocks.
+AUTHOR_EXPLICIT_PROSE_INSTRUCTIONS = '''Return ONLY JSON with exactly packet_id and blocks.
 blocks is an ordered list of objects with exactly section_id, kind, content, synthesis_ids, claim_ids, timing_ids.
 kind is paragraph, list_item or subheading. content contains that single block without a Markdown prefix or blank-line-separated extra blocks.
 Select sources explicitly for every block from the corresponding frozen section. claim_ids must be [].
@@ -98,10 +98,31 @@ Do not calculate hashes or source bindings; deterministic rendering handles thos
 Use as many blocks as distinct reader value requires. Never borrow a source merely to pass validation.
 '''
 
+REVIEWER_EXPLICIT_PROSE_INSTRUCTIONS = '''Return ONLY JSON with exactly packet_id, verdict, blocks, corrections_made, remaining_warnings, and regeneration_request.
+verdict must be exactly one of: "approved", "regenerate_author", "blocked".
+- If verdict is "approved":
+  * blocks must contain the complete ordered list of reviewed narrative blocks covering all manifest sections.
+  * corrections_made must be a list of non-empty strings describing substantive improvements made.
+  * remaining_warnings must be an empty list [] or a list of advisory non-fatal notes.
+  * regeneration_request must be null.
+- If verdict is "regenerate_author":
+  * regeneration_request must be an object with "items": [{"domain_id": str, "path_ids": [str], "reason": str}] specifying exactly which domains/paths failed semantic fidelity and require Author regeneration.
+  * blocks may be partial or empty.
+  * remaining_warnings must be a list of strings explaining the failure.
+- If verdict is "blocked":
+  * remaining_warnings must be a non-empty list of strings detailing why the draft cannot be delivered or salvaged.
+  * regeneration_request must be null.
+Each block in blocks must have: section_id, kind, content, synthesis_ids, claim_ids, timing_ids.
+kind is paragraph, list_item or subheading.
+Your source authority is strictly limited to Author-materialized sources in each section. claim_ids must be [].
+'''
+
+EXPLICIT_PROSE_INSTRUCTIONS = AUTHOR_EXPLICIT_PROSE_INSTRUCTIONS
+
 
 def build_reviewer_prompt(handoff, block_plan, author_payload, provenance, scope, lang='pt-BR'):
     from .reasoning import humanization_verifier_instructions
-    return (humanization_verifier_instructions(lang) + '\n' + EXPLICIT_PROSE_INSTRUCTIONS +
+    return (humanization_verifier_instructions(lang) + '\n' + REVIEWER_EXPLICIT_PROSE_INSTRUCTIONS +
             '\nThe Selection plan is immutable. Your source authority is limited to Author-materialized sources in each section.\n' +
             json.dumps({'reasoning_packet': handoff['reasoning_packet'], 'manifest': handoff['reader_domain_manifest'],
                         'block_plan': block_plan, 'author_blocks': author_payload, 'provenance': provenance,

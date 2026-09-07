@@ -9,15 +9,16 @@ from .premium_workflow import (build_author_selection_prompt, prepare_author_fro
     build_reviewer_prompt, validate_saved_block_plan, validate_frozen_inputs, require_deliverable)
 from .explicit_prose import render_explicit_blocks
 from .isolated_execution import RunStore
-from .benchmark_integrity import canonical_bytes, sha256, load_json, require_equal, check_benchmark_run_output
+from .benchmark_integrity import canonical_bytes, sha256, load_json, require_equal, check_benchmark_run_output, record_contamination_evidence
 from .exceptions import BenchmarkIntegrityError
 from .report import render_canonical_technical_appendix, validate_technical_relationship_fidelity
 from .editorial_qa import barnum_risk, grandiosity_and_flattery_risk, medicalization_risk
 from .engine import calculate_chart
 from .safe_view import build_safe_interpretive_view
+from .explicit_prose import render_explicit_blocks, validate_reviewer_payload
 
 
-def prepare_run(root, repository, birth, profile, *, as_of=None, horizon_days=366, include_timing=True, fixture=False, audit_record=None):
+def prepare_run(root, repository, birth, profile, *, as_of=None, horizon_days=366, include_timing=True, fixture=False, audit_record=None, benchmark_spec=None):
     configuration = {'birth': asdict(birth), 'profile': asdict(profile) if profile else None,
                      'as_of': as_of.isoformat() if as_of else None, 'horizon_days': horizon_days, 'include_timing': include_timing}
     store = RunStore.create(root, repository, configuration, fixture=fixture, audit_record=audit_record)
@@ -27,6 +28,9 @@ def prepare_run(root, repository, birth, profile, *, as_of=None, horizon_days=36
     store.put('author_selection_prompt.txt', build_author_selection_prompt(handoff).encode())
     store.put('canonical_technical_appendix.md', render_canonical_technical_appendix(birth, profile=profile, timing=handoff.get('timing')).encode())
     store.event('prepared', ['01-handoff.json', '01-candidate-catalog.json', 'author_selection_prompt.txt', 'canonical_technical_appendix.md'])
+    if benchmark_spec is not None:
+        from .benchmark_spec import freeze_spec_in_store
+        freeze_spec_in_store(store, benchmark_spec)
     return store
 
 
@@ -54,11 +58,14 @@ def _save(store, action, objects=None, texts=None):
 def continue_run(store, transport):
     store.assert_code()
     store.verify()
+    from .benchmark_spec import validate_run_against_spec
+    validate_run_against_spec(store, transport, 'selection')
     config = load_json(store.path('run.json'))['configuration']
     birth = BirthData(**config['birth'])
     profile = LocalizationProfile(**config['profile']) if config['profile'] else None
     handoff = load_json(store.path('01-handoff.json'))
     lang = handoff['reader_domain_manifest'].get('locale', 'pt-BR')
+    repo = Path(load_json(store.path('run.json'))['repository'])
     validate_frozen_inputs(handoff, birth, profile)
     selection = store.invoke('selection', store.path('author_selection_prompt.txt').read_text(), transport)
     prepared = prepare_author_from_selection(handoff, selection, lang)
@@ -68,8 +75,8 @@ def continue_run(store, transport):
         '01-prospective-block-plan.json': blocks}, {'author_prompt.txt': prepared['author_prompt']})
     author_payload = store.invoke('author', prepared['author_prompt'], transport)
     authored = render_explicit_blocks(author_payload, handoff, blocks)
-    if not load_json(store.path("run.json"))["fixture"]:
-        check_benchmark_run_output(store.root, authored['report'].encode())
+    if not load_json(store.path("run.json"))["fixture"] or store.path("benchmark_spec.json").exists():
+        record_contamination_evidence(store, "author", authored['report'].encode(), repo)
     author = build_author_bundle(handoff, authored['report'], authored['sources'], reader_selection_plan=selection, reader_sections=authored['sections'])
     provenance = validate_premium_author_bundle(birth, author, profile=profile, prepared_handoff=handoff)
     _save(store, 'author:guarded', {'02-author-bundle.json': author, '03-provenance-guard.json': provenance}, {'author_draft.md': authored['report']})
@@ -78,11 +85,35 @@ def continue_run(store, transport):
     reviewer_prompt = build_reviewer_prompt(handoff, blocks, author_payload, provenance, authored['materialized_scope'], lang)
     _save(store, 'author:validated', texts={'reviewer_prompt.txt': reviewer_prompt})
     reviewed_payload = store.invoke('reviewer', reviewer_prompt, transport)
+
+    # Reviewer MUST own the semantic verdict (M2-1, Corrections 1 & 2)
+    validate_reviewer_payload(reviewed_payload, handoff['packet_id'])
+    verdict = reviewed_payload['verdict']
+    corrections_made = reviewed_payload['corrections_made']
+    remaining_warnings = reviewed_payload['remaining_warnings']
+    regeneration_request = reviewed_payload['regeneration_request']
+
+    if verdict != 'approved':
+        # Preserve full captured response and structured ReviewerBundle / non-publication result
+        reviewer = build_reviewer_bundle(
+            author, provenance, final_report=authored['report'],
+            verdict=verdict, corrections_made=corrections_made,
+            remaining_warnings=remaining_warnings, regeneration_request=regeneration_request,
+            narrative_block_sources=authored['sources'], reader_sections=authored['sections'],
+        )
+        publication = validate_premium_narrative(reviewer, provenance, birth, profile=profile, prepared_handoff=handoff)
+        _save(store, 'reviewer:guarded', {'04-reviewer-bundle.json': reviewer, '05-publication-guard.json': publication})
+        raise BenchmarkIntegrityError(f"Reviewer verdict was '{verdict}'; publication halted without delivery: {remaining_warnings or regeneration_request}")
+
     reviewed = render_explicit_blocks(reviewed_payload, handoff, blocks, author_scope=authored['materialized_scope'])
-    if not load_json(store.path("run.json"))["fixture"]:
-        check_benchmark_run_output(store.root, reviewed['report'].encode())
-    reviewer = build_reviewer_bundle(author, provenance, final_report=reviewed['report'],
-                                    narrative_block_sources=reviewed['sources'], reader_sections=reviewed['sections'])
+    if not load_json(store.path("run.json"))["fixture"] or store.path("benchmark_spec.json").exists():
+        record_contamination_evidence(store, "reviewer", reviewed['report'].encode(), repo)
+    reviewer = build_reviewer_bundle(
+        author, provenance, final_report=reviewed['report'],
+        verdict=verdict, corrections_made=corrections_made,
+        remaining_warnings=remaining_warnings, regeneration_request=regeneration_request,
+        narrative_block_sources=reviewed['sources'], reader_sections=reviewed['sections'],
+    )
     publication = validate_premium_narrative(reviewer, provenance, birth, profile=profile, prepared_handoff=handoff)
     qa = {'publication_approved': publication.get('approved'), 'barnum_risk': barnum_risk(reviewed['report']),
           'grandiosity_risk': grandiosity_and_flattery_risk(reviewed['report']), 'medicalization_risk': medicalization_risk(reviewed['report']),
@@ -95,13 +126,18 @@ def continue_run(store, transport):
 
 def verify_captured_derivation(store):
     """Replay output extraction/rendering, not another model invocation."""
+    store.assert_code()
     store.verify()
     handoff = load_json(store.path('01-handoff.json'))
     selection = store.verify_response('selection')
     require_equal(selection, load_json(store.path('01-author-selection-plan.json')), 'captured selection')
     blocks = validate_saved_block_plan(handoff, load_json(store.path('01-prospective-block-plan.json')))
     author = render_explicit_blocks(store.verify_response('author'), handoff, blocks)
-    reviewer = render_explicit_blocks(store.verify_response('reviewer'), handoff, blocks, author_scope=author['materialized_scope'])
+    reviewed_resp = store.verify_response('reviewer')
+    validate_reviewer_payload(reviewed_resp, handoff['packet_id'])
+    if reviewed_resp['verdict'] != 'approved':
+        raise BenchmarkIntegrityError(f"Replay verified non-approved reviewer verdict: {reviewed_resp['verdict']}")
+    reviewer = render_explicit_blocks(reviewed_resp, handoff, blocks, author_scope=author['materialized_scope'])
     for result, name in ((author, 'author_draft.md'), (reviewer, 'final_reviewed_report.md')):
         if result['report'].encode() != store.path(name).read_bytes():
             raise BenchmarkIntegrityError('Report does not derive from captured response: ' + name)
@@ -111,7 +147,12 @@ def verify_captured_derivation(store):
     validate_frozen_inputs(handoff, birth, profile)
     author_bundle = build_author_bundle(handoff, author['report'], author['sources'], reader_selection_plan=selection, reader_sections=author['sections'])
     provenance = validate_premium_author_bundle(birth, author_bundle, profile=profile, prepared_handoff=handoff)
-    reviewer_bundle = build_reviewer_bundle(author_bundle, provenance, final_report=reviewer['report'], narrative_block_sources=reviewer['sources'], reader_sections=reviewer['sections'])
+    reviewer_bundle = build_reviewer_bundle(
+        author_bundle, provenance, final_report=reviewer['report'],
+        verdict=reviewed_resp['verdict'], corrections_made=reviewed_resp['corrections_made'],
+        remaining_warnings=reviewed_resp['remaining_warnings'], regeneration_request=reviewed_resp['regeneration_request'],
+        narrative_block_sources=reviewer['sources'], reader_sections=reviewer['sections'],
+    )
     publication = validate_premium_narrative(reviewer_bundle, provenance, birth, profile=profile, prepared_handoff=handoff)
     lang = handoff['reader_domain_manifest'].get('locale', 'pt-BR')
     qa = {'publication_approved': publication.get('approved'), 'barnum_risk': barnum_risk(reviewer['report']),
@@ -139,6 +180,7 @@ def finalize_trace(store):
     """Preserve aliases for the portable trace contract; never promote automatically."""
     from .benchmark_integrity import build_trace_manifest
     from .blind_execution import reveal_blind
+    store.assert_code()
     verify_captured_derivation(store)
     if 'blind:revealed' not in [e['action'] for e in store.verify()]:
         raise BenchmarkIntegrityError('Freeze evaluation and perform the separate reveal first')

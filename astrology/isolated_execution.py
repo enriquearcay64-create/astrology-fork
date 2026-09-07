@@ -48,13 +48,21 @@ class GeminiTransport:
     provider = 'google-gemini-api'
     fixture = False
 
-    def __init__(self, model, *, temperature=0.7, max_output_tokens=32768, timeout=180):
+    def __init__(self, model, *, temperature=0.7, max_output_tokens=32768, timeout=180, thinking_level=None):
         if not isinstance(model, str) or not re.fullmatch(r'[A-Za-z0-9._-]+', model):
             raise ValueError('An explicit Gemini model identifier is required')
         if not 0 <= temperature <= 2 or type(max_output_tokens) is not int or max_output_tokens <= 0:
             raise ValueError('Invalid generation settings')
         self.model = model
         self.settings = {'temperature': temperature, 'maxOutputTokens': max_output_tokens, 'responseMimeType': 'application/json'}
+        if thinking_level is not None:
+            tl = str(thinking_level).lower()
+            if tl not in {'low', 'medium', 'high'}:
+                raise ValueError(f'Invalid thinking level: {thinking_level}. Expected low, medium, or high.')
+            self.thinking_level = tl
+            self.settings['thinkingConfig'] = {'thinkingLevel': tl.upper()}
+        else:
+            self.thinking_level = None
         self.timeout = timeout
 
     def request(self, prompt):
@@ -163,10 +171,13 @@ class RunStore:
         return record
 
     def assert_code(self):
-        recorded = load_json(self.path('run.json'))['code_context']
-        current = code_context(load_json(self.path('run.json'))['repository'])
+        origin = load_json(self.path('run.json'))
+        recorded = origin['code_context']
+        current = code_context(origin['repository'])
         for field in ('artifact_generation_commit_sha', 'source_sha256'):
             require_equal(current[field], recorded[field], 'generation code ' + field)
+        if not origin.get('fixture') and current.get('working_tree_dirty'):
+            raise BenchmarkIntegrityError('Working tree cannot be dirty during live benchmark execution')
 
     def invoke(self, stage, prompt, transport):
         if stage not in {'selection', 'author', 'reviewer', 'evaluator'}:
@@ -184,7 +195,7 @@ class RunStore:
             if not fixture and type(transport) is not GeminiTransport:
                 raise BenchmarkIntegrityError('Live runs require the isolated API transport')
             request = transport.request(prompt)
-            expected = {'model': transport.model, 'provider': transport.provider, 'request': request, 'fixture_transport': bool(transport.fixture)}
+            expected = {'model': transport.model, 'provider': transport.provider, 'request': request, 'fixture_transport': bool(transport.fixture), 'thinking_level': getattr(transport, 'thinking_level', None)}
             prefix = f'stages/{stage}'
             if self.path(prefix + '/receipt.json').exists():
                 require_equal(load_json(self.path(prefix + '/request.json')), expected, 'resumed request')

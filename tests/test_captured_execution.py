@@ -88,7 +88,16 @@ def test_blind_state_machine(gitrepo,tmp_path):
     prompt=store.path('evaluator_prompt.txt').read_text()
     assert 'ground_truth' in prompt and 'nonce' not in prompt and 'mapping' not in prompt
     with pytest.raises(BenchmarkIntegrityError):reveal_blind(store)
-    t=FixtureTransport([{'scores':[{'alpha':8,'beta':9}]*17,'evidence':['fixture evidence']}])
+    structured_dimensions=[{
+        'dimension_id': f'dimension {i}',
+        'alpha_score': 8,
+        'beta_score': 9,
+        'alpha_evidence': ['Explicit quotation and detailed reasoning from Report Alpha.'],
+        'beta_evidence': ['Explicit quotation and detailed reasoning from Report Beta.'],
+        'factual_mismatches': [],
+        'uncertainty': None,
+    } for i in range(17)]
+    t=FixtureTransport([{'dimensions': structured_dimensions, 'overall_notes': 'Structured evaluation pass'}])
     result=evaluate_blind(store,t)
     assert result['score']['beta_wins']==17
     assert reveal_blind(store)['assignment']['run_id']=='run'
@@ -105,6 +114,18 @@ def _explicit_payload(report, sources, handoff):
         for b in parsed['authored']]}
 
 
+def _explicit_reviewer_payload(report, sources, handoff, verdict='approved', corrections_made=None, remaining_warnings=None, regeneration_request=None):
+    base = _explicit_payload(report, sources, handoff)
+    return {
+        'packet_id': handoff['packet_id'],
+        'verdict': verdict,
+        'blocks': base['blocks'],
+        'corrections_made': corrections_made or ["Polished prose rhythm and domain coherence"],
+        'remaining_warnings': remaining_warnings or [],
+        'regeneration_request': regeneration_request,
+    }
+
+
 @pytest.fixture(scope='module')
 def prose_fixture():
     h=current_handoff()
@@ -114,7 +135,7 @@ def prose_fixture():
     reviewer=(BENCHMARK_DIR/'final_reviewed_report.md').read_text()
     src,_,_=bind_prospective_plan_to_prose(author,bp,h['reader_domain_manifest'])
     rs,_,_=bind_prospective_plan_to_prose(reviewer,bp,h['reader_domain_manifest'])
-    return h,p,bp,_explicit_payload(author,src,h),_explicit_payload(reviewer,rs,h)
+    return h,p,bp,_explicit_payload(author,src,h),_explicit_reviewer_payload(reviewer,rs,h)
 
 
 def test_explicit_sources_no_retroactive_binding(prose_fixture):
