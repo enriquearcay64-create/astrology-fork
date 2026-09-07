@@ -85,8 +85,22 @@ def evaluate_blind(store, transport):
         raise BenchmarkIntegrityError('Blind commitment required before judgment')
     if store.path('benchmark_spec.json').exists():
         spec = load_json(store.path('benchmark_spec.json'))
-        if transport.model != spec['evaluator_protocol']['model']:
-            raise BenchmarkIntegrityError(f"Evaluator model mismatch: {transport.model} != {spec['evaluator_protocol']['model']}")
+        eval_cfg = spec.get('evaluator_protocol', {})
+        if transport.model != eval_cfg.get('model'):
+            raise BenchmarkIntegrityError(f"Evaluator model mismatch: {transport.model} != {eval_cfg.get('model')}")
+        tl = getattr(transport, 'thinking_level', None)
+        if tl != eval_cfg.get('thinking_level'):
+            raise BenchmarkIntegrityError(f"Evaluator thinking_level mismatch: {tl} != {eval_cfg.get('thinking_level')}")
+        temp = getattr(transport, 'temperature', None)
+        if temp is None and hasattr(transport, 'settings'):
+            temp = transport.settings.get('temperature')
+        if temp != eval_cfg.get('temperature'):
+            raise BenchmarkIntegrityError(f"Evaluator temperature mismatch: {temp} != {eval_cfg.get('temperature')}")
+        max_tok = getattr(transport, 'max_output_tokens', None)
+        if max_tok is None and hasattr(transport, 'settings'):
+            max_tok = transport.settings.get('maxOutputTokens')
+        if max_tok != eval_cfg.get('max_output_tokens'):
+            raise BenchmarkIntegrityError(f"Evaluator max_output_tokens mismatch: {max_tok} != {eval_cfg.get('max_output_tokens')}")
     payload = store.invoke('evaluator', store.path('evaluator_prompt.txt').read_text(), transport)
     rubric = load_json(store.path('rubric.json'))
     raw = store.path('stages/evaluator/response.raw.json').read_bytes()

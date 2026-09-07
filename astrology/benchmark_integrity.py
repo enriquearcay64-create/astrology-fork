@@ -36,6 +36,8 @@ def require_equal(actual, expected, label):
 def require_promotable(manifest):
     if manifest.get("benchmark_status") != "valid" or manifest.get("execution_kind") != "captured_live" or manifest.get("independently_reviewed") is not True:
         raise BenchmarkIntegrityError("Benchmark is not valid promotion evidence")
+    if manifest.get("champion_promotion_grade") is False or manifest.get("champion_comparison_mode") == "legacy_weaker":
+        raise BenchmarkIntegrityError("Legacy-weaker or unverified champion cannot satisfy promotion gate")
 
 
 def verify_artifacts(run_dir):
@@ -107,28 +109,28 @@ def create_assignment(run_id, reports, mapping, rubric_hash, truth_hash):
     return {"run_id": run_id, "commitment_sha256": sha256(canonical_bytes(private))}, private
 
 
-def freeze_score(raw_response: bytes, payload, rubric=None):
-    if isinstance(payload, dict) and "dimensions" in payload:
+def freeze_score(raw_response: bytes, payload, rubric=None, *, allow_legacy_positional=None):
+    if rubric is not None:
+        allow_legacy_positional = False
+    elif allow_legacy_positional is None:
+        allow_legacy_positional = True
+    if rubric is not None:
+        # Rubric supplied: live evaluation MUST use named structured dimensions. Positional fallback strictly forbidden.
+        if not isinstance(payload, dict) or "dimensions" not in payload:
+            raise BenchmarkIntegrityError("Expected dictionary with 'dimensions' in evaluation payload against frozen rubric")
         rows = payload["dimensions"]
         if not isinstance(rows, list) or not rows:
             raise BenchmarkIntegrityError("Expected non-empty list of dimensions in evaluation payload")
-        if rows and isinstance(rows[0], dict) and "dimension_id" not in rows[0] and "alpha" in rows[0] and "beta" in rows[0]:
-            return freeze_score(raw_response, rows)
-        if rubric is not None:
-            from .benchmark_spec import extract_rubric_dimension_ids
-            expected_ids = extract_rubric_dimension_ids(rubric)
-        else:
-            expected_ids = [r.get("dimension_id") for r in rows if isinstance(r, dict)]
-            if any(not d for d in expected_ids):
-                raise BenchmarkIntegrityError("All dimension rows must specify dimension_id")
-            if len(expected_ids) != len(set(expected_ids)):
-                raise BenchmarkIntegrityError("Duplicate dimension_id in evaluation rows")
+        from .benchmark_spec import extract_rubric_dimension_ids
+        expected_ids = extract_rubric_dimension_ids(rubric)
 
         seen_ids = set()
         validated_rows = []
         for row in rows:
             if not isinstance(row, dict):
                 raise BenchmarkIntegrityError("Each dimension row must be an object")
+            if "dimension_id" not in row:
+                raise BenchmarkIntegrityError("Named dimension schema required: missing dimension_id in evaluation row")
             dim_id = row.get("dimension_id")
             if not isinstance(dim_id, str) or dim_id not in expected_ids:
                 raise BenchmarkIntegrityError(f"Unknown or missing dimension_id: {dim_id}")
@@ -194,7 +196,61 @@ def freeze_score(raw_response: bytes, payload, rubric=None):
         }
         return {"score": result, "score_sha256": sha256(canonical_bytes(result))}
 
-    scores = payload
+    # Rubric is None: only allowed when allow_legacy_positional is True or named dimensions without rubric
+    if isinstance(payload, dict) and "dimensions" in payload:
+        rows = payload["dimensions"]
+        if not isinstance(rows, list) or not rows:
+            raise BenchmarkIntegrityError("Expected non-empty list of dimensions in evaluation payload")
+        if not allow_legacy_positional or (rows and isinstance(rows[0], dict) and "dimension_id" in rows[0]):
+            expected_ids = [r.get("dimension_id") for r in rows if isinstance(r, dict)]
+            if any(not d for d in expected_ids):
+                raise BenchmarkIntegrityError("All dimension rows must specify dimension_id")
+            if len(expected_ids) != len(set(expected_ids)):
+                raise BenchmarkIntegrityError("Duplicate dimension_id in evaluation rows")
+            seen_ids = set()
+            validated_rows = []
+            for row in rows:
+                if not isinstance(row, dict):
+                    raise BenchmarkIntegrityError("Each dimension row must be an object")
+                dim_id = row.get("dimension_id")
+                if not isinstance(dim_id, str):
+                    raise BenchmarkIntegrityError(f"Unknown or missing dimension_id: {dim_id}")
+                seen_ids.add(dim_id)
+                alpha = row.get("alpha_score", row.get("alpha"))
+                beta = row.get("beta_score", row.get("beta"))
+                if type(alpha) not in (int, float) or not 0 <= alpha <= 10 or type(beta) not in (int, float) or not 0 <= beta <= 10:
+                    raise BenchmarkIntegrityError(f"Invalid score values for dimension {dim_id}")
+                alpha_ev = row.get("alpha_evidence", [])
+                beta_ev = row.get("beta_evidence", [])
+                if not isinstance(alpha_ev, list) or not alpha_ev or not isinstance(beta_ev, list) or not beta_ev:
+                    raise BenchmarkIntegrityError(f"Dimension {dim_id} requires non-empty alpha and beta evidence")
+                validated_rows.append({
+                    "dimension_id": dim_id,
+                    "alpha_score": alpha,
+                    "beta_score": beta,
+                    "alpha_evidence": alpha_ev,
+                    "beta_evidence": beta_ev,
+                    "factual_mismatches": row.get("factual_mismatches", []),
+                    "uncertainty": row.get("uncertainty", "") or "",
+                })
+            result = {
+                "raw_response_sha256": sha256(raw_response),
+                "dimension_count": len(validated_rows),
+                "dimensions": validated_rows,
+                "alpha_total": sum(r["alpha_score"] for r in validated_rows),
+                "beta_total": sum(r["beta_score"] for r in validated_rows),
+                "alpha_wins": sum(r["alpha_score"] > r["beta_score"] for r in validated_rows),
+                "beta_wins": sum(r["beta_score"] > r["alpha_score"] for r in validated_rows),
+                "ties": sum(r["alpha_score"] == r["beta_score"] for r in validated_rows),
+                "overall_notes": str(payload.get("overall_notes", "")),
+            }
+            return {"score": result, "score_sha256": sha256(canonical_bytes(result))}
+
+    # Positional list fallback only allowed when explicitly enabled
+    if not allow_legacy_positional:
+        raise BenchmarkIntegrityError("Legacy positional scoring is forbidden in live execution; structured named dimensions required")
+
+    scores = payload["dimensions"] if (isinstance(payload, dict) and "dimensions" in payload) else payload
     if not isinstance(scores, list) or not scores:
         raise BenchmarkIntegrityError("Expected non-empty list of scores")
     for row in scores:
@@ -212,6 +268,11 @@ def freeze_score(raw_response: bytes, payload, rubric=None):
     return {"score": result, "score_sha256": sha256(canonical_bytes(result))}
 
 
+def freeze_score_legacy_positional(raw_response: bytes, scores):
+    """Historical and replay-only positional scoring; cannot be invoked by captured live evaluator."""
+    return freeze_score(raw_response, scores, rubric=None, allow_legacy_positional=True)
+
+
 def reveal_assignment(commitment, payload, frozen_score, raw_response):
     require_equal(commitment, {"run_id": payload["run_id"], "commitment_sha256": sha256(canonical_bytes(payload))}, "blind commitment")
     if not frozen_score or "score" not in frozen_score:
@@ -220,7 +281,7 @@ def reveal_assignment(commitment, payload, frozen_score, raw_response):
     if dims and isinstance(dims[0], dict) and "dimension_id" in dims[0]:
         recomputed = freeze_score(raw_response, {"dimensions": dims, "overall_notes": frozen_score["score"].get("overall_notes", "")})
     else:
-        recomputed = freeze_score(raw_response, dims)
+        recomputed = freeze_score_legacy_positional(raw_response, dims)
     require_equal(frozen_score, recomputed, "frozen score")
     return {"assignment": payload, "score_sha256": frozen_score["score_sha256"]}
 
@@ -255,11 +316,19 @@ def build_trace_manifest(run_dir, repository, pipeline_version, parameters):
     if missing:
         raise BenchmarkIntegrityError(f"Incomplete execution trace: {sorted(set(missing))}")
     files = [f for f in root.rglob('*') if f.is_file() and f.name not in {'.writer.lock', 'benchmark_manifest.json'}]
+    champ_prom_grade = None
+    champ_comp_mode = None
+    if (root / 'benchmark_spec.json').is_file():
+        spec = load_json(root / 'benchmark_spec.json')
+        champ_prom_grade = spec.get('champion', {}).get('promotion_grade', False)
+        champ_comp_mode = spec.get('champion', {}).get('comparison_mode', 'standard')
     return {
         'trace_contract_version': '1.0', 'run_id': root.name,
         'benchmark_status': 'synthetic_test_fixture' if origin['fixture'] else 'pending_independent_review',
         'execution_kind': 'fixture' if origin['fixture'] else 'captured_live',
         'independently_reviewed': False,
+        'champion_promotion_grade': champ_prom_grade,
+        'champion_comparison_mode': champ_comp_mode,
         'artifact_generation_commit_sha': context['artifact_generation_commit_sha'],
         'generation_source_sha256': context['source_sha256'],
         'pipeline_version': pipeline_version, 'preparation_parameters': parameters,
@@ -271,47 +340,62 @@ def record_contamination_evidence(store, stage: str, output: bytes, repository: 
     """Portable contamination check persisting 07-<stage>-contamination.json and logging event."""
     repo_root = Path(repository).resolve()
     inspected_corpus = []
+    target_items = []
 
-    if corpus_files is not None:
-        target_paths = [Path(p).resolve() for p in corpus_files]
-    elif store.path("benchmark_spec.json").exists():
+    if store.path("benchmark_spec.json").exists():
         spec = load_json(store.path("benchmark_spec.json"))
         c_scope = spec.get("contamination_scope", {})
         spec_files = c_scope.get("corpus_files", [])
-        if spec_files:
-            target_paths = [(repo_root / item["relative_path"]).resolve() for item in spec_files]
-        else:
-            fam = c_scope.get("benchmark_family", "chart3_mutable_earth_water")
-            target_paths = [p.resolve() for p in (repo_root / "benchmarks" / fam).rglob("*.md") if store.root not in p.resolve().parents]
-    else:
-        # Fallback to searching benchmarks directory outside current run
-        bench_dir = repo_root / "benchmarks"
-        target_paths = [p.resolve() for p in bench_dir.rglob("*.md") if store.root not in p.resolve().parents] if bench_dir.exists() else []
+        for item in spec_files:
+            rel = item["relative_path"]
+            p = (repo_root / rel).resolve()
+            if not p.is_file():
+                raise BenchmarkIntegrityError(f"Contamination corpus file missing: {rel}")
+            file_sha = sha256(p.read_bytes())
+            if file_sha != item["sha256"]:
+                raise BenchmarkIntegrityError(
+                    f"Frozen contamination corpus hash mutated: {rel} (frozen {item['sha256']} != disk {file_sha})"
+                )
+            target_items.append((p, rel, file_sha))
+    elif corpus_files is not None:
+        for p in corpus_files:
+            p_res = Path(p).resolve()
+            if p_res.is_file():
+                try:
+                    rel = str(p_res.relative_to(repo_root))
+                except ValueError:
+                    rel = p_res.name
+                target_items.append((p_res, rel, sha256(p_res.read_bytes())))
 
-    target_paths = sorted(set(target_paths))
     output_digest = sha256(output)
     normalized_output = " ".join(output.decode("utf-8").split())
     near_copies = []
+    artifact_name = f"07-{stage}-contamination.json"
 
-    for path in target_paths:
-        if not path.is_file():
-            continue
-        try:
-            rel_path = str(path.relative_to(repo_root))
-        except ValueError:
-            rel_path = path.name
-        file_bytes = path.read_bytes()
-        file_digest = sha256(file_bytes)
+    for path, rel_path, file_digest in target_items:
         inspected_corpus.append({"relative_path": rel_path, "sha256": file_digest})
 
         if file_digest == output_digest:
+            record = {
+                "stage": stage,
+                "output_sha256": output_digest,
+                "inspected_corpus": inspected_corpus,
+                "similarity_threshold": similarity_threshold,
+                "near_copies": near_copies,
+                "exact_match": rel_path,
+                "requires_review": True,
+                "passed": False,
+                "violation": f"Historical report reused: {rel_path}",
+            }
+            with store.lock():
+                store.put_json(artifact_name, record)
+                store.event(f"{stage}:contamination_failed", [artifact_name])
             raise BenchmarkIntegrityError(f"Historical report reused: {rel_path}")
 
-        ratio = SequenceMatcher(None, normalized_output.split(), file_bytes.decode("utf-8").split(), autojunk=False).ratio()
+        ratio = SequenceMatcher(None, normalized_output.split(), path.read_bytes().decode("utf-8").split(), autojunk=False).ratio()
         if ratio >= similarity_threshold:
             near_copies.append({"relative_path": rel_path, "similarity": ratio})
 
-    artifact_name = f"07-{stage}-contamination.json"
     record = {
         "stage": stage,
         "output_sha256": output_digest,
@@ -321,12 +405,17 @@ def record_contamination_evidence(store, stage: str, output: bytes, repository: 
         "requires_review": bool(near_copies),
         "passed": not bool(near_copies),
     }
+    if near_copies:
+        record["violation"] = f"Near-copy contamination requires review before acceptance: {near_copies}"
+        with store.lock():
+            store.put_json(artifact_name, record)
+            store.event(f"{stage}:contamination_failed", [artifact_name])
+        raise BenchmarkIntegrityError(f"Near-copy contamination requires review before acceptance: {near_copies}")
+
     with store.lock():
         store.put_json(artifact_name, record)
         store.event(f"{stage}:contamination_checked", [artifact_name])
 
-    if near_copies:
-        raise BenchmarkIntegrityError(f"Near-copy contamination requires review before acceptance: {near_copies}")
     return record
 
 

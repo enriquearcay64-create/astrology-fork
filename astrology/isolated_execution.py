@@ -54,6 +54,8 @@ class GeminiTransport:
         if not 0 <= temperature <= 2 or type(max_output_tokens) is not int or max_output_tokens <= 0:
             raise ValueError('Invalid generation settings')
         self.model = model
+        self.temperature = temperature
+        self.max_output_tokens = max_output_tokens
         self.settings = {'temperature': temperature, 'maxOutputTokens': max_output_tokens, 'responseMimeType': 'application/json'}
         if thinking_level is not None:
             tl = str(thinking_level).lower()

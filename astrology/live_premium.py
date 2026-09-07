@@ -17,6 +17,8 @@ from .engine import calculate_chart
 from .safe_view import build_safe_interpretive_view
 from .explicit_prose import render_explicit_blocks, validate_reviewer_payload
 
+PIPELINE_VERSION = 'v2.3.1d'
+
 
 def prepare_run(root, repository, birth, profile, *, as_of=None, horizon_days=366, include_timing=True, fixture=False, audit_record=None, benchmark_spec=None):
     configuration = {'birth': asdict(birth), 'profile': asdict(profile) if profile else None,
@@ -75,7 +77,7 @@ def continue_run(store, transport):
         '01-prospective-block-plan.json': blocks}, {'author_prompt.txt': prepared['author_prompt']})
     author_payload = store.invoke('author', prepared['author_prompt'], transport)
     authored = render_explicit_blocks(author_payload, handoff, blocks)
-    if not load_json(store.path("run.json"))["fixture"] or store.path("benchmark_spec.json").exists():
+    if store.path("benchmark_spec.json").exists():
         record_contamination_evidence(store, "author", authored['report'].encode(), repo)
     author = build_author_bundle(handoff, authored['report'], authored['sources'], reader_selection_plan=selection, reader_sections=authored['sections'])
     provenance = validate_premium_author_bundle(birth, author, profile=profile, prepared_handoff=handoff)
@@ -106,7 +108,7 @@ def continue_run(store, transport):
         raise BenchmarkIntegrityError(f"Reviewer verdict was '{verdict}'; publication halted without delivery: {remaining_warnings or regeneration_request}")
 
     reviewed = render_explicit_blocks(reviewed_payload, handoff, blocks, author_scope=authored['materialized_scope'])
-    if not load_json(store.path("run.json"))["fixture"] or store.path("benchmark_spec.json").exists():
+    if store.path("benchmark_spec.json").exists():
         record_contamination_evidence(store, "reviewer", reviewed['report'].encode(), repo)
     reviewer = build_reviewer_bundle(
         author, provenance, final_report=reviewed['report'],
@@ -204,7 +206,7 @@ def finalize_trace(store):
         else:
             require_equal(metadata, load_json(store.path('runtime_execution_metadata.json')), 'runtime metadata')
         origin = load_json(store.path('run.json'))
-        manifest = build_trace_manifest(store.root, origin['repository'], 'v2.3.1b', load_json(store.path('01-handoff.json'))['preparation_parameters'])
+        manifest = build_trace_manifest(store.root, origin['repository'], PIPELINE_VERSION, load_json(store.path('01-handoff.json'))['preparation_parameters'])
         if store.path('benchmark_manifest.json').exists():
             require_equal(manifest, load_json(store.path('benchmark_manifest.json')), 'trace manifest')
         else:

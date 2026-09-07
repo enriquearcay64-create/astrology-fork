@@ -63,6 +63,7 @@ def main() -> int:
     parser.add_argument("--thinking-level", choices=("low", "medium", "high"), default=None, help="Explicit Gemini thinking level")
     parser.add_argument("--candidate-model", help="Candidate model identifier for pre-frozen benchmark spec")
     parser.add_argument("--evaluator-model", help="Evaluator model identifier for pre-frozen benchmark spec")
+    parser.add_argument("--evaluator-thinking-level", choices=("low", "medium", "high"), default=None, help="Explicit Gemini thinking level for evaluator")
     parser.add_argument("--benchmark-spec", help="Path to pre-frozen benchmark specification JSON")
     parser.add_argument("--champion-descriptor", help="Champion compatibility descriptor JSON")
     parser.add_argument("--champion-run", help="Captured champion run directory")
@@ -91,19 +92,24 @@ def main() -> int:
                 if args.benchmark_spec:
                     bench_spec = _load(args.benchmark_spec)
                 elif args.rubric and (args.champion_report or args.champion_descriptor or args.champion_run):
-                    from .benchmark_spec import create_benchmark_spec
+                    from .benchmark_spec import create_benchmark_spec, derive_champion_from_run
                     from .isolated_execution import git_commit
                     repo = Path(__file__).resolve().parents[1]
                     handoff = prepare_premium_handoff(birth, profile, as_of=as_of, horizon_days=args.horizon_days, include_timing=not args.no_timing)
-                    champ_desc = _load(args.champion_descriptor) if args.champion_descriptor else {}
-                    champ_bytes = Path(args.champion_report).read_bytes() if args.champion_report else b""
+                    if args.champion_run:
+                        champ_desc, champ_bytes = derive_champion_from_run(args.champion_run, repo)
+                    else:
+                        champ_desc = _load(args.champion_descriptor) if args.champion_descriptor else {}
+                        champ_bytes = Path(args.champion_report).read_bytes() if args.champion_report else b""
                     cand_model = args.candidate_model or args.model or "gemini-3.8-flash"
                     cand_tl = args.thinking_level or "high"
                     eval_model = args.evaluator_model or cand_model
+                    eval_tl = args.evaluator_thinking_level or "high"
                     bench_spec = create_benchmark_spec(
                         birth, profile, handoff, _load(args.rubric), champ_desc,
                         champ_bytes, cand_model, cand_tl, eval_model,
                         repo, git_commit(repo),
+                        evaluator_thinking_level=eval_tl,
                     )
                 store = prepare_run(args.run_dir, Path(__file__).resolve().parents[1], birth, profile,
                     as_of=as_of, horizon_days=args.horizon_days, include_timing=not args.no_timing,
@@ -117,10 +123,15 @@ def main() -> int:
                     result = continue_run(store, transport)
                 elif args.premium_stage == "evaluate-captured":
                     if not store.path("assignment_commitment.json").exists():
-                        if not args.champion_report or not args.rubric:
-                            raise ValueError("--champion-report and --rubric are required before blind commitment")
-                        champ_desc = _load(args.champion_descriptor) if args.champion_descriptor else None
-                        commit_blind(store, Path(args.champion_report).read_bytes(), _load(args.rubric), champion_descriptor=champ_desc)
+                        if not args.rubric or (not args.champion_report and not args.champion_run):
+                            raise ValueError("--rubric and (--champion-report or --champion-run) are required before blind commitment")
+                        if args.champion_run:
+                            from .benchmark_spec import derive_champion_from_run
+                            champ_desc, champ_bytes = derive_champion_from_run(args.champion_run, Path(__file__).resolve().parents[1])
+                        else:
+                            champ_desc = _load(args.champion_descriptor) if args.champion_descriptor else None
+                            champ_bytes = Path(args.champion_report).read_bytes()
+                        commit_blind(store, champ_bytes, _load(args.rubric), champion_descriptor=champ_desc)
                     eval_transport = GeminiTransport(args.model, thinking_level=args.thinking_level)
                     result = evaluate_blind(store, eval_transport)
                 elif args.premium_stage == "reveal-captured":

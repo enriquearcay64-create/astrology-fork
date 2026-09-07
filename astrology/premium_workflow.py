@@ -102,7 +102,8 @@ REVIEWER_EXPLICIT_PROSE_INSTRUCTIONS = '''Return ONLY JSON with exactly packet_i
 verdict must be exactly one of: "approved", "regenerate_author", "blocked".
 - If verdict is "approved":
   * blocks must contain the complete ordered list of reviewed narrative blocks covering all manifest sections.
-  * corrections_made must be a list of non-empty strings describing substantive improvements made.
+  * corrections_made must be a list of non-empty strings describing substantive improvements made, or [] if no changes were necessary.
+  * Do not modify good prose merely to demonstrate Reviewer activity. If the Author draft is faithful, well-developed, and complies with all constraints, approve it directly with corrections_made: [].
   * remaining_warnings must be an empty list [] or a list of advisory non-fatal notes.
   * regeneration_request must be null.
 - If verdict is "regenerate_author":
