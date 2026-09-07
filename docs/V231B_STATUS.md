@@ -1,3 +1,5 @@
+> Superseding closure on `v2.3.1d-candidate`, after review of `cdc0fe442`: captured Champion derivation and `--champion-run` are removed. All comparisons are explicitly historical/legacy and promotion is disabled; no self-declared metadata enables it. CLI preparation uses one handoff and later execution uses frozen runtime settings. Empty corpora are insufficient evidence; evaluator citations must occur in the corresponding report. See `CAPTURED_PREMIUM.md`. Independent delta audit remains required; no live model call or product superiority is claimed. Earlier checkpoint details below are historical.
+
 # V2.3.1b engineering checkpoint — implementation ready for independent review
 
 M1 now includes captured execution and an offline end-to-end protocol fixture. This is not a completed product or an independent benchmark-ready declaration. Work remains on `v2.3.1-candidate`, based on `36e807e3340b802ac5dd355141de8837928d3e00`. No new model generation, premium benchmark, merge, push, installation or usage-reset redemption was performed.

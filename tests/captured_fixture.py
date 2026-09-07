@@ -38,8 +38,8 @@ def build_fixture(out):
         'dimension_id': f'Synthetic protocol dimension {i}',
         'alpha_score': 0,
         'beta_score': 0,
-        'alpha_evidence': ['Synthetic scores exercise protocol only; no editorial judgment occurred.'],
-        'beta_evidence': ['Synthetic scores exercise protocol only; no editorial judgment occurred.'],
+        'alpha_evidence': [store.path('blind/alpha.md').read_text()],
+        'beta_evidence': [store.path('blind/beta.md').read_text()],
         'factual_mismatches': [],
         'uncertainty': None,
     } for i in range(17)]

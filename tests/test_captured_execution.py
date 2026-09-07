@@ -92,8 +92,8 @@ def test_blind_state_machine(gitrepo,tmp_path):
         'dimension_id': f'dimension {i}',
         'alpha_score': 8,
         'beta_score': 9,
-        'alpha_evidence': ['Explicit quotation and detailed reasoning from Report Alpha.'],
-        'beta_evidence': ['Explicit quotation and detailed reasoning from Report Beta.'],
+        'alpha_evidence': [store.path('blind/alpha.md').read_text()],
+        'beta_evidence': [store.path('blind/beta.md').read_text()],
         'factual_mismatches': [],
         'uncertainty': None,
     } for i in range(17)]

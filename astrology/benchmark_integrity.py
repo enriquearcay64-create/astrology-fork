@@ -36,8 +36,9 @@ def require_equal(actual, expected, label):
 def require_promotable(manifest):
     if manifest.get("benchmark_status") != "valid" or manifest.get("execution_kind") != "captured_live" or manifest.get("independently_reviewed") is not True:
         raise BenchmarkIntegrityError("Benchmark is not valid promotion evidence")
-    if manifest.get("champion_promotion_grade") is False or manifest.get("champion_comparison_mode") == "legacy_weaker":
-        raise BenchmarkIntegrityError("Legacy-weaker or unverified champion cannot satisfy promotion gate")
+    # Captured Champion authentication is deferred. No local descriptor or manifest
+    # flag can enable promotion until that evidence path is implemented and audited.
+    raise BenchmarkIntegrityError("Legacy-weaker or unverified champion cannot satisfy promotion gate")
 
 
 def verify_artifacts(run_dir):
@@ -138,8 +139,8 @@ def freeze_score(raw_response: bytes, payload, rubric=None, *, allow_legacy_posi
                 raise BenchmarkIntegrityError(f"Duplicate dimension_id in evaluation: {dim_id}")
             seen_ids.add(dim_id)
 
-            alpha = row.get("alpha_score", row.get("alpha"))
-            beta = row.get("beta_score", row.get("beta"))
+            alpha = row.get("alpha_score")
+            beta = row.get("beta_score")
             if type(alpha) not in (int, float) or not 0 <= alpha <= 10:
                 raise BenchmarkIntegrityError(f"Invalid alpha score for dimension {dim_id}: {alpha}")
             if type(beta) not in (int, float) or not 0 <= beta <= 10:
@@ -320,8 +321,8 @@ def build_trace_manifest(run_dir, repository, pipeline_version, parameters):
     champ_comp_mode = None
     if (root / 'benchmark_spec.json').is_file():
         spec = load_json(root / 'benchmark_spec.json')
-        champ_prom_grade = spec.get('champion', {}).get('promotion_grade', False)
-        champ_comp_mode = spec.get('champion', {}).get('comparison_mode', 'standard')
+        champ_prom_grade = False
+        champ_comp_mode = 'legacy_weaker'
     return {
         'trace_contract_version': '1.0', 'run_id': root.name,
         'benchmark_status': 'synthetic_test_fixture' if origin['fixture'] else 'pending_independent_review',
@@ -349,6 +350,8 @@ def record_contamination_evidence(store, stage: str, output: bytes, repository: 
         for item in spec_files:
             rel = item["relative_path"]
             p = (repo_root / rel).resolve()
+            if repo_root not in p.parents:
+                raise BenchmarkIntegrityError("Contamination corpus escapes repository")
             if not p.is_file():
                 raise BenchmarkIntegrityError(f"Contamination corpus file missing: {rel}")
             file_sha = sha256(p.read_bytes())
@@ -402,8 +405,8 @@ def record_contamination_evidence(store, stage: str, output: bytes, repository: 
         "inspected_corpus": inspected_corpus,
         "similarity_threshold": similarity_threshold,
         "near_copies": near_copies,
-        "requires_review": bool(near_copies),
-        "passed": not bool(near_copies),
+        "requires_review": bool(near_copies) or not inspected_corpus,
+        "passed": bool(inspected_corpus) and not near_copies,
     }
     if near_copies:
         record["violation"] = f"Near-copy contamination requires review before acceptance: {near_copies}"

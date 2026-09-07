@@ -5,7 +5,7 @@ import copy
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 from .benchmark_integrity import canonical_bytes, sha256, load_json, require_equal, verify_commit
 from .exceptions import BenchmarkIntegrityError
@@ -31,57 +31,6 @@ def extract_rubric_dimension_ids(rubric: Dict[str, object]) -> List[str]:
     if len(ids) != len(set(ids)):
         raise BenchmarkIntegrityError("Duplicate dimension IDs in rubric")
     return ids
-
-
-def derive_champion_from_run(champion_run_dir: Path | str, repository: Path) -> Tuple[Dict[str, object], bytes]:
-    """Derive a verified Champion descriptor and report from an existing captured run directory."""
-    run_path = Path(champion_run_dir).resolve()
-    if not run_path.is_dir():
-        raise BenchmarkIntegrityError(f"Champion run directory not found: {run_path}")
-    run_json_path = run_path / "run.json"
-    handoff_path = run_path / "01-handoff.json"
-    report_path = run_path / "final_reviewed_report.md"
-    if not run_json_path.is_file() or not handoff_path.is_file() or not report_path.is_file():
-        raise BenchmarkIntegrityError(f"Champion run missing essential artifacts: {run_path}")
-
-    run_data = load_json(run_json_path)
-    handoff_data = load_json(handoff_path)
-    report_bytes = report_path.read_bytes()
-    report_sha = sha256(report_bytes)
-
-    commit_sha = run_data.get("code_context", {}).get("artifact_generation_commit_sha")
-    if commit_sha:
-        verify_commit(str(repository), commit_sha)
-
-    manifest_path = run_path / "benchmark_manifest.json"
-    if manifest_path.is_file():
-        manifest = load_json(manifest_path)
-        artifacts = manifest.get("artifacts_sha256", {})
-        if artifacts.get("final_reviewed_report.md") != report_sha:
-            raise BenchmarkIntegrityError("Champion manifest report hash mismatch")
-
-    config = run_data.get("configuration", {})
-    birth_hash = sha256(canonical_bytes(config.get("birth", {})))
-    locale = handoff_data.get("reader_domain_manifest", {}).get("locale", "pt-BR")
-    prep_params = handoff_data.get("preparation_parameters", {})
-    timing_enabled = prep_params.get("include_timing", False)
-    as_of = prep_params.get("effective_as_of")
-    horizon_days = prep_params.get("horizon_days", 366)
-
-    descriptor = {
-        "source": "captured_run",
-        "run_dir": str(run_path),
-        "commit_sha": commit_sha,
-        "birth_data_hash": birth_hash,
-        "locale": locale,
-        "timing_enabled": timing_enabled,
-        "as_of": as_of,
-        "horizon_days": horizon_days,
-        "report_sha256": report_sha,
-        "verified_captured_run": True,
-        "promotion_grade": True,
-    }
-    return descriptor, report_bytes
 
 
 def validate_champion_compatibility(
@@ -144,15 +93,11 @@ def validate_champion_compatibility(
 
     verified = copy.deepcopy(champion_descriptor)
     verified["report_sha256"] = actual_report_hash
-    if source == "captured_run" and champion_descriptor.get("verified_captured_run") is True:
-        verified["promotion_grade"] = True
-        verified["comparison_mode"] = "standard"
-    elif source == "captured_run":
-        verified["promotion_grade"] = False
-        verified["comparison_mode"] = "standard"
-    else:
-        verified["promotion_grade"] = False
-        verified["comparison_mode"] = "legacy_weaker"
+    # Descriptors are compatibility claims, never captured execution authority.
+    verified["source"] = "historical_legacy"
+    verified["verified_captured_run"] = False
+    verified["promotion_grade"] = False
+    verified["comparison_mode"] = "legacy_weaker"
     return verified
 
 
@@ -170,8 +115,9 @@ def resolve_contamination_corpus(
     if explicit_files is not None:
         for f in explicit_files:
             p = Path(f).resolve()
-            if p.is_file():
-                target_files.append(p)
+            if not p.is_file() or repo_root not in p.parents:
+                raise BenchmarkIntegrityError("Corpus file must exist inside repository")
+            target_files.append(p)
     elif benchmark_family:
         family_dir = repo_root / "benchmarks" / benchmark_family
         if family_dir.is_dir():
@@ -296,6 +242,13 @@ def authenticate_benchmark_spec(spec: Dict[str, object], store, transport=None) 
     if not isinstance(spec, dict):
         raise BenchmarkIntegrityError("Benchmark spec must be an object")
 
+    champion = spec.get("champion", {})
+    if (champion.get("source") != "historical_legacy"
+            or champion.get("promotion_grade") is not False
+            or champion.get("comparison_mode") != "legacy_weaker"
+            or champion.get("verified_captured_run", False) is not False):
+        raise BenchmarkIntegrityError("Only historical_legacy Champion comparisons are supported; descriptors cannot authenticate capture")
+
     handoff = load_json(store.path("01-handoff.json"))
     run_meta = load_json(store.path("run.json"))
     config = run_meta.get("configuration", {})
@@ -336,7 +289,7 @@ def authenticate_benchmark_spec(spec: Dict[str, object], store, transport=None) 
 
     cand_cfg = spec.get("candidate_protocol", {})
     run_commit = code_ctx.get("artifact_generation_commit_sha")
-    if not run_meta.get("fixture") and cand_cfg.get("commit_sha") and run_commit and cand_cfg.get("commit_sha") != run_commit:
+    if not run_meta.get("fixture") and (not run_commit or cand_cfg.get("commit_sha") != run_commit):
         raise BenchmarkIntegrityError(
             f"Candidate commit SHA mismatch: spec {cand_cfg.get('commit_sha')} != run {run_commit}"
         )
@@ -366,10 +319,23 @@ def authenticate_benchmark_spec(spec: Dict[str, object], store, transport=None) 
                 f"Candidate max_output_tokens mismatch with frozen spec: transport={max_tok} != spec={cand_cfg.get('max_output_tokens')}"
             )
 
+    # Validate both frozen runtime configurations before any generation, without I/O.
+    from .isolated_execution import GeminiTransport
+    for name in ("candidate_protocol", "evaluator_protocol"):
+        cfg = spec.get(name, {})
+        if cfg.get("thinking_level") not in {"low", "medium", "high"}:
+            raise BenchmarkIntegrityError("Explicit thinking level required in " + name)
+        if type(cfg.get("temperature")) not in (int, float):
+            raise BenchmarkIntegrityError("Explicit numeric temperature required in " + name)
+        GeminiTransport(cfg.get("model"), thinking_level=cfg["thinking_level"],
+                        temperature=cfg.get("temperature"), max_output_tokens=cfg.get("max_output_tokens"))
+
     # Verify frozen contamination corpus hashes
     c_scope = spec.get("contamination_scope", {})
     for item in c_scope.get("corpus_files", []):
-        file_path = repo_root / item["relative_path"]
+        file_path = (repo_root / item["relative_path"]).resolve()
+        if repo_root not in file_path.parents:
+            raise BenchmarkIntegrityError("Contamination corpus escapes repository")
         if not file_path.is_file():
             raise BenchmarkIntegrityError(f"Frozen contamination corpus file missing: {item['relative_path']}")
         actual_sha = sha256(file_path.read_bytes())

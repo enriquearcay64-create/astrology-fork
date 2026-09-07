@@ -1,19 +1,4 @@
-"""Adversarial regression tests for V2.3.1d Final M2 Delta.
-
-Validates:
-1. Legacy {alpha, beta} evaluator payload rejected against frozen rubric.
-2. Legacy positional scoring rejected in live mode.
-3. Foreign / mismatched benchmark_spec rejected before Selection.
-4. Candidate temperature / max tokens mismatch rejected.
-5. Evaluator model / thinking_level / temperature / max_tokens mismatch rejected.
-6. Self-declared captured_run cannot become promotion-grade without verified captured run.
-7. Timing_enabled false vs true Champion mismatch rejected.
-8. Frozen contamination corpus hash mutation rejected.
-9. Contamination failure record persisted before halting.
-10. Final trace identifies pipeline version v2.3.1d.
-11. Reviewer approved with corrections_made=[] accepted.
-12. Proper derive_champion_from_run execution and validation.
-"""
+"""Adversarial protocol closure: identity, runtime, evidence and disabled promotion."""
 import copy
 import subprocess
 from dataclasses import asdict
@@ -28,7 +13,7 @@ from astrology.benchmark_integrity import (
 )
 from astrology.benchmark_spec import (
     create_benchmark_spec, freeze_spec_in_store, validate_run_against_spec,
-    validate_champion_compatibility, derive_champion_from_run,
+    validate_champion_compatibility,
     resolve_contamination_corpus,
 )
 from astrology.isolated_execution import GeminiTransport
@@ -242,6 +227,8 @@ def test_evaluator_thinking_model_temp_max_mismatch_rejected(mock_run_env):
 def test_self_declared_captured_run_cannot_become_promotion_grade(gitrepo):
     champ_desc = {
         "source": "captured_run",
+        "verified_captured_run": True,
+        "promotion_grade": True,
         "birth_data_hash": sha256(canonical_bytes(asdict(CHART_3_BIRTH))),
         "locale": "pt-BR",
         "timing_enabled": True,
@@ -254,7 +241,7 @@ def test_self_declared_captured_run_cannot_become_promotion_grade(gitrepo):
         champ_desc, b"champion report", gitrepo,
     )
     assert verified["promotion_grade"] is False
-    assert verified["source"] == "captured_run"
+    assert verified["source"] == "historical_legacy"
 
     from astrology.benchmark_integrity import require_promotable
     manifest = {
@@ -396,25 +383,116 @@ def test_reviewer_approved_with_empty_corrections_made_accepted(mock_run_env):
     assert validated["verdict"] == "approved"
 
 
-def test_derive_champion_from_captured_run(mock_run_env):
-    store, handoff, gitrepo = mock_run_env
-    # Prepare mock run with final_reviewed_report.md
-    champ_bytes = b"# Final Champion Report\nSample text."
-    store.put("final_reviewed_report.md", champ_bytes)
-    desc, report_bytes = derive_champion_from_run(store.root, gitrepo)
-    assert desc["source"] == "captured_run"
-    assert desc["verified_captured_run"] is True
-    assert desc["promotion_grade"] is True
-    assert desc["timing_enabled"] == handoff["preparation_parameters"]["include_timing"]
-    assert report_bytes == champ_bytes
+def test_promotion_gate_rejects_all_self_declared_authority():
+    from astrology.benchmark_integrity import require_promotable
+    for champion in ({}, {"champion_promotion_grade": True, "champion_comparison_mode": "standard"}):
+        with pytest.raises(BenchmarkIntegrityError):
+            require_promotable(dict(benchmark_status="valid", execution_kind="captured_live",
+                                   independently_reviewed=True, **champion))
 
-    # Validate compatibility of derived champion
-    verified = validate_champion_compatibility(
-        CHART_3_BIRTH, PROFILE,
-        datetime.fromisoformat(handoff["preparation_parameters"]["effective_as_of"]),
-        handoff["preparation_parameters"]["horizon_days"],
-        handoff["preparation_parameters"]["include_timing"],
-        desc, report_bytes, gitrepo,
-    )
-    assert verified["promotion_grade"] is True
-    assert verified["comparison_mode"] == "standard"
+
+def test_external_spec_cannot_declare_champion_authority(mock_run_env):
+    from astrology.benchmark_spec import authenticate_benchmark_spec
+    store, _, _ = mock_run_env
+    for champion in ({}, {"source": "captured_run", "verified_captured_run": True, "promotion_grade": True},
+                     {"source": "historical_legacy", "promotion_grade": True, "comparison_mode": "legacy_weaker"}):
+        with pytest.raises(BenchmarkIntegrityError, match="Only historical_legacy"):
+            authenticate_benchmark_spec({"champion": champion}, store)
+
+
+def test_empty_corpus_is_not_a_passing_check(mock_run_env):
+    store, _, repo = mock_run_env
+    record = record_contamination_evidence(store, "author", b"new text", repo)
+    assert record["inspected_corpus"] == []
+    assert record["passed"] is False and record["requires_review"] is True
+
+
+def test_named_legacy_evaluator_scores_rejected():
+    row = {"dimension_id": "x", "alpha": 9, "beta": 8,
+           "alpha_evidence": ["..."], "beta_evidence": ["..."]}
+    with pytest.raises(BenchmarkIntegrityError):
+        freeze_score(b"raw", {"dimensions": [row]}, rubric={"dimensions": ["x"]})
+
+
+@pytest.mark.parametrize('stage,protocol', [('run-captured', 'candidate_protocol'), ('evaluate-captured', 'evaluator_protocol')])
+def test_cli_uses_frozen_transport_settings(tmp_path, monkeypatch, stage, protocol, capsys):
+    import sys
+    import astrology.cli as cli
+    import astrology.live_premium as live
+    import astrology.blind_execution as blind
+    root = tmp_path / 'run'
+    root.mkdir()
+    cfg = dict(model='explicit-test-model', thinking_level='high', temperature=0.13, max_output_tokens=12345)
+    (root / 'benchmark_spec.json').write_bytes(canonical_bytes({protocol: cfg}))
+    (root / '01-handoff.json').write_text('{}')
+    (root / 'assignment_commitment.json').write_text('{}')
+    inp = tmp_path / 'input.json'
+    inp.write_bytes(canonical_bytes(asdict(CHART_3_BIRTH)))
+    monkeypatch.setattr(cli, 'validate_frozen_inputs', lambda *a: None)
+    seen = []
+    def execute(store, transport):
+        seen.append((transport.model, transport.thinking_level, transport.temperature, transport.max_output_tokens))
+        return {}
+    monkeypatch.setattr(live, 'continue_run', execute)
+    monkeypatch.setattr(blind, 'evaluate_blind', execute)
+    args = ['astrology-skill', str(inp), '--premium-stage', stage, '--run-dir', str(root)]
+    monkeypatch.setattr(sys, 'argv', args)
+    assert cli.main() == 0
+    assert seen == [('explicit-test-model', 'high', 0.13, 12345)]
+    monkeypatch.setattr(sys, 'argv', args + ['--model', 'wrong'])
+    assert cli.main() != 0
+    assert len(seen) == 1
+
+
+def test_cli_prepares_snapshot_once(tmp_path, monkeypatch):
+    import sys
+    import astrology.cli as cli
+    import astrology.live_premium as live
+    import astrology.benchmark_spec as specs
+    from astrology.isolated_execution import RunStore
+    handoff = current_handoff()
+    root = tmp_path / 'run'
+    inp, desc, rubric, report, audit = [tmp_path / n for n in ('input.json', 'desc.json', 'rubric.json', 'report.md', 'audit.json')]
+    inp.write_bytes(canonical_bytes({**asdict(CHART_3_BIRTH), 'localization_profile': asdict(PROFILE)}))
+    descriptor = dict(source='historical_legacy', birth_data_hash=sha256(canonical_bytes(asdict(CHART_3_BIRTH))),
+                      locale='pt-BR', timing_enabled=True,
+                      as_of=handoff['preparation_parameters']['effective_as_of'],
+                      horizon_days=handoff['preparation_parameters']['horizon_days'], report_sha256=sha256(b'old'))
+    desc.write_bytes(canonical_bytes(descriptor)); rubric.write_bytes(canonical_bytes({'dimensions':['x']}))
+    report.write_bytes(b'old'); audit.write_text('{}')
+    calls=[]
+    def prepare(*args, **kwargs):
+        calls.append(kwargs['as_of'])
+        root.mkdir()
+        store=RunStore(root)
+        store.put_json('01-handoff.json', handoff)
+        store.put_json('run.json', {'code_context':{'artifact_generation_commit_sha':'test-commit'}})
+        return store
+    monkeypatch.setattr(live, 'prepare_run', prepare)
+    monkeypatch.setattr(cli, 'prepare_premium_handoff', lambda *a, **kw: pytest.fail('Second snapshot preparation'))
+    frozen=[]
+    monkeypatch.setattr(specs, 'freeze_spec_in_store', lambda store, spec: frozen.append(spec))
+    monkeypatch.setattr(sys, 'argv', ['astrology-skill',str(inp),'--premium-stage','prepare-run','--run-dir',str(root),
+        '--audit-record',str(audit),'--rubric',str(rubric),'--champion-report',str(report),'--champion-descriptor',str(desc),
+        '--model','test-model','--thinking-level','high','--evaluator-model','test-eval','--evaluator-thinking-level','high'])
+    assert cli.main()==0
+    assert calls==[None]
+    assert frozen[0]['preparation_identity']['packet_id']==handoff['packet_id']
+    assert frozen[0]['chart_identity']['as_of']==handoff['preparation_parameters']['effective_as_of']
+
+
+@pytest.mark.parametrize('evidence', ['...', 'Generic praise absent from either report'])
+def test_unanchored_evidence_never_freezes_score(gitrepo, tmp_path, evidence):
+    from astrology.isolated_execution import RunStore
+    from tests.test_captured_execution import FixtureTransport
+    store=RunStore.create(tmp_path/'evidence-run',gitrepo,{},fixture=True)
+    store.put_json('01-handoff.json',{'reasoning_packet':{'facts':{}},'preparation_parameters':{}})
+    store.put('final_reviewed_report.md',b'Candidate passage')
+    store.event('reviewer:validated',['01-handoff.json','final_reviewed_report.md'])
+    commit_blind(store,b'Champion passage',{'dimensions':['x']})
+    payload={'dimensions':[{'dimension_id':'x','alpha_score':9,'beta_score':8,
+                           'alpha_evidence':[evidence],'beta_evidence':[evidence]}]}
+    with pytest.raises(BenchmarkIntegrityError, match='quote the corresponding report'):
+        evaluate_blind(store,FixtureTransport([payload]))
+    assert store.path('stages/evaluator/response.raw.json').exists()
+    assert not store.path('score_frozen.json').exists()

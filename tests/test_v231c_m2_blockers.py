@@ -259,8 +259,8 @@ def test_contamination_evidence_enters_trace(mock_run_env):
         repo, corpus_files=[]
     )
     assert store.path('07-author-contamination.json').exists()
-    assert record['passed'] is True
-    assert record['requires_review'] is False
+    assert record['passed'] is False  # An empty corpus is insufficient evidence.
+    assert record['requires_review'] is True
 
     events = store.verify()
     assert any(e['action'] == 'author:contamination_checked' for e in events)
@@ -321,8 +321,8 @@ def test_reveal_cannot_occur_under_changed_code(mock_run_env):
     eval_payload = {
         'dimensions': [{
             'dimension_id': 'dimension 0', 'alpha_score': 8, 'beta_score': 9,
-            'alpha_evidence': ['Explicit citation from Alpha.'],
-            'beta_evidence': ['Explicit citation from Beta.'],
+            'alpha_evidence': [store.path('blind/alpha.md').read_text()],
+            'beta_evidence': [store.path('blind/beta.md').read_text()],
             'factual_mismatches': [], 'uncertainty': None,
         }],
         'overall_notes': 'Notes',

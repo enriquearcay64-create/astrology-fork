@@ -66,7 +66,7 @@ def main() -> int:
     parser.add_argument("--evaluator-thinking-level", choices=("low", "medium", "high"), default=None, help="Explicit Gemini thinking level for evaluator")
     parser.add_argument("--benchmark-spec", help="Path to pre-frozen benchmark specification JSON")
     parser.add_argument("--champion-descriptor", help="Champion compatibility descriptor JSON")
-    parser.add_argument("--champion-run", help="Captured champion run directory")
+    parser.add_argument("--contamination-file", action="append", help="Repository-local historical report to freeze (repeatable)")
     parser.add_argument("--audit-record", help="Independent benchmark-ready code audit JSON")
     parser.add_argument("--champion-report", help="Comparison report, supplied only to the blind evaluator")
     parser.add_argument("--rubric", help="Frozen evaluation rubric JSON")
@@ -88,52 +88,53 @@ def main() -> int:
             if args.premium_stage == "prepare-run":
                 if not args.audit_record:
                     raise ValueError("--audit-record is required before live generation")
+                repo = Path(__file__).resolve().parents[1]
+                store = prepare_run(args.run_dir, repo, birth, profile,
+                    as_of=as_of, horizon_days=args.horizon_days, include_timing=not args.no_timing,
+                    audit_record=_load(args.audit_record))
+                from .benchmark_spec import create_benchmark_spec, freeze_spec_in_store
                 bench_spec = None
                 if args.benchmark_spec:
                     bench_spec = _load(args.benchmark_spec)
-                elif args.rubric and (args.champion_report or args.champion_descriptor or args.champion_run):
-                    from .benchmark_spec import create_benchmark_spec, derive_champion_from_run
-                    from .isolated_execution import git_commit
-                    repo = Path(__file__).resolve().parents[1]
-                    handoff = prepare_premium_handoff(birth, profile, as_of=as_of, horizon_days=args.horizon_days, include_timing=not args.no_timing)
-                    if args.champion_run:
-                        champ_desc, champ_bytes = derive_champion_from_run(args.champion_run, repo)
-                    else:
-                        champ_desc = _load(args.champion_descriptor) if args.champion_descriptor else {}
-                        champ_bytes = Path(args.champion_report).read_bytes() if args.champion_report else b""
-                    cand_model = args.candidate_model or args.model or "gemini-3.8-flash"
-                    cand_tl = args.thinking_level or "high"
-                    eval_model = args.evaluator_model or cand_model
-                    eval_tl = args.evaluator_thinking_level or "high"
+                elif args.rubric and (args.champion_report or args.champion_descriptor):
+                    if not args.champion_report or not args.champion_descriptor:
+                        raise ValueError("Both --champion-report and --champion-descriptor are required")
+                    cand_model = args.candidate_model or args.model
+                    if not cand_model or not args.thinking_level or not args.evaluator_model or not args.evaluator_thinking_level:
+                        raise ValueError("Explicit candidate/evaluator models and thinking levels are required")
                     bench_spec = create_benchmark_spec(
-                        birth, profile, handoff, _load(args.rubric), champ_desc,
-                        champ_bytes, cand_model, cand_tl, eval_model,
-                        repo, git_commit(repo),
-                        evaluator_thinking_level=eval_tl,
+                        birth, profile, _load(str(store.path("01-handoff.json"))), _load(args.rubric),
+                        _load(args.champion_descriptor), Path(args.champion_report).read_bytes(),
+                        cand_model, args.thinking_level, args.evaluator_model, repo,
+                        _load(str(store.path("run.json")))["code_context"]["artifact_generation_commit_sha"],
+                        evaluator_thinking_level=args.evaluator_thinking_level,
+                        contamination_corpus_files=args.contamination_file,
                     )
-                store = prepare_run(args.run_dir, Path(__file__).resolve().parents[1], birth, profile,
-                    as_of=as_of, horizon_days=args.horizon_days, include_timing=not args.no_timing,
-                    audit_record=_load(args.audit_record), benchmark_spec=bench_spec)
+                if bench_spec is not None:
+                    freeze_spec_in_store(store, bench_spec)
                 result = {"stage": "prepared", "run_dir": str(store.root), "benchmark_spec_frozen": bench_spec is not None}
             else:
                 store = RunStore(args.run_dir)
                 validate_frozen_inputs(_load(str(store.path("01-handoff.json"))), birth, profile)
+                if args.premium_stage in {"run-captured", "evaluate-captured"}:
+                    if store.path("benchmark_spec.json").exists():
+                        protocol = "candidate_protocol" if args.premium_stage == "run-captured" else "evaluator_protocol"
+                        cfg = _load(str(store.path("benchmark_spec.json")))[protocol]
+                        if (args.model is not None and args.model != cfg["model"]) or (args.thinking_level is not None and args.thinking_level != cfg["thinking_level"]):
+                            raise ValueError("CLI override conflicts with frozen protocol")
+                        transport = GeminiTransport(cfg["model"], thinking_level=cfg["thinking_level"],
+                            temperature=cfg["temperature"], max_output_tokens=cfg["max_output_tokens"])
+                    else:
+                        transport = GeminiTransport(args.model, thinking_level=args.thinking_level)
                 if args.premium_stage == "run-captured":
-                    transport = GeminiTransport(args.model, thinking_level=args.thinking_level)
                     result = continue_run(store, transport)
                 elif args.premium_stage == "evaluate-captured":
                     if not store.path("assignment_commitment.json").exists():
-                        if not args.rubric or (not args.champion_report and not args.champion_run):
-                            raise ValueError("--rubric and (--champion-report or --champion-run) are required before blind commitment")
-                        if args.champion_run:
-                            from .benchmark_spec import derive_champion_from_run
-                            champ_desc, champ_bytes = derive_champion_from_run(args.champion_run, Path(__file__).resolve().parents[1])
-                        else:
-                            champ_desc = _load(args.champion_descriptor) if args.champion_descriptor else None
-                            champ_bytes = Path(args.champion_report).read_bytes()
-                        commit_blind(store, champ_bytes, _load(args.rubric), champion_descriptor=champ_desc)
-                    eval_transport = GeminiTransport(args.model, thinking_level=args.thinking_level)
-                    result = evaluate_blind(store, eval_transport)
+                        if not args.rubric or not args.champion_report:
+                            raise ValueError("--rubric and --champion-report are required before blind commitment")
+                        champ_desc = _load(args.champion_descriptor) if args.champion_descriptor else None
+                        commit_blind(store, Path(args.champion_report).read_bytes(), _load(args.rubric), champion_descriptor=champ_desc)
+                    result = evaluate_blind(store, transport)
                 elif args.premium_stage == "reveal-captured":
                     result = {"reveal": reveal_blind(store), "manifest": finalize_trace(store)}
                 else:

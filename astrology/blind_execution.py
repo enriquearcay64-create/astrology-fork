@@ -68,7 +68,7 @@ def commit_blind(store, champion, rubric, champion_descriptor=None):
                   '  "factual_mismatches": ["<any factual inaccuracies against technical truth>"],\n'
                   '  "uncertainty": "<any calibrated uncertainty or null>"\n'
                   '"overall_notes": "<summary justification>"\n'
-                  'Use sober, objective language.\n'
+                  'Evidence entries must be verbatim passages from the corresponding report, including substantive words; no placeholders or commentary inside quotations. Use sober, objective language.\n'
                   + canonical_bytes({'rubric': rubric, 'ground_truth': truth, 'reports': {k: v.decode('utf-8') for k, v in reports.items()}}).decode())
         store.put('evaluator_prompt.txt', prompt.encode())
         artifacts = ['private/blind_assignment.json', 'assignment_commitment.json', 'rubric.json', 'ground_truth.json',
@@ -105,6 +105,12 @@ def evaluate_blind(store, transport):
     rubric = load_json(store.path('rubric.json'))
     raw = store.path('stages/evaluator/response.raw.json').read_bytes()
     frozen = freeze_score(raw, payload, rubric=rubric)
+    for row in frozen['score']['dimensions']:
+        for label in ('alpha', 'beta'):
+            report = store.path('blind/' + label + '.md').read_text()
+            for quote in row[label + '_evidence']:
+                if not any(c.isalnum() for c in quote) or quote not in report:
+                    raise BenchmarkIntegrityError('Evaluator evidence must quote the corresponding report verbatim')
     with store.lock():
         if store.path('score_frozen.json').exists():
             require_equal(load_json(store.path('score_frozen.json')), frozen, 'resumed score')

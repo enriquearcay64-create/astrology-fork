@@ -45,3 +45,12 @@ This versioned recipe deliberately reuses historical prose as test data, supplie
 ## Release boundary
 
 Engineering tests do not establish live provider reliability, report quality, unseen-chart generalization or commercial readiness. The next gates are independent code review, configured runtime, genuinely fresh Chart 3, 5–6 unseen charts and the client deliverable/rendering checks in the master plan. The installed astrology skill and main branch remain untouched.
+
+
+## Narrow closure after cdc0fe442
+
+Champion capture authentication is deferred: `--champion-run` was removed. Descriptors are historical compatibility claims only; all comparisons are `historical_legacy` / `legacy_weaker`, and promotion is disabled even if manifest flags claim approval. This supports regression signals, not a causal architecture comparison or final promotion evidence.
+
+For a benchmark, `prepare-run` accepts `--champion-report`, `--champion-descriptor`, `--rubric`, explicit candidate/evaluator models and thinking levels, and repeatable `--contamination-file` paths inside the repository. An external `--benchmark-spec` must also declare a non-promotable historical comparison. Empty contamination corpora produce a failed/insufficient check, never PASS. Ordinary non-benchmark generation remains independent of this check.
+
+The prepared handoff is reused to build the spec. Later `run-captured` and `evaluate-captured` load model, thinking, temperature and token limits from that spec; omit redundant model/thinking arguments, or supply matching values. Evaluator evidence must quote the corresponding anonymous report verbatim. Quote validation establishes textual anchoring, not the semantic adequacy of a judgment.
