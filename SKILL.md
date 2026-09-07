@@ -7,6 +7,10 @@ description: Calcular fatos astrológicos determinísticos e produzir leituras n
 
 Use este skill como leitura simbólica e reflexiva. A precisão prometida é astronômica e metodológica; não declare validação científica de personalidade ou previsão de eventos.
 
+## Manutenção deste skill
+
+Para alterar ou auditar o código, os prompts ou o protocolo deste repositório, leia [AGENTS.md](AGENTS.md). Essas instruções de engenharia não são contexto de geração para Author, Reviewer ou avaliador.
+
 ## Dados necessários
 
 Exigir data local, fuso IANA, latitude e longitude. Para o relatório **premium beta**, exigir hora local ISO conhecida: casas, ângulos e timing tópico são parte da promessa editorial. Quando a hora for desconhecida, aceitar `birth_time_known: false` apenas para a leitura determinística limitada a fatores que sobrevivam à análise do dia inteiro. Aceitar perfil de localização somente se fornecido pela pessoa. Não inferir cultura, país atual ou psicologia pelo local de nascimento.
