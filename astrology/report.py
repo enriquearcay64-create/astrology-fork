@@ -1179,30 +1179,78 @@ def render_canonical_technical_appendix(
     return "\n".join(lines)
 
 
+_FIDELITY_BODIES = {
+    "sol": "sun", "sun": "sun",
+    "lua": "moon", "moon": "moon",
+    "mercúrio": "mercury", "mercurio": "mercury", "mercury": "mercury",
+    "vênus": "venus", "venus": "venus",
+    "marte": "mars", "mars": "mars",
+    "júpiter": "jupiter", "jupiter": "jupiter",
+    "saturno": "saturn", "saturn": "saturn",
+    "urano": "uranus", "uranus": "uranus",
+    "netuno": "neptune", "neptune": "neptune",
+    "plutão": "pluto", "plutao": "pluto", "pluto": "pluto",
+    "quíron": "chiron", "chiron": "chiron",
+}
+
+
+def validate_natal_house_occupancy(report_text: str, chart: SafeInterpretiveChart) -> List[str]:
+    """Check explicit PT/EN body–occupancy assertions, not arbitrary paraphrases.
+
+    Supports sign qualifiers, ruler appositives, occupies/is located/in, and
+    numeric or spelled ordinal houses. Unqualified natal houses mean Placidus.
+    Explicit transit/profection/progression clauses are outside natal scope;
+    a natal assertion in such a clause is still checked. No sources are inferred
+    or added. Missing safe occupancy cannot authorize a categorical assertion.
+    """
+    if not isinstance(report_text, str):
+        return []  # The report shape guard rejects absent/non-text reports.
+    bodies = "|".join(_FIDELITY_BODIES)
+    ordinals = dict(zip(
+        "primeira segunda terceira quarta quinta sexta sétima oitava nona décima undécima duodécima".split(), range(1, 13)))
+    ordinals.update(zip("first second third fourth fifth sixth seventh eighth ninth tenth eleventh twelfth".split(), range(1, 13)))
+    ordinals.update({'décima primeira': 11, 'décima segunda': 12})
+    number = r"(?:\d{1,2}(?:st|nd|rd|th|[ªº])?|" + "|".join(sorted(ordinals, key=len, reverse=True)) + r")"
+    house = rf"(?:casa\s+(?P<pt_after>{number})|(?P<before>{number})\s+(?:casa|house)|house\s+(?P<en_after>{number}))"
+    signs = "áries|aries|touro|taurus|gêmeos|gemini|câncer|cancer|leão|leo|virgem|virgo|libra|escorpião|scorpio|sagitário|sagittarius|capricórnio|capricorn|aquário|aquarius|peixes|pisces"
+    # The optional appositive names a role; its house number is never captured
+    # as occupancy. Keep the predicate grammar closed, rather than .* matching.
+    role = rf"(?:,\s*(?:regente\s+(?:da|de)|ruler\s+of\s+(?:the\s+)?)\s*(?:casa\s+{number}|{number}\s+house)\s*,)?"
+    predicate = r"(?:na|no|in(?:\s+the)?|ocupa(?:\s+a)?|occupies(?:\s+the)?|está\s+na|fica\s+na|is\s+in(?:\s+the)?|is\s+located\s+in(?:\s+the)?|está\s+localizad[oa]\s+na)"
+    pattern = rf"\b(?P<body>{bodies})\b(?:\s+natal)?(?:\s+(?:em|in)\s+(?:{signs}))?\s*{role}\s*,?\s*{predicate}\s+{house}\b"
+    errors = []
+    for clause in re.split(r"[.;\n]|\b(?:mas|but|enquanto|while)\b", report_text, flags=re.I):
+        clause = re.sub(r"[*_`]", "", clause).lower()
+        for match in re.finditer(pattern, clause):
+            prefix = clause[:match.start()]
+            temporal = re.fullmatch(r"\s*(?:no trânsito|em trânsito|in transit|na profecção|in (?:the )?profection|na progressão|in (?:the )?progression)\s*[:,]?\s*", prefix)
+            if temporal and not re.search(r"\b(?:natal|nascimento|birth)\b", clause):
+                continue
+            body = _FIDELITY_BODIES[match['body']]
+            token = next(match[g] for g in ('pt_after', 'before', 'en_after') if match[g])
+            stated = ordinals.get(token)
+            if stated is None:
+                stated = int(re.match(r"\d+", token)[0])
+            # A system qualifier must belong to this assertion, not another
+            # planet elsewhere in the sentence.
+            suffix = clause[match.end():]
+            whole = r"(?:signo inteiro|whole[ -]sign)"
+            whole_sign = re.match(rf"\s*(?:\(\s*|(?:em|por|in|using)\s+){whole}\b", suffix) or re.fullmatch(rf"\s*(?:em|por|in|using)\s+{whole}\s*,?\s*", prefix)
+            system = 'whole_sign_house' if whole_sign else 'placidus_house'
+            placement = chart.house_placements.get(body)
+            actual = getattr(placement, system, None)
+            if stated != actual:
+                errors.append(f"unauthorized_natal_house_occupancy:{body}:{system}:stated={stated}:authorized={actual}")
+    return list(dict.fromkeys(errors))
+
+
 def validate_technical_relationship_fidelity(
     report_text: str,
     chart: SafeInterpretiveChart,
     lang: str = "pt",
 ) -> List[str]:
-    """Deterministically check that aspect relationships claimed in prose exist in chart.aspects.
-
-    Detects false syntactic combinations where multiple targets are subordinated
-    to an aspect that only applies to one (e.g. 'Saturn sextiles Sun and Neptune'
-    when Saturn is conjunct Neptune).
-    """
-    body_map = {
-        "sol": "sun", "sun": "sun",
-        "lua": "moon", "moon": "moon",
-        "mercúrio": "mercury", "mercurio": "mercury", "mercury": "mercury",
-        "vênus": "venus", "venus": "venus",
-        "marte": "mars", "mars": "mars",
-        "júpiter": "jupiter", "jupiter": "jupiter",
-        "saturno": "saturn", "saturn": "saturn",
-        "urano": "uranus", "uranus": "uranus",
-        "netuno": "neptune", "neptune": "neptune",
-        "plutão": "pluto", "plutao": "pluto", "pluto": "pluto",
-        "quíron": "chiron", "chiron": "chiron",
-    }
+    """Check bounded explicit natal occupancy and coordinated aspect assertions."""
+    body_map = _FIDELITY_BODIES
     aspect_map = {
         "sextil": "sextile", "sextile": "sextile",
         "conjunção": "conjunction", "conjuncao": "conjunction", "conjunction": "conjunction",
@@ -1225,7 +1273,7 @@ def validate_technical_relationship_fidelity(
     # Split text into clauses on sentence breaks, semicolons, and strong conjunctions
     clauses = re.split(r"[;\.\n]|\balém de\b|\benquanto\b|\bmas\b|\bembora\b", report_text, flags=re.IGNORECASE)
 
-    errors: List[str] = []
+    errors: List[str] = validate_natal_house_occupancy(report_text, chart)
     for clause in clauses:
         no_asp = rf"(?:(?!\b(?:{aspect_re})\b).)*?"
         pattern = (

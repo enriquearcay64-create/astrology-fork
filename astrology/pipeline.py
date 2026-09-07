@@ -25,7 +25,7 @@ from .interpretation import build_compensation_hypotheses, build_paradoxes
 from .localization import localization_audit
 from .models import BirthData, Claim, LocalizationProfile, ReasonedSynthesis, to_primitive
 from .privacy import record_boundaries
-from .report import render_report, technical_appendix
+from .report import render_report, technical_appendix, validate_natal_house_occupancy
 from .reasoning import build_chart_signature, build_narrative_plan, build_natal_timing_interactions, build_reader_domain_manifest, build_reasoning_packet, compose_reasoned_syntheses, humanization_instructions, humanization_verifier_instructions, llm_reasoning_instructions, validate_reasoned_syntheses
 from .safe_view import build_safe_interpretive_view
 from .semantics import build_claims, verify_claims
@@ -2250,6 +2250,7 @@ def _validate_premium_author_bundle_v13(birth: BirthData, author_bundle: Dict[st
     if author_bundle.get("synthesis_bundle_sha256") != expected_synthesis_hash:
         errors.append("synthesis_bundle_hash_mismatch")
     draft = author_bundle.get("draft_report")
+    errors.extend(validate_natal_house_occupancy(draft, build_safe_interpretive_view(calculate_chart(birth))))
     if author_bundle.get("draft_report_sha256") != _canonical_hash(draft):
         errors.append("draft_report_hash_mismatch")
     approved_ids = {item["id"] for item in checked["reasoned_synthesis"] if item["status"] == "allowed"}
@@ -2311,6 +2312,7 @@ def _validate_premium_author_bundle_v14(
     allowed_claims = {str(item["id"]): Claim(**item) for item in checked["allowed_claims"]}
     manifest = checked["reader_domain_manifest"]
     parsed = _parse_premium_narrative(draft, manifest)
+    errors.extend(validate_natal_house_occupancy(draft, build_safe_interpretive_view(calculate_chart(birth))))
     errors.extend(_validate_reader_sections(parsed, author_bundle.get("reader_sections"), manifest))
     source_errors, valid_sources = _validated_narrative_block_sources(
         draft, author_bundle.get("narrative_block_sources"), approved_ids, allowed_claims,
@@ -2399,6 +2401,7 @@ def _validate_premium_narrative_v13(
     approved_ids = {str(item.get("id")) for item in provenance.get("approved_reasoned_syntheses", [])}
     report = narrative_payload.get("final_report")
     errors = ([] if provenance.get("approved") else ["author_provenance_not_approved"]) + preparation_errors
+    errors.extend(validate_natal_house_occupancy(report, build_safe_interpretive_view(calculate_chart(birth))))
     errors.extend(_handoff_contract_errors_v13(narrative_payload, "reviewer"))
     if provenance.get("premium_handoff_contract_version") != LEGACY_PREMIUM_HANDOFF_CONTRACT_VERSION:
         errors.append("provenance_handoff_contract_version_mismatch")
@@ -2546,6 +2549,7 @@ def _validate_premium_narrative_v14(
     approved_ids = {str(item.get("id")) for item in provenance.get("approved_reasoned_syntheses", []) if isinstance(item, dict)}
     report = narrative_payload.get("final_report")
     errors = ([] if provenance.get("approved") else ["author_provenance_not_approved"]) + preparation_errors
+    errors.extend(validate_natal_house_occupancy(report, build_safe_interpretive_view(calculate_chart(birth))))
     errors.extend(_handoff_contract_errors_v14(narrative_payload, "reviewer"))
     contract = _premium_handoff_contract()
     if provenance.get("premium_handoff_contract_version") != PREMIUM_HANDOFF_CONTRACT_VERSION:
