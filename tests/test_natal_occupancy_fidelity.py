@@ -22,11 +22,22 @@ FALSE_OCCUPANCIES = [
     'Saturno em Peixes na casa 9',
 ]
 
+COMMON_SYNTAX_BYPASSES = [
+    'Na casa 10 está Saturno em Peixes.',
+    'Na décima casa está Saturno em Peixes.',
+    'Na décima casa encontramos Saturno em Peixes.',
+    'Saturno, regente da décima casa, está na casa 10.',
+    'Saturno encontra-se na casa 10.',
+    'Saturno se encontra na casa 10.',
+    'In the tenth house is Saturn in Pisces.',
+    'In the tenth house we find Saturn.',
+]
+
 
 def test_explicit_occupancy_and_role_boundaries():
     chart = build_safe_interpretive_view(calculate_chart(BirthData(
         '1994-07-25T00:35:00', 'America/Sao_Paulo', -18.9188, -48.2768)))
-    invalid = FALSE_OCCUPANCIES + [
+    invalid = FALSE_OCCUPANCIES + COMMON_SYNTAX_BYPASSES + [
         'Saturno ocupa a décima casa.', 'Saturno está localizado na casa 10.',
         'Saturno em Peixes, na casa 10.',
         'Saturn in Pisces in the 10th house.', 'Saturn occupies the tenth house.',
@@ -37,6 +48,18 @@ def test_explicit_occupancy_and_role_boundaries():
         'Júpiter na casa 7 em Signo Inteiro e Saturno na casa 10 em Placidus.',
     ]
     valid = [
+        'Na casa 11 está Saturno em Peixes.',
+        'Na décima primeira casa encontramos Saturno em Peixes.',
+        'Saturno, regente da décima casa, está na casa 11.',
+        'Saturno encontra-se na casa 11. Saturno se encontra na casa 11.',
+        'In the eleventh house is Saturn in Pisces.',
+        'In the eleventh house we find Saturn.',
+        'Na casa 10, regida por Saturno, há um tema de vocação.',
+        'Na profecção, na casa 9 está Saturno.',
+        'Na casa 9 está Saturno em trânsito.',
+        'In transit, in the eighth house is Jupiter.',
+        'Em Signo Inteiro, na casa 7 está Júpiter.',
+        'In the seventh house is Jupiter (whole sign).',
         'Saturno rege a casa 10. Júpiter é regente da casa 8.',
         'Saturno em Peixes na casa 11. Júpiter em Escorpião na casa 6.',
         'Saturno, regente da casa 10, está na casa 11.',
@@ -59,10 +82,14 @@ def test_explicit_occupancy_and_role_boundaries():
 
 @pytest.mark.parametrize('stage,phrase,invalid', [
     *[('author', phrase, True) for phrase in FALSE_OCCUPANCIES],
+    *[('author', phrase, True) for phrase in COMMON_SYNTAX_BYPASSES[:4]],
+    ('reviewer', COMMON_SYNTAX_BYPASSES[0], True),
     ('reviewer', FALSE_OCCUPANCIES[0], True),
     ('reviewer', 'Saturno, regente da casa 12, está na casa 1. '
      'Jupiter occupies the ninth house. Júpiter na casa 10 em Signo Inteiro. '
-     'Na profecção, Saturno na casa 9.', False),
+     'Na profecção, Saturno na casa 9. Na primeira casa está Saturno. '
+     'Saturno, regente da décima segunda casa, está na casa 1. '
+     'In the ninth house we find Jupiter.', False),
 ])
 def test_relation_swap_never_delivers(gitrepo, tmp_path, prose_fixture, stage, phrase, invalid):
     # Existing complete synthetic protocol fixture: only prose changes. IDs and

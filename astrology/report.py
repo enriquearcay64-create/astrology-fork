@@ -1197,8 +1197,9 @@ _FIDELITY_BODIES = {
 def validate_natal_house_occupancy(report_text: str, chart: SafeInterpretiveChart) -> List[str]:
     """Check explicit PT/EN body–occupancy assertions, not arbitrary paraphrases.
 
-    Supports sign qualifiers, ruler appositives, occupies/is located/in, and
-    numeric or spelled ordinal houses. Unqualified natal houses mean Placidus.
+    Supports body-first and house-first assertions, sign qualifiers, ruler
+    appositives, and numeric or spelled ordinal houses. Unqualified natal houses
+    mean Placidus.
     Explicit transit/profection/progression clauses are outside natal scope;
     a natal assertion in such a clause is still checked. No sources are inferred
     or added. Missing safe occupancy cannot authorize a categorical assertion.
@@ -1215,15 +1216,18 @@ def validate_natal_house_occupancy(report_text: str, chart: SafeInterpretiveChar
     signs = "áries|aries|touro|taurus|gêmeos|gemini|câncer|cancer|leão|leo|virgem|virgo|libra|escorpião|scorpio|sagitário|sagittarius|capricórnio|capricorn|aquário|aquarius|peixes|pisces"
     # The optional appositive names a role; its house number is never captured
     # as occupancy. Keep the predicate grammar closed, rather than .* matching.
-    role = rf"(?:,\s*(?:regente\s+(?:da|de)|ruler\s+of\s+(?:the\s+)?)\s*(?:casa\s+{number}|{number}\s+house)\s*,)?"
-    predicate = r"(?:na|no|in(?:\s+the)?|ocupa(?:\s+a)?|occupies(?:\s+the)?|está\s+na|fica\s+na|is\s+in(?:\s+the)?|is\s+located\s+in(?:\s+the)?|está\s+localizad[oa]\s+na)"
+    role = rf"(?:,\s*(?:regente\s+(?:da|de)|ruler\s+of\s+(?:the\s+)?)\s*(?:casa\s+{number}|{number}\s+(?:casa|house))\s*,)?"
+    predicate = r"(?:na|no|in(?:\s+the)?|ocupa(?:\s+a)?|occupies(?:\s+the)?|está\s+na|fica\s+na|(?:encontra-se|se\s+encontra)\s+na|is\s+in(?:\s+the)?|is\s+located\s+in(?:\s+the)?|está\s+localizad[oa]\s+na)"
     pattern = rf"\b(?P<body>{bodies})\b(?:\s+natal)?(?:\s+(?:em|in)\s+(?:{signs}))?\s*{role}\s*,?\s*{predicate}\s+{house}\b"
+    house_first = rf"\b(?:na|in(?:\s+the)?)\s+{house}\s*,?\s*(?:está|encontramos|encontra-se|is|we\s+find)\s+(?P<body>{bodies})\b(?:\s+natal)?(?:\s+(?:em|in)\s+(?:{signs}))?"
     errors = []
     for clause in re.split(r"[.;\n]|\b(?:mas|but|enquanto|while)\b", report_text, flags=re.I):
         clause = re.sub(r"[*_`]", "", clause).lower()
-        for match in re.finditer(pattern, clause):
+        for match in [*re.finditer(pattern, clause), *re.finditer(house_first, clause)]:
             prefix = clause[:match.start()]
+            suffix = clause[match.end():]
             temporal = re.fullmatch(r"\s*(?:no trânsito|em trânsito|in transit|na profecção|in (?:the )?profection|na progressão|in (?:the )?progression)\s*[:,]?\s*", prefix)
+            temporal = temporal or re.match(r"\s+(?:em trânsito|in transit|progredido|progressed)\b", suffix)
             if temporal and not re.search(r"\b(?:natal|nascimento|birth)\b", clause):
                 continue
             body = _FIDELITY_BODIES[match['body']]
@@ -1233,7 +1237,6 @@ def validate_natal_house_occupancy(report_text: str, chart: SafeInterpretiveChar
                 stated = int(re.match(r"\d+", token)[0])
             # A system qualifier must belong to this assertion, not another
             # planet elsewhere in the sentence.
-            suffix = clause[match.end():]
             whole = r"(?:signo inteiro|whole[ -]sign)"
             whole_sign = re.match(rf"\s*(?:\(\s*|(?:em|por|in|using)\s+){whole}\b", suffix) or re.fullmatch(rf"\s*(?:em|por|in|using)\s+{whole}\s*,?\s*", prefix)
             system = 'whole_sign_house' if whole_sign else 'placidus_house'
