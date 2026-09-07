@@ -28,6 +28,9 @@ from astrology.pipeline import (
 )
 
 
+# Legacy prose regression fixtures explicitly supply their historical editorial choices.
+from tests.legacy_fixture_adapter import fixture_plan_prospective_narrative_blocks as plan_prospective_narrative_blocks
+
 def sample_birth() -> BirthData:
     return BirthData(
         "1989-11-01T12:08:00",
@@ -63,7 +66,7 @@ def test_prospective_source_selection_workflow():
 
     # Invariant: Block plan is created BEFORE prose
     block_plan = plan_prospective_narrative_blocks(handoff, allow_conservative_fallback=True)
-    assert block_plan["plan_version"] == "1.0"
+    assert block_plan["plan_version"] == "1.1"
     assert "plan_sha256" in block_plan
     assert "opening" in block_plan["sections"]
     assert "integration" in block_plan["sections"]

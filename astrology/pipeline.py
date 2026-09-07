@@ -1762,7 +1762,7 @@ def _validate_reader_selection_plan(
         return ["missing_reader_selection_plan"], None, None
     if _canonical_hash(plan) != plan_hash:
         errors.append("reader_selection_plan_hash_mismatch")
-    if not ({"version", "domains"}.issubset(set(plan)) and set(plan).issubset({"version", "domains", "packet_id"})) or plan.get("version") != "1.0" or not isinstance(plan.get("domains"), list):
+    if not (set(plan) == ({"version", "domains", "packet_id"} | ({"editorial_sections"} if plan.get("version") == "1.1" else set())) and isinstance(plan.get("packet_id"), str) and bool(plan["packet_id"])) or plan.get("version") not in {"1.0", "1.1"} or not isinstance(plan.get("domains"), list):
         return [*errors, "invalid_reader_selection_plan"], None, None
     if not isinstance(manifest, dict):
         return [*errors, "missing_reader_domain_manifest"], None, None
@@ -1777,6 +1777,9 @@ def _validate_reader_selection_plan(
         errors.append("reader_selection_domain_mismatch")
 
     approved = {str(item.get("id")): item for item in approved_syntheses if isinstance(item, dict) and item.get("status") == "allowed"}
+    if plan.get("version") == "1.1":
+        from .editorial_selection import validate_editorial_sections
+        errors.extend(validate_editorial_sections(plan.get("editorial_sections"), approved))
     source_by_hash = {
         str(item.get("narrative_block_sha256")): item
         for item in narrative_block_sources if isinstance(item, dict)
@@ -2333,6 +2336,8 @@ def _validate_premium_author_bundle_v14(
         parsed, valid_sources, approved_syntheses, manifest,
     )
     errors.extend(selection_errors)
+    if isinstance(selection_plan, dict) and selection_plan.get("packet_id") != checked["packet_id"]:
+        errors.append("reader_selection_packet_id_mismatch")
     if isinstance(draft, str) and _contains_prohibited_extension(draft):
         errors.append("prohibited_extension_in_author_draft")
     if not birth.birth_time_known:
@@ -2869,49 +2874,61 @@ def validate_author_selection_plan(
     errors: List[str] = []
     if not isinstance(plan, dict):
         return False, ["missing_plan_dict"]
-    if plan.get("version") != "1.0":
+    if plan.get("version") not in {"1.0", "1.1"}:
         errors.append("invalid_plan_version")
 
-    # Strict packet lineage check
-    if handoff and isinstance(handoff, dict) and "packet_id" in handoff:
-        plan_packet_id = plan.get("packet_id")
-        if plan_packet_id and plan_packet_id != handoff["packet_id"]:
-            errors.append(f"lineage_mismatch:plan_packet_id_{plan_packet_id}_vs_handoff_{handoff['packet_id']}")
-
-    available = [
-        d for d in manifest.get("domains", [])
-        if isinstance(d, dict) and d.get("availability") == "available"
-    ]
-    plan_domains = plan.get("domains", [])
-    if not isinstance(plan_domains, list):
-        return False, ["invalid_domains_list"]
-    domain_entry_map = {str(e.get("domain_id")): e for e in plan_domains if isinstance(e, dict)}
-
-    # Extract approved syntheses if handoff provided
-    if approved_syntheses is None and handoff is not None:
-        if handoff.get("approved_reasoned_syntheses"):
-            approved_syntheses = handoff["approved_reasoned_syntheses"]
-        else:
-            facts = handoff.get("reasoning_packet", {}).get("facts", {})
-            claims_list = (
-                facts.get("allowed_claims")
-                or handoff.get("allowed_claims")
-                or handoff.get("reasoning_packet", {}).get("claims")
-                or []
-            )
-            claims_dict = {str(item["id"]): item for item in claims_list if isinstance(item, dict)}
-            coverage = facts.get("coverage", {})
-            composed, _, _ = compose_canonical_domain_syntheses(claims_dict, manifest, coverage)
-            for c in composed:
-                if isinstance(c, dict):
-                    c["status"] = "allowed"
-            sig_synths = handoff.get("prepared_signature_syntheses", [])
-            approved_syntheses = [*composed, *sig_synths]
+    expected_fields = {"version", "packet_id", "domains"} | ({"editorial_sections"} if plan.get("version") == "1.1" else set())
+    if set(plan) != expected_fields:
+        errors.append("invalid_plan_fields")
+    if not isinstance(plan.get("packet_id"), str) or not plan["packet_id"].strip():
+        errors.append("missing_or_invalid_packet_id")
+    if handoff is None:
+        errors.append("missing_authoritative_handoff")
+    else:
+        if plan.get("packet_id") != handoff.get("packet_id"):
+            errors.append("lineage_mismatch:plan_packet_id")
+        if handoff.get("reasoning_packet", {}).get("packet_id") != handoff.get("packet_id"):
+            errors.append("lineage_mismatch:reasoning_packet_id")
+        if manifest != handoff.get("reader_domain_manifest"):
+            errors.append("reader_domain_manifest_mismatch")
+        catalog = handoff.get("candidate_catalog")
+        authoritative_syntheses = handoff.get("approved_reasoned_syntheses")
+        if not isinstance(catalog, dict) or not authoritative_syntheses:
+            errors.append("missing_validated_candidate_catalog")
+        elif catalog != build_selection_candidate_catalog(
+            manifest=manifest, approved_syntheses=authoritative_syntheses,
+            packet_id=handoff.get("packet_id"),
+        ):
+            errors.append("candidate_catalog_mismatch")
+        if approved_syntheses is not None and list(approved_syntheses) != authoritative_syntheses:
+            errors.append("approved_synthesis_basis_mismatch")
+        approved_syntheses = authoritative_syntheses
     approved = {
-        str(item.get("id")): item
-        for item in (approved_syntheses or [])
+        item["id"]: item for item in (approved_syntheses or [])
         if isinstance(item, dict) and item.get("status") == "allowed"
     }
+    if plan.get("version") == "1.1":
+        from .editorial_selection import validate_editorial_sections
+        errors.extend(validate_editorial_sections(plan.get("editorial_sections"), approved))
+    if not approved:
+        errors.append("missing_approved_synthesis_basis")
+    available = [d for d in manifest.get("domains", [])
+                 if isinstance(d, dict) and d.get("availability") == "available"]
+    expected_domains = {d["id"] for d in available}
+    plan_domains = plan.get("domains")
+    if not isinstance(plan_domains, list):
+        return False, [*errors, "invalid_domains_list"]
+    domain_entry_map = {}
+    for entry in plan_domains:
+        if not isinstance(entry, dict) or set(entry) != {"domain_id", "paths"} or not isinstance(entry.get("domain_id"), str):
+            errors.append("invalid_domain_entry")
+            continue
+        did = entry["domain_id"]
+        if did in domain_entry_map:
+            errors.append(f"duplicate_domain:{did}")
+        if did not in expected_domains:
+            errors.append(f"unknown_domain:{did}")
+        domain_entry_map[did] = entry
 
     for d in available:
         d_id = str(d["id"])
@@ -2934,7 +2951,33 @@ def validate_author_selection_plan(
         if not represented_in_domain:
             errors.append(f"domain_has_no_represented_paths:{d_id}")
 
-        path_map = {str(pe.get("path_id")): pe for pe in path_entries if isinstance(pe, dict)}
+        path_map = {}
+        for pe in path_entries:
+            if not isinstance(pe, dict) or set(pe) != {"path_id", "decision", "synthesis_ids", "merged_with_path_id", "rationale"}:
+                errors.append(f"invalid_path_fields:{d_id}")
+                continue
+            pid = pe.get("path_id")
+            if not isinstance(pid, str):
+                errors.append(f"invalid_path_id:{d_id}")
+                continue
+            if pid in path_map:
+                errors.append(f"duplicate_path:{d_id}:{pid}")
+            if pid not in path_by_id:
+                errors.append(f"unknown_path:{d_id}:{pid}")
+            if not isinstance(pe.get("decision"), str):
+                errors.append(f"invalid_decision_type:{pid}")
+                continue
+            ids = pe.get("synthesis_ids")
+            if not isinstance(ids, list) or any(not isinstance(x, str) or not x for x in ids):
+                errors.append(f"invalid_synthesis_ids:{pid}")
+                continue
+            if pe.get("merged_with_path_id") is not None and not isinstance(pe["merged_with_path_id"], str):
+                errors.append(f"invalid_merge_target_type:{pid}")
+                continue
+            if pe.get("rationale") is not None and not isinstance(pe["rationale"], str):
+                errors.append(f"invalid_rationale_type:{pid}")
+                continue
+            path_map[pid] = pe
 
         for pid in expected_ids:
             if pid not in path_map:
@@ -3100,87 +3143,45 @@ def plan_prospective_narrative_blocks(
     claims_dict = {str(item["id"]): item for item in claims_list if isinstance(item, dict)}
     coverage = facts.get("coverage", {})
 
-    composed_synths, domain_sources, mandatory_ids = compose_canonical_domain_syntheses(claims_dict, manifest, coverage)
-    for c in composed_synths:
-        if isinstance(c, dict):
-            c["status"] = "allowed"
-
+    _, domain_sources, mandatory_ids = compose_canonical_domain_syntheses(claims_dict, manifest, coverage)
+    approved_synths = handoff.get("approved_reasoned_syntheses")
+    if not approved_synths or not handoff.get("candidate_catalog"):
+        raise SelectionPlanValidationError("missing validated candidate catalog / approved synthesis basis")
+    composed_synths = list(approved_synths)
     available_domains = [d for d in manifest.get("domains", []) if isinstance(d, dict) and d.get("availability") == "available"]
-
-    # Identify primary domain syntheses from selection plan or manifest defaults
-    effective_selection = author_selection_plan or selection_plan
-    approved_synths = (
-        handoff.get("approved_reasoned_syntheses")
-        or [*composed_synths, *handoff.get("prepared_signature_syntheses", [])]
-    )
-    if effective_selection is None and not handoff.get("reader_selection_plan"):
+    if selection_plan is not None:
+        raise SelectionPlanValidationError("Use explicit author_selection_plan; legacy selection_plan is not a production input")
+    if author_selection_plan is None:
         if not allow_conservative_fallback:
-            raise ValueError(
-                "author_selection_plan is required for prospective narrative block planning; "
-                "production pipeline fails closed without validated author selection."
-            )
-        sel_plan = build_canonical_selection_plan(
-            manifest,
-            domain_sources=domain_sources,
-            allow_conservative_fallback=True,
-            approved_syntheses=approved_synths,
-            handoff=handoff,
-        )
+            raise SelectionPlanValidationError("author_selection_plan is required for prospective narrative block planning")
+        sel_plan = build_canonical_selection_plan(manifest, domain_sources=domain_sources, allow_conservative_fallback=True)
+        sel_plan["packet_id"] = handoff["packet_id"]
     else:
-        sel_plan = effective_selection or handoff.get("reader_selection_plan")
-        if sel_plan.get("packet_id") and handoff.get("packet_id") and sel_plan["packet_id"] != handoff["packet_id"]:
-            raise LineageMismatchError(
-                f"Selection plan packet_id {sel_plan.get('packet_id')} does not match handoff packet_id {handoff.get('packet_id')}"
-            )
-        valid, errors = validate_author_selection_plan(
-            sel_plan,
-            manifest,
-            approved_syntheses=approved_synths,
-            handoff=handoff,
-        )
-        if not valid:
-            raise SelectionPlanValidationError("Invalid reader selection plan: " + ", ".join(errors[:5]))
+        sel_plan = author_selection_plan
+    if allow_conservative_fallback and isinstance(sel_plan, dict) and sel_plan.get("version") == "1.0":
+        from .editorial_selection import conservative_editorial_sections
+        sel_plan = dict(sel_plan, version="1.1", editorial_sections=conservative_editorial_sections({x["id"]: x for x in approved_synths}))
+    if not isinstance(sel_plan, dict):
+        raise SelectionPlanValidationError("selection plan must be an object")
+    if not isinstance(sel_plan.get("packet_id"), str) or not sel_plan["packet_id"].strip():
+        raise SelectionPlanValidationError("packet_id is required")
+    if sel_plan["packet_id"] != handoff.get("packet_id"):
+        raise LineageMismatchError("Selection plan packet_id does not match authoritative handoff")
+    if sel_plan.get("version") != "1.1":
+        raise SelectionPlanValidationError("Selection 1.1 with Author-owned editorial_sections is required; 1.0 is replay-only")
+    valid, errors = validate_author_selection_plan(sel_plan, manifest, handoff=handoff)
+    if not valid:
+        raise SelectionPlanValidationError("Invalid reader selection plan: " + ", ".join(errors))
     plan_by_domain: Dict[str, Dict[str, object]] = {}
 
     for d_entry in sel_plan.get("domains", []):
         if isinstance(d_entry, dict):
             plan_by_domain[str(d_entry.get("domain_id"))] = d_entry
 
-    # Identify relational synthesis candidates
-    prepared_synths = handoff.get("prepared_signature_syntheses", [])
-    relational_candidates = [
-        s["id"] for s in prepared_synths
-        if isinstance(s, dict) and s.get("reasoning_class") in {"integrated_pattern", "theme_interaction"}
-        and not any(str(c).startswith("claim.house_ruler.placidus.") for c in s.get("source_claim_ids", []))
-    ]
-    primary_relational = relational_candidates[0] if relational_candidates else "reasoned.competence"
-    secondary_relational = relational_candidates[1] if len(relational_candidates) > 1 else primary_relational
-
-    sections_plan: Dict[str, List[Dict[str, object]]] = {}
-
-    # 1. Opening: 2 relational blocks weaving mandatory items together
-    half_m = len(mandatory_ids) // 2
-    first_half_m = mandatory_ids[:half_m]
-    second_half_m = mandatory_ids[half_m:]
-
-    sections_plan["opening"] = [
-        {
-            "block_index": 0,
-            "kind": "paragraph",
-            "synthesis_ids": [primary_relational, *first_half_m],
-            "claim_ids": [],
-            "timing_ids": [],
-            "intended_mechanism": "Síntese relacional de ordem superior dos centros de gravidade do mapa e eixos estruturantes",
-        },
-        {
-            "block_index": 1,
-            "kind": "paragraph",
-            "synthesis_ids": [secondary_relational, *second_half_m],
-            "claim_ids": [],
-            "timing_ids": [],
-            "intended_mechanism": "Tensões dinâmicas fundamentais, polaridades e integração dos recursos vitais",
-        },
-    ]
+    from .editorial_selection import compile_editorial_sections
+    sections_plan = compile_editorial_sections(sel_plan["editorial_sections"])
+    # Compatibility metadata for the legacy diagnostic binder, never a source decision.
+    primary_relational = sections_plan["opening"][0]["synthesis_ids"][0]
 
     # 2. Domains: each available domain plans blocks based on represented paths
     for d in available_domains:
@@ -3197,7 +3198,9 @@ def plan_prospective_narrative_blocks(
             for b_idx, rp in enumerate(represented_paths):
                 rp_id = str(rp["path_id"])
                 p_obj = path_by_id.get(rp_id, {})
-                t_ids = list(map(str, p_obj.get("timing_ids", []))) if d_id == "active_life_chapter" else []
+                cluster = [rp_id, *[item["path_id"] for item in domain_entry.get("paths", [])
+                    if item.get("decision") == "merged_with_represented" and item.get("merged_with_path_id") == rp_id]]
+                t_ids = sorted({str(tid) for path_id in cluster for tid in path_by_id[path_id].get("timing_ids", [])})
                 blocks.append({
                     "block_index": b_idx,
                     "kind": "paragraph",
@@ -3223,22 +3226,10 @@ def plan_prospective_narrative_blocks(
         s_ids = []
         for rp in represented_paths:
             s_ids.extend(rp.get("synthesis_ids", []))
-        aligned_domain_sources[d_id] = list(dict.fromkeys(s_ids or domain_sources.get(d_id, [f"reasoned.reader.{d_id}"])))
-
-    # 3. Integration: higher-order synthesis
-    sections_plan["integration"] = [
-        {
-            "block_index": 0,
-            "kind": "paragraph",
-            "synthesis_ids": [primary_relational],
-            "claim_ids": [],
-            "timing_ids": [],
-            "intended_mechanism": "Síntese de ordem superior organizando a pessoa como um todo e pergunta reflexiva final",
-        }
-    ]
+        aligned_domain_sources[d_id] = list(dict.fromkeys(s_ids))
 
     plan_payload = {
-        "plan_version": "1.0",
+        "plan_version": "1.1",
         "packet_id": handoff["packet_id"],
         "sections": sections_plan,
         "composed_syntheses": composed_synths,
@@ -3247,7 +3238,7 @@ def plan_prospective_narrative_blocks(
         "primary_relational": primary_relational,
         "selection_plan": sel_plan,
     }
-    plan_payload["plan_sha256"] = _canonical_hash({k: v for k, v in plan_payload.items() if k != "composed_syntheses"})
+    plan_payload["plan_sha256"] = _canonical_hash(plan_payload)
     return plan_payload
 
 
@@ -3682,32 +3673,11 @@ def build_author_bundle(
     selection_plan_hash = _canonical_hash(reader_selection_plan)
 
     if reasoned_syntheses is None:
-        if handoff.get("approved_reasoned_syntheses"):
-            reasoned_syntheses = handoff["approved_reasoned_syntheses"]
-        else:
-            facts = handoff.get("reasoning_packet", {}).get("facts", {})
-            claims_list = (
-                facts.get("allowed_claims")
-                or handoff.get("allowed_claims")
-                or handoff.get("reasoning_packet", {}).get("claims")
-                or []
-            )
-            claims_dict = {str(item["id"]): item for item in claims_list if isinstance(item, dict)}
-            coverage = facts.get("coverage", {})
-            composed, _, _ = compose_canonical_domain_syntheses(claims_dict, manifest, coverage)
-            for c in composed:
-                if isinstance(c, dict):
-                    c["status"] = "allowed"
-            sig_synths = handoff.get("prepared_signature_syntheses", [])
-            seen_ids = set()
-            combined = []
-            for item in [*composed, *sig_synths]:
-                if isinstance(item, dict) and item.get("id") not in seen_ids:
-                    seen_ids.add(item.get("id"))
-                    combined.append(item)
-            reasoned_syntheses = combined
+        reasoned_syntheses = handoff.get("approved_reasoned_syntheses")
+        if not reasoned_syntheses:
+            raise SelectionPlanValidationError("missing authoritative approved syntheses")
 
-    allowed_syntheses = [s for s in reasoned_syntheses if isinstance(s, dict) and s.get("status", "allowed") == "allowed"]
+    allowed_syntheses = [s for s in reasoned_syntheses if isinstance(s, dict) and s.get("status") == "allowed"]
     synth_hash = synthesis_bundle_sha256 or handoff.get("synthesis_bundle_sha256") or _canonical_hash(allowed_syntheses)
     report_hash = _canonical_hash(draft_report)
 

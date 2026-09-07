@@ -38,7 +38,7 @@ Python prova somente shape, ordem, IDs, hashes, syntheses aprovadas, provenance 
 Quando a pessoa pedir naturalmente “gere uma leitura premium” ou “faça o relatório natal completo”, faça todo o percurso sem expor operações intermediárias:
 
 ```text
-núcleo determinístico → SafeInterpretiveChart → Premium Author High
+núcleo determinístico → SafeInterpretiveChart → Author Selection → validação prospectiva → plano congelado → Premium Author
 → Deterministic Provenance Guard → Premium Reviewer/Editor High
 → Publication Guard → relatório final
 ```
@@ -50,7 +50,10 @@ O Author recebe o handoff preparado fechado, mas o `reasoning_packet` é sua ún
 O relatório local determinístico é fallback para testes e debug; não o apresente como produto premium. Para a leitura premium no Codex High, execute exatamente:
 
 ```bash
-python3 scripts/astrology_skill.py /caminho/entrada.json --premium-stage prepare > pacote.json
+python3 scripts/astrology_skill.py /caminho/entrada.json --premium-stage prepare-selection > pacote.json
+# Entregue author_selection_prompt ao Author, preserve resposta bruta e salve selection.json.
+python3 scripts/astrology_skill.py /caminho/entrada.json --premium-stage validate-selection --premium-handoff pacote.json --premium-selection selection.json
+python3 scripts/astrology_skill.py /caminho/entrada.json --premium-stage prepare-author --premium-handoff pacote.json --premium-selection selection.json > author-input.json
 # No Codex, reasoning_packet é a única autoridade astrológica; campos top-level do handoff orientam somente workflow, apresentação e proveniência.
 python3 scripts/astrology_skill.py /caminho/entrada.json --premium-stage validate-synthesis --premium-handoff pacote.json --premium-synthesis author-bundle.json
 # O Reviewer usa as sínteses aprovadas para criar reviewer-bundle.json e corrigir o rascunho diretamente.
@@ -86,3 +89,11 @@ Bloquear ou reformular trauma, abuso, abandono, diagnóstico, morte, doença, gr
 - `astrology/safe_view.py`: gate arquitetural entre Chart bruto e interpretação.
 - `astrology/reasoning.py`: pacote factual fechado, ReasonedSynthesis, planner e contrato de humanização.
 - `astrology/editorial_qa.py`: lint de Barnum, reutilização literal/semântica e pré-teste de report swap.
+
+## Integridade V2.3.1b
+
+Consulte `docs/ARCHITECTURAL_INVARIANTS.md` e `docs/V231B_STATUS.md`. O plano Selection deve conter packet_id obrigatório e todos os caminhos legais. A prosa usa o plano congelado; não o reconstrua. O run `run_20260905_052000` está invalidado para promoção. Nenhum novo benchmark premium deve ser executado antes da auditoria independente do patch. Estes comandos são estágios manuais; ainda não demonstram um runtime generativo isolado de ponta a ponta.
+
+## Execução premium capturada
+
+O caminho de produção com modelo é o fluxo descrito em `docs/CAPTURED_PREMIUM.md`: `prepare-run` → `run-captured` → avaliação cega separada quando aplicável. Ele exige revisão independente do código, configuração local do runtime e Selection 1.1 com `editorial_sections` escolhidas pelo Author. Author e Reviewer declaram fontes por bloco; o binder lexical antigo não participa dessa execução. Os comandos manuais de validação continuam disponíveis para diagnóstico e replay, sem provar geração fresh ou isolamento. Nunca promova uma fixture como leitura premium.

@@ -17,6 +17,9 @@ from tests.test_v22_architecture_and_guards import sample_birth
 CHART_3_BIRTH = BirthData("1995-09-08T19:45:00", "Europe/Paris", 48.8566, 2.3522)
 
 
+# Legacy prose regression fixtures explicitly supply their historical editorial choices.
+from tests.legacy_fixture_adapter import fixture_plan_prospective_narrative_blocks as plan_prospective_narrative_blocks
+
 def test_canonical_timing_renderer_schema_and_real_dates():
     """Verify R1: timing renderer schema fields, technique labels, and verified concrete dates."""
     analysis = analyse_birth_chart(CHART_3_BIRTH, include_timing=True)
@@ -95,7 +98,10 @@ def test_reader_selection_plan_order_agnostic_and_multi_path():
     bench_plan_path = Path("benchmarks/chart3_mutable_earth_water/01-author-selection-plan.json")
     if bench_plan_path.exists():
         author_plan = json.loads(bench_plan_path.read_text(encoding="utf-8"))
-        valid, errors = validate_author_selection_plan(author_plan, manifest)
+        handoff = prepare_premium_handoff(CHART_3_BIRTH)
+        manifest = handoff["reader_domain_manifest"]
+        author_plan["packet_id"] = handoff["packet_id"]  # synthetic fixture only
+        valid, errors = validate_author_selection_plan(author_plan, manifest, handoff=handoff)
         assert valid is True, f"Benchmark author selection plan failed validation: {errors}"
         auth_by_dom = {d["domain_id"]: d["paths"] for d in author_plan["domains"]}
         # Work vocation: both Casa 10 ruler and Casa 6 ruler represented
@@ -168,6 +174,7 @@ def test_author_bundle_provenance_guard_pass_with_v221():
     manifest = handoff["reader_domain_manifest"]
     bench_dir = Path("benchmarks/chart3_mutable_earth_water")
     sel_plan = json.loads((bench_dir / "01-author-selection-plan.json").read_text(encoding="utf-8"))
+    sel_plan["packet_id"] = handoff["packet_id"]  # test-only structural fixture migration
     block_plan = plan_prospective_narrative_blocks(handoff, author_selection_plan=sel_plan)
 
     report = (bench_dir / "author_draft.md").read_text(encoding="utf-8")
@@ -259,6 +266,7 @@ def test_reviewer_bundle_automatic_rebind_on_edited_report():
     manifest = handoff["reader_domain_manifest"]
     sel_path = Path("benchmarks/chart3_mutable_earth_water/01-author-selection-plan.json")
     author_selection_plan = json.loads(sel_path.read_text(encoding="utf-8"))
+    author_selection_plan["packet_id"] = handoff["packet_id"]  # test-only structural fixture migration
     block_plan = plan_prospective_narrative_blocks(handoff, author_selection_plan=author_selection_plan)
 
     sources, sections, _ = bind_prospective_plan_to_prose(SAMPLE_CHART3_PROSE, block_plan, manifest)

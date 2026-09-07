@@ -135,6 +135,7 @@ def build_author_bundle_v14(
             ],
             "integration": {"narrative_block_sha256s": [str(x["narrative_block_sha256"]) for x in parsed["sections"]["integration"]["authored"]]},
         }
+    legacy_author["reader_selection_plan"]["packet_id"] = result["packet_id"]
     author = pipeline.build_author_bundle(
         result, report, sources,
         reader_selection_plan=legacy_author["reader_selection_plan"],

@@ -55,5 +55,12 @@
     "evaluator_prompt.txt": "5a7670011c6a35d358548bd0882f5e6ca7acc44e8a4b2bcf12141a40a323450f",
     "final_reviewed_report.md": "5fbc96d51d6bf68422f828d0bad25bc2a1d9503e025093f0c084a300158967fe",
     "reviewer_prompt.txt": "530ccf6f1076712e907a242e4e66ec8e393f73eda662b0ae7755fcd39401efcc"
+  },
+  "benchmark_status": "invalidated",
+  "invalidation_reason": "Reviewer output reused a historical candidate report byte-for-byte; fresh Reviewer isolation and blind evaluation integrity were not demonstrated.",
+  "invalidation_evidence": {
+    "shared_git_blob": "72d1714331e758e54aed86503a8517f8d0eb2ebb",
+    "audited_commit": "36e807e3340b802ac5dd355141de8837928d3e00",
+    "reported_manifest_sha_correction": "d0fcf23f40517a6b65888861b97b148e89770e62"
   }
 }

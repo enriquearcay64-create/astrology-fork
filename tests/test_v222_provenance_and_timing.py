@@ -32,6 +32,9 @@ from tests.v221_fixtures import SAMPLE_CHART3_PROSE, CHART_3_BIRTH
 from tests.test_v221_timing_and_selection import sample_birth
 
 
+# Legacy prose regression fixtures explicitly supply their historical editorial choices.
+from tests.legacy_fixture_adapter import fixture_plan_prospective_narrative_blocks as plan_prospective_narrative_blocks
+
 def test_v222_unmaterialized_planned_synthesis_not_silently_attached():
     """Verify Issue 1: a planned synthesis with 0 semantic score is never silently attached to blocks."""
     profile = LocalizationProfile(preferred_language="pt-BR")
@@ -221,7 +224,8 @@ def test_v222_validate_author_selection_plan_legality_and_rejection():
 
     # 1. Valid plan built by build_canonical_selection_plan with conservative fallback
     valid_plan = build_canonical_selection_plan(manifest, allow_conservative_fallback=True)
-    is_valid, errors = validate_author_selection_plan(valid_plan, manifest)
+    valid_plan["packet_id"] = handoff["packet_id"]  # test-only conservative fixture
+    is_valid, errors = validate_author_selection_plan(valid_plan, manifest, handoff=handoff)
     assert is_valid is True
     assert errors == []
 
@@ -230,7 +234,7 @@ def test_v222_validate_author_selection_plan_legality_and_rejection():
         "version": "1.0",
         "domains": [d for d in valid_plan["domains"] if d["domain_id"] != "identity_presence"],
     }
-    valid_res, errors = validate_author_selection_plan(bad_plan_missing_domain, manifest)
+    valid_res, errors = validate_author_selection_plan(bad_plan_missing_domain, manifest, handoff=handoff)
     assert valid_res is False
     assert any("missing_domain:identity_presence" in e for e in errors)
 
@@ -238,7 +242,7 @@ def test_v222_validate_author_selection_plan_legality_and_rejection():
     import copy
     bad_plan_illegal_decision = copy.deepcopy(valid_plan)
     bad_plan_illegal_decision["domains"][0]["paths"][0]["decision"] = "ignored"
-    valid_res, errors = validate_author_selection_plan(bad_plan_illegal_decision, manifest)
+    valid_res, errors = validate_author_selection_plan(bad_plan_illegal_decision, manifest, handoff=handoff)
     assert valid_res is False
     assert any("invalid_decision" in e for e in errors)
 
@@ -248,7 +252,7 @@ def test_v222_validate_author_selection_plan_legality_and_rejection():
     bad_plan_merge["domains"][0]["paths"][0]["merged_with_path_id"] = "non_existent_path"
     bad_plan_merge["domains"][0]["paths"][0]["rationale"] = "Rationale test"
     bad_plan_merge["domains"][0]["paths"][0]["synthesis_ids"] = []
-    valid_res, errors = validate_author_selection_plan(bad_plan_merge, manifest)
+    valid_res, errors = validate_author_selection_plan(bad_plan_merge, manifest, handoff=handoff)
     assert valid_res is False
     assert any("invalid_merge_target" in e for e in errors)
 
@@ -257,6 +261,6 @@ def test_v222_validate_author_selection_plan_legality_and_rejection():
     bad_plan_empty_rationale["domains"][0]["paths"][0]["decision"] = "omitted_no_distinct_reader_value"
     bad_plan_empty_rationale["domains"][0]["paths"][0]["synthesis_ids"] = []
     bad_plan_empty_rationale["domains"][0]["paths"][0]["rationale"] = "   "
-    valid_res, errors = validate_author_selection_plan(bad_plan_empty_rationale, manifest)
+    valid_res, errors = validate_author_selection_plan(bad_plan_empty_rationale, manifest, handoff=handoff)
     assert valid_res is False
     assert any("missing_omission_rationale" in e for e in errors)

@@ -14,8 +14,8 @@ from .timing import solar_return
 
 
 def _load(path: str) -> Dict[str, object]:
-    with open(path, "r", encoding="utf-8") as handle:
-        return json.load(handle)
+    from .benchmark_integrity import load_json
+    return load_json(path)
 
 
 def _birth(data: Dict[str, object]) -> BirthData:
@@ -39,21 +39,7 @@ def _profile(data: Dict[str, object]) -> Optional[LocalizationProfile]:
     return LocalizationProfile(**profile)
 
 
-def _prepared_timing_parameters(handoff: Dict[str, object]) -> tuple[Optional[datetime], int, bool]:
-    parameters = handoff.get("preparation_parameters")
-    if not isinstance(parameters, dict):
-        raise ValueError("premium handoff is missing preparation_parameters")
-    effective = parameters.get("effective_as_of")
-    effective_as_of = datetime.fromisoformat(str(effective).replace("Z", "+00:00")) if effective is not None else None
-    if effective_as_of is not None and effective_as_of.tzinfo is None:
-        raise ValueError("premium handoff effective_as_of must include a UTC offset")
-    horizon_days = parameters.get("horizon_days")
-    include_timing = parameters.get("include_timing")
-    if not isinstance(horizon_days, int) or isinstance(horizon_days, bool) or horizon_days <= 0:
-        raise ValueError("premium handoff horizon_days must be a positive integer")
-    if not isinstance(include_timing, bool):
-        raise ValueError("premium handoff include_timing must be boolean")
-    return effective_as_of, horizon_days, include_timing
+from .premium_workflow import prepared_timing_parameters as _prepared_timing_parameters, build_author_selection_prompt, prepare_author_from_selection, validate_frozen_inputs
 
 
 def main() -> int:
@@ -67,10 +53,16 @@ def main() -> int:
     parser.add_argument("--solar-return-location-policy", choices=("birth_place", "habitual_residence", "actual_physical_location"), default="birth_place")
     parser.add_argument("--as-of", help="UTC ISO timestamp for reproducible timing")
     parser.add_argument("--format", choices=("json", "report"), default="json")
-    parser.add_argument("--premium-stage", choices=("prepare", "validate-synthesis", "validate-narrative"), help="Manual Sol High handoff; does not call an external model")
+    parser.add_argument("--premium-stage", choices=("prepare", "prepare-selection", "validate-selection", "prepare-author", "validate-synthesis", "validate-narrative", "prepare-run", "run-captured", "evaluate-captured", "reveal-captured", "replay-captured"), help="Manual Sol High handoff; does not call an external model")
     parser.add_argument("--premium-synthesis", help="AuthorBundle JSON, or a raw ReasonedSynthesis list for synthesis-only debugging")
     parser.add_argument("--premium-narrative", help="ReviewerBundle JSON with final_report and paragraph source mapping")
     parser.add_argument("--premium-handoff", help="Original deterministic handoff JSON that authoritatively binds a premium lineage")
+    parser.add_argument("--premium-selection", help="Author-owned SelectionPlan JSON for the frozen handoff")
+    parser.add_argument("--run-dir", help="Captured execution directory")
+    parser.add_argument("--model", help="Explicit configured Gemini API model identifier")
+    parser.add_argument("--audit-record", help="Independent benchmark-ready code audit JSON")
+    parser.add_argument("--champion-report", help="Comparison report, supplied only to the blind evaluator")
+    parser.add_argument("--rubric", help="Frozen 17-dimension evaluation rubric JSON")
     args = parser.parse_args()
     try:
         data = _load(args.input)
@@ -79,8 +71,48 @@ def main() -> int:
         as_of = datetime.fromisoformat(args.as_of.replace("Z", "+00:00")) if args.as_of else None
         if as_of is not None and as_of.tzinfo is None:
             raise ValueError("--as-of must include a UTC offset")
-        if args.premium_stage == "prepare":
+        if args.premium_stage in {"prepare-run", "run-captured", "evaluate-captured", "reveal-captured", "replay-captured"}:
+            from pathlib import Path
+            from .isolated_execution import RunStore, GeminiTransport
+            from .live_premium import prepare_run, continue_run, verify_captured_derivation, finalize_trace
+            from .blind_execution import commit_blind, evaluate_blind, reveal_blind
+            if not args.run_dir:
+                raise ValueError("--run-dir is required")
+            if args.premium_stage == "prepare-run":
+                if not args.audit_record:
+                    raise ValueError("--audit-record is required before live generation")
+                store = prepare_run(args.run_dir, Path(__file__).resolve().parents[1], birth, profile,
+                    as_of=as_of, horizon_days=args.horizon_days, include_timing=not args.no_timing, audit_record=_load(args.audit_record))
+                result = {"stage": "prepared", "run_dir": str(store.root)}
+            else:
+                store = RunStore(args.run_dir)
+                validate_frozen_inputs(_load(str(store.path("01-handoff.json"))), birth, profile)
+                if args.premium_stage == "run-captured":
+                    result = continue_run(store, GeminiTransport(args.model))
+                elif args.premium_stage == "evaluate-captured":
+                    if not store.path("assignment_commitment.json").exists():
+                        if not args.champion_report or not args.rubric:
+                            raise ValueError("--champion-report and --rubric are required before blind commitment")
+                        commit_blind(store, Path(args.champion_report).read_bytes(), _load(args.rubric))
+                    result = evaluate_blind(store, GeminiTransport(args.model))
+                elif args.premium_stage == "reveal-captured":
+                    result = {"reveal": reveal_blind(store), "manifest": finalize_trace(store)}
+                else:
+                    result = {"deterministic_replay_approved": verify_captured_derivation(store), "run_dir": str(store.root)}
+        elif args.premium_stage == "prepare":
             result = prepare_premium_handoff(birth, profile, args.depth or "deep", not args.no_timing, as_of, args.horizon_days)
+        elif args.premium_stage == "prepare-selection":
+            result = prepare_premium_handoff(birth, profile, args.depth or "deep", not args.no_timing, as_of, args.horizon_days)
+            result["author_selection_prompt"] = build_author_selection_prompt(result)
+        elif args.premium_stage in {"validate-selection", "prepare-author"}:
+            if not args.premium_handoff or not args.premium_selection:
+                raise ValueError("--premium-handoff and --premium-selection are required")
+            handoff = _load(args.premium_handoff)
+            validate_frozen_inputs(handoff, birth, profile)
+            selection = _load(args.premium_selection)
+            result = prepare_author_from_selection(handoff, selection, handoff["reader_domain_manifest"].get("locale", "pt-BR"))
+            if args.premium_stage == "validate-selection":
+                result = {"stage": "selection_validated", "approved": True, "packet_id": handoff["packet_id"]}
         elif args.premium_stage == "validate-synthesis":
             if not args.premium_synthesis:
                 raise ValueError("--premium-synthesis is required with --premium-stage validate-synthesis")

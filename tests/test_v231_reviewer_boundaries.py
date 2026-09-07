@@ -29,11 +29,16 @@ from scripts.run_chart3_pipeline import (
 )
 
 
+# Legacy prose regression fixtures explicitly supply their historical editorial choices.
+from tests.legacy_fixture_adapter import fixture_plan_prospective_narrative_blocks as plan_prospective_narrative_blocks
+
 @pytest.fixture
 def chart3_baseline():
     """Load baseline artifacts and produce validated author bundle and provenance."""
-    handoff = json.loads((BENCHMARK_DIR / "01-handoff.json").read_text(encoding="utf-8"))
+    from tests.legacy_fixture_adapter import current_handoff
+    handoff = current_handoff()
     author_selection_plan = json.loads((BENCHMARK_DIR / "01-author-selection-plan.json").read_text(encoding="utf-8"))
+    author_selection_plan["packet_id"] = handoff["packet_id"]  # test-only structural fixture migration
     author_draft = (BENCHMARK_DIR / "author_draft.md").read_text(encoding="utf-8")
     final_reviewed_report = (BENCHMARK_DIR / "final_reviewed_report.md").read_text(encoding="utf-8")
     domain_manifest = handoff["reader_domain_manifest"]

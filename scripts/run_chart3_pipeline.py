@@ -47,23 +47,8 @@ BENCHMARK_DIR = Path("benchmarks/chart3_mutable_earth_water")
 
 def verify_benchmark_artifacts(bench_dir: Path = BENCHMARK_DIR) -> Dict[str, object]:
     """Verify SHA-256 integrity of all versioned benchmark artifacts."""
-    manifest_path = bench_dir / "benchmark_manifest.json"
-    if not manifest_path.exists():
-        raise BenchmarkIntegrityError(f"Missing benchmark manifest: {manifest_path}")
-    
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    expected_hashes = manifest.get("artifacts_sha256", {})
-    
-    for filename, expected_hash in expected_hashes.items():
-        artifact_path = bench_dir / filename
-        if not artifact_path.exists():
-            raise BenchmarkIntegrityError(f"Missing expected benchmark artifact: {artifact_path}")
-        content = artifact_path.read_bytes()
-        actual_hash = hashlib.sha256(content).hexdigest()
-        if actual_hash != expected_hash:
-            raise BenchmarkIntegrityError(f"Hash mismatch for {filename}: expected {expected_hash}, got {actual_hash}")
-    
-    return manifest
+    from astrology.benchmark_integrity import verify_artifacts
+    return verify_artifacts(bench_dir)
 
 
 def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
@@ -72,7 +57,17 @@ def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
     # 1. Integrity Check
     print("\n==> [1/5] Verifying Benchmark Artifact Hashes against Manifest...")
     manifest = verify_benchmark_artifacts(bench_dir)
-    print(f"Verified {len(manifest['artifacts_sha256'])} benchmark artifacts against commit {manifest['git_commit_sha'][:8]}.")
+    if manifest.get("benchmark_status") == "invalidated":
+        raise BenchmarkIntegrityError("Invalidated benchmark cannot pass publication replay")
+    if manifest.get("artifact_generation_commit_sha"):
+        from astrology.benchmark_integrity import verify_commit
+        verify_commit(Path(__file__).resolve().parents[1], manifest["artifact_generation_commit_sha"])
+    print(f"Verified {len(manifest['artifacts_sha256'])} benchmark artifacts.")
+
+    if (bench_dir / "run.json").exists():
+        from astrology.isolated_execution import RunStore
+        from astrology.live_premium import verify_captured_derivation
+        return verify_captured_derivation(RunStore(bench_dir))
 
     # Load versioned artifacts
     handoff = json.loads((bench_dir / "01-handoff.json").read_text(encoding="utf-8"))
@@ -94,14 +89,15 @@ def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
     # 3. Compile Prospective Block Plan and Re-verify against artifact
     print("\n==> [3/5] Compiling Prospective Block Plan from Selection Plan...")
     block_plan = plan_prospective_narrative_blocks(handoff, author_selection_plan=author_selection_plan)
-    if len(block_plan.get("sections", {})) != 18:
-        raise BenchmarkIntegrityError("Expected 18 planned sections (opening + 16 domains + integration)")
+
 
     versioned_block_plan_path = bench_dir / "01-prospective-block-plan.json"
     if versioned_block_plan_path.exists():
         versioned_bp = json.loads(versioned_block_plan_path.read_text(encoding="utf-8"))
-        if set(block_plan.get("sections", {}).keys()) != set(versioned_bp.get("sections", {}).keys()):
-            raise BenchmarkIntegrityError("Recompiled prospective block plan sections do not match versioned block plan.")
+        from astrology.benchmark_integrity import require_equal
+        require_equal(block_plan, versioned_bp, "prospective block plan")
+    else:
+        raise BenchmarkIntegrityError("Missing prospective block plan")
     print("Prospective Block Plan: COMPILED and verified successfully.")
 
     # Appendix Re-rendering Check
@@ -109,15 +105,21 @@ def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
     as_of_dt = datetime.fromisoformat(as_of_val) if isinstance(as_of_val, str) else as_of_val
     horizon_days = handoff["preparation_parameters"].get("horizon_days", 366)
     timing_data = handoff.get("timing")
-    if timing_data is None:
+    if timing_data is None and handoff["preparation_parameters"]["include_timing"]:
         raw_chart = calculate_chart(CHART_3_BIRTH)
         chart_view = build_safe_interpretive_view(raw_chart)
         timing_data = cross_technique_timing(chart_view.semantic_chart(), as_of_dt, horizon_days)
 
     re_rendered_appendix = render_canonical_technical_appendix(CHART_3_BIRTH, profile=PROFILE, timing=timing_data)
     appendix_file = (bench_dir / "canonical_technical_appendix.md").read_text(encoding="utf-8")
-    if re_rendered_appendix.strip() != appendix_file.strip():
+    if re_rendered_appendix != appendix_file:
         raise BenchmarkIntegrityError("Canonical technical appendix re-render does not match versioned benchmark artifact.")
+
+    from astrology.benchmark_integrity import load_json, require_equal
+    original_author = load_json(bench_dir / "02-author-bundle.json")
+    original_reviewer = load_json(bench_dir / "04-reviewer-bundle.json")
+    require_equal(original_author["draft_report"], author_draft, "Author draft")
+    require_equal(original_reviewer["final_report"], final_reviewed_report, "Reviewer report")
 
     # 4. Provenance Guard on Authored Draft
     print("\n==> [4/5] Running Deterministic Provenance Guard on Author Draft...")
@@ -129,8 +131,10 @@ def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
     author_bundle = build_author_bundle(
         handoff=handoff,
         draft_report=author_draft,
-        narrative_block_sources=sources,
-        reader_sections=sections,
+        narrative_block_sources=original_author["narrative_block_sources"],
+        reader_sections=original_author["reader_sections"],
+        reasoned_syntheses=original_author["reasoned_syntheses"],
+        synthesis_bundle_sha256=original_author["synthesis_bundle_sha256"],
         reader_selection_plan=author_selection_plan,
     )
     prov_result = validate_premium_author_bundle(
@@ -147,11 +151,12 @@ def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
         author_bundle=author_bundle,
         provenance_result=prov_result,
         final_report=final_reviewed_report,
-        verdict="approved",
-        corrections_made=["Audited technical precision and affirmative multi-paragraph cadence."],
-        remaining_warnings=[],
-        narrative_block_sources=rev_sources,
-        reader_sections=rev_sections,
+        verdict=original_reviewer["verdict"],
+        corrections_made=original_reviewer["corrections_made"],
+        remaining_warnings=original_reviewer["remaining_warnings"],
+        regeneration_request=original_reviewer.get("regeneration_request"),
+        narrative_block_sources=original_reviewer["narrative_block_sources"],
+        reader_sections=original_reviewer["reader_sections"],
     )
     pub_result = validate_premium_narrative(
         reviewer_bundle,
@@ -179,6 +184,19 @@ def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
     if len(f_errors) != 0:
         raise BenchmarkIntegrityError(f"Relationship fidelity errors found: {f_errors}")
 
+    from astrology.benchmark_integrity import require_equal, load_json
+    stored = {
+        "02-author-bundle.json": author_bundle,
+        "03-provenance-guard.json": prov_result,
+        "04-reviewer-bundle.json": reviewer_bundle,
+        "05-publication-guard.json": pub_result,
+        "06-editorial-qa.json": {"barnum_risk": b_risk, "grandiosity_risk": g_risk, "medicalization_risk": m_risk, "relationship_fidelity_errors": f_errors, "publication_approved": pub_result["approved"]},
+    }
+    for name, actual in stored.items():
+        path = bench_dir / name
+        if not path.is_file():
+            raise BenchmarkIntegrityError(f"Missing full replay output: {name}")
+        require_equal(actual, load_json(path), name)
     print(f"Publication Guard: APPROVED.")
     print(f"Editorial QA: Barnum={b_risk['share']}, Grandiosity={g_risk['share']}, Medicalization={m_risk['share']}.")
     print(f"Relationship Fidelity: {len(f_errors)} errors.")
@@ -187,6 +205,10 @@ def replay_chart3_benchmark(bench_dir: Path = BENCHMARK_DIR) -> bool:
 
 
 if __name__ == "__main__":
-    success = replay_chart3_benchmark()
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--run-dir", type=Path, required=True)
+    args = parser.parse_args()
+    success = replay_chart3_benchmark(args.run_dir)
     if not success:
         sys.exit(1)

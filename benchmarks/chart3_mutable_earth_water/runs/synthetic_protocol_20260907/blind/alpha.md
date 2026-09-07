@@ -1,0 +1,1 @@
+Synthetic comparison fixture, not a quality benchmark.

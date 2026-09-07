@@ -1,6 +1,6 @@
 """Custom domain and integrity exceptions for astrology pipeline."""
 
-class AstrologyError(Exception):
+class AstrologyError(ValueError):
     """Base class for exceptions in this package."""
     pass
 

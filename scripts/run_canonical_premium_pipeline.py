@@ -58,28 +58,7 @@ from astrology.reasoning import (
 )
 
 
-def build_author_selection_prompt(handoff: Dict[str, object], lang: str = "pt-BR") -> str:
-    """Generate prompt instructing the Author to build the ReaderSelectionPlan."""
-    manifest = handoff["reader_domain_manifest"]
-    catalog = handoff.get("candidate_catalog") or {}
-    approved_synths = handoff.get("approved_reasoned_syntheses") or handoff.get("prepared_signature_syntheses", [])
-    packet_id = handoff.get("packet_id", "")
-    return (
-        f"=== AUTHOR SELECTION INSTRUCTIONS ===\n"
-        f"You are the Premium Astrological Author. Before drafting prose, you must evaluate all candidate legal coverage paths\n"
-        f"in the Selection Candidate Catalog and Reader Domain Manifest, and produce the Author Selection Plan (ReaderSelectionPlan v1.0).\n\n"
-        f"For each available domain in the manifest:\n"
-        f"- Classify each legal path as: 'represented', 'merged_with_represented', or 'omitted_no_distinct_reader_value'.\n"
-        f"- Coverage contract: Every available domain MUST have at least one 'represented' path.\n"
-        f"- For 'represented': assign the approved synthesis ID(s) from the candidate catalog that materialize this path's distinct human mechanism.\n"
-        f"- For 'merged_with_represented': specify the 'merged_with_path_id' (must be a represented path in the same domain) and a non-empty rationale explaining how the mechanisms converge.\n"
-        f"- For 'omitted_no_distinct_reader_value': specify a non-empty rationale explaining why this path provides no distinct reader value.\n"
-        f"- Lineage invariant: Include 'packet_id': '{packet_id}' in the selection plan.\n"
-        f"- Output strictly valid JSON matching the ReaderSelectionPlan v1.0 schema.\n\n"
-        f"=== SELECTION CANDIDATE CATALOG ===\n{json.dumps(catalog, ensure_ascii=False, indent=2)}\n\n"
-        f"=== READER DOMAIN MANIFEST ===\n{json.dumps(manifest, ensure_ascii=False, indent=2)}\n\n"
-        f"=== APPROVED SYNTHESES ===\n{json.dumps(approved_synths, ensure_ascii=False, indent=2)}\n"
-    )
+from astrology.premium_workflow import build_author_selection_prompt, prepared_timing_parameters, prepare_author_from_selection, validate_frozen_inputs, require_deliverable, validate_saved_block_plan, build_reviewer_preflight
 
 
 def prepare_audit_run(
@@ -98,11 +77,16 @@ def prepare_audit_run(
 
     # Stage 1: Deterministic Handoff from a single authoritative snapshot
     print("==> [Stage 1] Preparing Deterministic Handoff...")
-    effective_as_of = as_of or datetime.now(timezone.utc)
-    handoff = prepare_premium_handoff(
-        birth, profile=profile, report_depth="deep", include_timing=True,
-        as_of=effective_as_of, horizon_days=horizon_days,
-    )
+    snapshot_path = output_dir / "01-handoff.json"
+    if snapshot_path.exists():
+        handoff = json.loads(snapshot_path.read_text(encoding="utf-8"))
+        validate_frozen_inputs(handoff, birth, profile)
+    else:
+        effective_as_of = as_of or datetime.now(timezone.utc)
+        handoff = prepare_premium_handoff(
+            birth, profile=profile, report_depth="deep", include_timing=True,
+            as_of=effective_as_of, horizon_days=horizon_days,
+        )
 
     (output_dir / "01-handoff.json").write_text(json.dumps(handoff, ensure_ascii=False, indent=2), encoding="utf-8")
     if handoff.get("candidate_catalog"):
@@ -150,23 +134,11 @@ def prepare_audit_run(
     (output_dir / "01-prospective-block-plan.json").write_text(json.dumps(block_plan, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # Generate Prompts using single authoritative reasoning packet from handoff
-    author_prompt = (
-        f"=== AUTHOR INSTRUCTIONS ===\n{humanization_instructions(lang)}\n\n"
-        f"=== PROSPECTIVE BLOCK PLAN ===\n{json.dumps(block_plan, ensure_ascii=False, indent=2)}\n\n"
-        f"=== REASONING PACKET / HANDOFF ===\n{json.dumps(handoff['reasoning_packet'], ensure_ascii=False, indent=2)}\n\n"
-        f"=== READER DOMAIN MANIFEST ===\n{json.dumps(handoff['reader_domain_manifest'], ensure_ascii=False, indent=2)}\n\n"
-        f"=== FIXED READER INTRODUCTION ===\n{handoff['reader_introduction']}\n"
-    )
+    author_prompt = prepare_author_from_selection(handoff, block_plan["selection_plan"], lang)["author_prompt"]
     (output_dir / "author_prompt.txt").write_text(author_prompt, encoding="utf-8")
 
-    reviewer_prompt = (
-        f"=== REVIEWER INSTRUCTIONS ===\n{humanization_verifier_instructions(lang)}\n\n"
-        f"=== PROSPECTIVE BLOCK PLAN ===\n{json.dumps(block_plan, ensure_ascii=False, indent=2)}\n\n"
-        f"=== REASONING PACKET / HANDOFF ===\n{json.dumps(handoff['reasoning_packet'], ensure_ascii=False, indent=2)}\n\n"
-        f"=== READER DOMAIN MANIFEST ===\n{json.dumps(handoff['reader_domain_manifest'], ensure_ascii=False, indent=2)}\n\n"
-        f"=== FIXED READER INTRODUCTION ===\n{handoff['reader_introduction']}\n"
-    )
-    (output_dir / "reviewer_prompt.txt").write_text(reviewer_prompt, encoding="utf-8")
+    reviewer_prompt = build_reviewer_preflight(handoff, block_plan, lang)
+    (output_dir / "reviewer_instructions.txt").write_text(reviewer_prompt, encoding="utf-8")
 
     # Render Technical Appendix
     appendix = render_canonical_technical_appendix(birth, profile=profile, timing=handoff.get("timing"))
@@ -190,7 +162,11 @@ def validate_authored_draft(
     """Binds prose to prospective plan, builds AuthorBundle, and runs Provenance Guard."""
     handoff = json.loads(handoff_path.read_text(encoding="utf-8"))
     block_plan = json.loads(block_plan_path.read_text(encoding="utf-8"))
+    validate_frozen_inputs(handoff, birth, profile)
+    validate_saved_block_plan(handoff, block_plan)
     draft_report = draft_report_path.read_text(encoding="utf-8")
+    from astrology.benchmark_integrity import check_benchmark_run_output
+    check_benchmark_run_output(output_dir, draft_report.encode("utf-8"))
     manifest = handoff["reader_domain_manifest"]
     sources, sections, audit_trace = bind_prospective_plan_to_prose(draft_report, block_plan, manifest)
 
@@ -201,10 +177,9 @@ def validate_authored_draft(
             all_synths.append(ps)
 
     from datetime import datetime
-    effective_as_of = handoff["preparation_parameters"]["effective_as_of"]
-    parsed_as_of = datetime.fromisoformat(str(effective_as_of).replace("Z", "+00:00"))
+    parsed_as_of, prepared_horizon, prepared_timing = prepared_timing_parameters(handoff)
     from astrology.pipeline import validate_premium_syntheses, _canonical_hash
-    checked = validate_premium_syntheses(birth, all_synths, profile, parsed_as_of, 366, True, premium_contract_version="1.4")
+    checked = validate_premium_syntheses(birth, all_synths, profile, parsed_as_of, prepared_horizon, prepared_timing, premium_contract_version="1.4")
     approved_synths = [item for item in checked["reasoned_synthesis"] if item["status"] == "allowed"]
     expected_synthesis_hash = _canonical_hash(approved_synths)
 
@@ -247,7 +222,11 @@ def validate_reviewed_report(
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
     handoff = json.loads(handoff_path.read_text(encoding="utf-8"))
     block_plan = json.loads(block_plan_path.read_text(encoding="utf-8"))
+    validate_frozen_inputs(handoff, birth, profile)
+    validate_saved_block_plan(handoff, block_plan)
     final_report = final_report_path.read_text(encoding="utf-8")
+    from astrology.benchmark_integrity import check_benchmark_run_output
+    check_benchmark_run_output(output_dir, final_report.encode("utf-8"))
     manifest = handoff["reader_domain_manifest"]
 
     # In Contract 1.4, when prose undergoes reviewer layout/language edits,
@@ -264,9 +243,10 @@ def validate_reviewed_report(
     (output_dir / "04-prospective-final-audit.json").write_text(json.dumps(audit_trace, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+    frozen_as_of, frozen_horizon, frozen_timing = prepared_timing_parameters(handoff)
     pub_result = validate_premium_narrative(
         reviewer_bundle, provenance, birth, profile,
-        prepared_handoff=handoff, include_timing=True,
+        frozen_as_of, frozen_horizon, frozen_timing, prepared_handoff=handoff,
     )
     (output_dir / "05-publication-guard.json").write_text(json.dumps(pub_result, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -287,6 +267,8 @@ def validate_reviewed_report(
         "publication_approved": pub_result.get("approved", False),
     }
     (output_dir / "06-editorial-qa.json").write_text(json.dumps(qa_report, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    require_deliverable(qa_report)
 
     # Assemble publication report with deterministic technical appendix
     appendix_path = output_dir / "canonical_technical_appendix.md"
@@ -408,23 +390,11 @@ if __name__ == "__main__":
         (out_dir / "01-prospective-block-plan.json").write_text(
             json.dumps(block_plan, ensure_ascii=False, indent=2), encoding="utf-8"
         )
-        author_prompt = (
-            f"=== AUTHOR INSTRUCTIONS ===\n{humanization_instructions(args.lang)}\n\n"
-            f"=== PROSPECTIVE BLOCK PLAN ===\n{json.dumps(block_plan, ensure_ascii=False, indent=2)}\n\n"
-            f"=== REASONING PACKET / HANDOFF ===\n{json.dumps(handoff['reasoning_packet'], ensure_ascii=False, indent=2)}\n\n"
-            f"=== READER DOMAIN MANIFEST ===\n{json.dumps(handoff['reader_domain_manifest'], ensure_ascii=False, indent=2)}\n\n"
-            f"=== FIXED READER INTRODUCTION ===\n{handoff['reader_introduction']}\n"
-        )
+        author_prompt = prepare_author_from_selection(handoff, block_plan["selection_plan"], args.lang)["author_prompt"]
         (out_dir / "author_prompt.txt").write_text(author_prompt, encoding="utf-8")
 
-        reviewer_prompt = (
-            f"=== REVIEWER INSTRUCTIONS ===\n{humanization_verifier_instructions(args.lang)}\n\n"
-            f"=== PROSPECTIVE BLOCK PLAN ===\n{json.dumps(block_plan, ensure_ascii=False, indent=2)}\n\n"
-            f"=== REASONING PACKET / HANDOFF ===\n{json.dumps(handoff['reasoning_packet'], ensure_ascii=False, indent=2)}\n\n"
-            f"=== READER DOMAIN MANIFEST ===\n{json.dumps(handoff['reader_domain_manifest'], ensure_ascii=False, indent=2)}\n\n"
-            f"=== FIXED READER INTRODUCTION ===\n{handoff['reader_introduction']}\n"
-        )
-        (out_dir / "reviewer_prompt.txt").write_text(reviewer_prompt, encoding="utf-8")
+        reviewer_prompt = build_reviewer_preflight(handoff, block_plan, args.lang)
+        (out_dir / "reviewer_instructions.txt").write_text(reviewer_prompt, encoding="utf-8")
         print(f"Prospective block plan and author/reviewer prompts ready in {out_dir}.")
         print(f"Packet ID: {block_plan['packet_id']}")
         sys.exit(0)
