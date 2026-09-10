@@ -16,3 +16,4 @@ ux-audit*/
 *.local.json
 .agents/
 /runs/
+/delivery/fixtures/output/

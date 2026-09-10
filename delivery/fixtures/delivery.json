@@ -1,0 +1,15 @@
+{
+  "reading": "reading.md",
+  "appendix": "appendix.md",
+  "source_sha256": "1503a28d2acb0ca605d3ffb5f006edd0feb7b208302a437f5ea0ab58ee058979",
+  "appendix_sha256": "f9a7bf4bf727f82c361e6ae066e51c509f2eed08530e3c37a5da85064b039937",
+  "display_name": "Amostra sintética",
+  "metadata": ["Teste técnico de apresentação; não é um relatório de cliente."],
+  "output_dir": "output/pdf",
+  "report_filename": "layout-smoke.pdf",
+  "appendix_filename": "appendix-smoke.pdf",
+  "highlights": {
+    "0c00eeee8382fc381234b53bda086db5e2ca08433e31b8d6b01a9b20d367d4e5": "example",
+    "72776eb256da597645a691d773345913f0b7080dd0fe9aef54bc7dbe84bfd786": "quote"
+  }
+}
